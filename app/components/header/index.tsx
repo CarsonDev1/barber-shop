@@ -11,31 +11,29 @@ import {
 import { Menu, UserRound, X, Flag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Logo from '@/public/root/Logo.png';
 import { useTranslation } from 'react-i18next';
+import '@/i18n';
 
-function useMediaQuery(query: string) {
-	const [matches, setMatches] = useState(false);
+// function useMediaQuery(query: string) {
+// 	const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
 
-	useEffect(() => {
-		const media = window.matchMedia(query);
-		if (media.matches !== matches) {
-			setMatches(media.matches);
-		}
-		const listener = () => setMatches(media.matches);
-		media.addListener(listener);
-		return () => media.removeListener(listener);
-	}, [matches, query]);
+// 	useEffect(() => {
+// 		const media = window.matchMedia(query);
+// 		const listener = () => setMatches(media.matches);
+// 		media.addListener(listener);
+// 		return () => media.removeListener(listener);
+// 	}, [query]);
 
-	return matches;
-}
+// 	return matches;
+// }
 
 export default function Header() {
-	const { t, i18n } = useTranslation();
+	const { t, i18n } = useTranslation('common');
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
-	const isLargeScreen = useMediaQuery('(min-width: 768px)');
+	// const isLargeScreen = useMediaQuery('(min-width: 768px)');
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -46,20 +44,25 @@ export default function Header() {
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
 
-	useEffect(() => {
-		if (isLargeScreen) {
-			setIsOpen(false);
-		}
-	}, [isLargeScreen]);
+	// useEffect(() => {
+	// 	if (isLargeScreen) {
+	// 		setIsOpen(false);
+	// 	}
+	// }, [isLargeScreen]);
 
-	const languages = [
-		{ code: 'en', label: 'English', flag: '🇺🇸' },
-		{ code: 'ko', label: '한국어', flag: '🇰🇷' },
-	];
+	const languages = useMemo(
+		() => [
+			{ code: 'en', label: 'English', flag: '🇺🇸' },
+			{ code: 'ko', label: '한국어', flag: '🇰🇷' },
+		],
+		[]
+	);
 
 	return (
 		<header
-			className={`w-full bg-black text-white fixed top-0 z-50 transition-all ${isScrolled ? 'shadow-lg' : ''}`}
+			className={`w-full bg-black text-white z-50 fixed top-0 transition-all duration-300 ${
+				isScrolled ? 'shadow-lg ' : ''
+			}`}
 		>
 			<div className='container-lg'>
 				<nav className='flex items-center justify-between h-16 md:h-20'>
@@ -73,7 +76,7 @@ export default function Header() {
 						/>
 					</div>
 					<div className='hidden md:flex items-center gap-8'>
-						{/* Định nghĩa navItems bên trong JSX để cập nhật khi ngôn ngữ thay đổi */}
+						{/* Navigation Items */}
 						{[
 							{ name: t('home'), href: '/' },
 							{ name: t('aboutBarber'), href: '/about' },
@@ -121,14 +124,15 @@ export default function Header() {
 								variant='outline'
 							>
 								<UserRound className='w-4 h-4' />
-								{t('loginRegister')}
+								<span>{t('login')}</span>
 							</Button>
 						</Link>
+
+						{/* Mobile Menu (Sheet) */}
 						<Sheet open={isOpen} onOpenChange={setIsOpen}>
 							<SheetTrigger asChild>
-								<Button variant='ghost' size='icon' className='md:hidden'>
+								<Button variant='ghost' size='icon' className='md:hidden' aria-label='Toggle menu'>
 									<Menu className='h-6 w-6' />
-									<span className='sr-only'>Toggle menu</span>
 								</Button>
 							</SheetTrigger>
 							<SheetContent side='right' className='w-[300px] sm:w-[400px] bg-black p-0 border-none'>
@@ -171,7 +175,7 @@ export default function Header() {
 											variant='outline'
 										>
 											<UserRound className='w-4 h-4' />
-											{t('loginRegister')}
+											<span>{t('login')}</span>
 										</Button>
 									</div>
 								</Link>
