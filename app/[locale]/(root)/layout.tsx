@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import Header from '@/app/components/header';
@@ -13,11 +14,7 @@ export const metadata: Metadata = {
 	description: 'Barber Shop Hair Cut',
 };
 
-export default function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang='en'>
 			<body className={poppins.className}>

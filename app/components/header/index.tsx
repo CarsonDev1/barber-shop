@@ -2,11 +2,18 @@
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, UserRound, X } from 'lucide-react';
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Menu, UserRound, X, Flag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Logo from '@/public/root/Logo.png';
+import { useTranslation } from 'react-i18next';
 
 function useMediaQuery(query: string) {
 	const [matches, setMatches] = useState(false);
@@ -25,6 +32,7 @@ function useMediaQuery(query: string) {
 }
 
 export default function Header() {
+	const { t, i18n } = useTranslation();
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
 	const isLargeScreen = useMediaQuery('(min-width: 768px)');
@@ -44,14 +52,9 @@ export default function Header() {
 		}
 	}, [isLargeScreen]);
 
-	const navItems = [
-		{ name: 'Home', href: '/' },
-		{ name: 'About Barber', href: '/about' },
-		{ name: 'Book', href: '/book' },
-		{ name: 'Review', href: '/review' },
-		{ name: 'Service', href: '/service' },
-		{ name: 'Contact', href: '/contact' },
-		{ name: 'Review & Feedback', href: '/feedback' },
+	const languages = [
+		{ code: 'en', label: 'English', flag: '🇺🇸' },
+		{ code: 'ko', label: '한국어', flag: '🇰🇷' },
 	];
 
 	return (
@@ -70,9 +73,17 @@ export default function Header() {
 						/>
 					</div>
 					<div className='hidden md:flex items-center gap-8'>
-						{navItems.map((item) => (
+						{/* Định nghĩa navItems bên trong JSX để cập nhật khi ngôn ngữ thay đổi */}
+						{[
+							{ name: t('home'), href: '/' },
+							{ name: t('aboutBarber'), href: '/about' },
+							{ name: t('book'), href: '/book' },
+							{ name: t('service'), href: '/service' },
+							{ name: t('contact'), href: '/contact' },
+							{ name: t('reviewFeedback'), href: '/feedback' },
+						].map((item) => (
 							<Link
-								key={item.name}
+								key={item.href}
 								className='text-sm hover:text-gray-300 transition-colors'
 								href={item.href}
 							>
@@ -81,13 +92,36 @@ export default function Header() {
 						))}
 					</div>
 					<div className='flex items-center gap-4'>
+						{/* Language Switcher */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button className='flex items-center gap-2 text-sm bg-transparent text-white hover:text-gray-300'>
+									<Flag className='w-4 h-4' />
+									{languages.find((lang) => lang.code === i18n.language)?.label || 'English'}
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className='bg-white text-black w-32' style={{ overflow: 'visible' }}>
+								{languages.map((lang) => (
+									<DropdownMenuItem
+										key={lang.code}
+										onClick={() => i18n.changeLanguage(lang.code)}
+										className='flex items-center gap-2'
+									>
+										<span>{lang.flag}</span>
+										{lang.label}
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						{/* Login Button */}
 						<Link href='/login'>
 							<Button
 								className='hidden md:flex items-center gap-2 bg-transparent hover:bg-white hover:text-black transition-colors'
 								variant='outline'
 							>
 								<UserRound className='w-4 h-4' />
-								LOGIN/REGISTER
+								{t('loginRegister')}
 							</Button>
 						</Link>
 						<Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -112,9 +146,16 @@ export default function Header() {
 									/>
 								</div>
 								<nav className='flex flex-col gap-1 p-4 flex-grow'>
-									{navItems.map((item) => (
+									{[
+										{ name: t('home'), href: '/' },
+										{ name: t('aboutBarber'), href: '/about' },
+										{ name: t('book'), href: '/book' },
+										{ name: t('service'), href: '/service' },
+										{ name: t('contact'), href: '/contact' },
+										{ name: t('reviewFeedback'), href: '/feedback' },
+									].map((item) => (
 										<Link
-											key={item.name}
+											key={item.href}
 											href={item.href}
 											className='text-white hover:bg-gray-800 px-4 py-2 rounded-md transition-colors'
 											onClick={() => setIsOpen(false)}
@@ -130,7 +171,7 @@ export default function Header() {
 											variant='outline'
 										>
 											<UserRound className='w-4 h-4' />
-											LOGIN/REGISTER
+											{t('loginRegister')}
 										</Button>
 									</div>
 								</Link>
