@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, ChevronRight, Scissors, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
+import Face from '@/public/root/face.png';
+import Link from 'next/link';
 
 export default function BookingForm() {
 	const [date, setDate] = useState<Date | undefined>(new Date());
@@ -42,40 +43,41 @@ export default function BookingForm() {
 	];
 
 	return (
-		<div className='sec-com'>
-			<div className='relative h-full md:min-h-dvh'>
+		<div className='!overflow-hidden bg-black h-screen sec-com'>
+			<div className='relative'>
 				<Image
 					src={BackGroundRoot}
 					alt='Barber Shop Logo'
 					width={1820}
 					height={1200}
-					className='absolute inset-0 w-full h-full object-cover'
+					className='absolute inset-0 w-full object-cover h-screen'
 				/>
-				<div className='absolute inset-0 bg-black bg-opacity-50'></div>
-				<div className='w-full max-w-xl mx-auto p-4'>
-					<div className='bg-gray-800/80 backdrop-blur-sm rounded-3xl p-6 space-y-6'>
+				<div className='absolute inset-0 bg-black bg-opacity-50 h-screen'></div>
+				<div className='w-full max-w-xl mx-auto p-4 sec-com'>
+					<div className='bg-white/10 backdrop-blur-sm rounded-3xl p-6 space-y-6'>
 						<div className='space-y-4'>
 							<h2 className='text-xl text-white font-semibold'>Choose service</h2>
-							<Select>
-								<SelectTrigger className='w-full bg-white text-black'>
-									<SelectValue placeholder='See all attractive services...' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value='haircut'>Haircut</SelectItem>
-									<SelectItem value='shave'>Shave</SelectItem>
-									<SelectItem value='coloring'>Hair Coloring</SelectItem>
-								</SelectContent>
-							</Select>
+							<Link href='/service'>
+								<Button className='flex items-center justify-between w-full bg-white hover:bg-gray-300'>
+									<div className='flex items-center'>
+										<Scissors className='mr-2 h-4 w-4 text-gray-900' />
+										<span className='text-gray-900'>See all attractive services..</span>
+									</div>
+									<ChevronRight className='ml-auto h-4 w-4 text-gray-900' />
+								</Button>
+							</Link>
 						</div>
 
 						<div className='space-y-4'>
 							<h2 className='text-xl text-white font-semibold'>Choose date, time & stylist</h2>
 							<div className='flex gap-2'>
-								<Button variant='outline' className='flex-1 bg-white text-black'>
-									<Scissors className='mr-2 h-4 w-4' />
-									Choose stylist
-									<ChevronRight className='ml-auto h-4 w-4' />
-								</Button>
+								<Link href='/stylist'>
+									<Button variant='outline' className='flex-1 bg-white text-black'>
+										<Image src={Face} alt='face' className='mr-2 h-7 w-6' />
+										Choose stylist
+										<ChevronRight className='ml-auto h-4 w-4' />
+									</Button>
+								</Link>
 								<Button variant='outline' className='flex-1 bg-white text-black'>
 									<Upload className='mr-2 h-4 w-4' />
 									Upload my hairstyle
@@ -102,8 +104,10 @@ export default function BookingForm() {
 									<Button
 										key={time}
 										variant='outline'
-										className={`bg-white text-black hover:bg-gray-200 ${
-											selectedTime === time ? 'ring-2 ring-black' : ''
+										className={`bg-white text-black ${
+											selectedTime === time
+												? 'bg-[#F0B35B] text-white ring-2 ring-black hover:bg-[#F0B35B] hover:text-white'
+												: ''
 										}`}
 										onClick={() => setSelectedTime(time)}
 									>

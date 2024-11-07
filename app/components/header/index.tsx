@@ -61,7 +61,7 @@ export default function Header() {
 	return (
 		<header
 			className={`w-full bg-black text-white z-50 fixed top-0 transition-all duration-300 ${
-				isScrolled ? 'shadow-lg ' : ''
+				isScrolled ? 'shadow-lg' : ''
 			}`}
 		>
 			<div className='container-lg'>

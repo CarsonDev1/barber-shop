@@ -6,7 +6,6 @@ import Feature from '@/app/pages/home/feature';
 import StyleList from '@/app/pages/home/stylist';
 import '@/i18n';
 import Address from '@/app/pages/home/address';
-import Chats from '@/app/components/chats';
 
 export default function Home() {
 	return (
@@ -16,7 +15,6 @@ export default function Home() {
 			<Feature />
 			<StyleList />
 			<Address />
-			<Chats />
 		</Fragment>
 	);
 }
