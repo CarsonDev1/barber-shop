@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,9 @@ import { ChevronDown, ArrowLeft, Clock, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import ServiceImage from '@/public/root/service-img.png';
+import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@/components/ui/dialog';
+import Offers from '@/app/components/offers';
+import { toast } from 'sonner';
 
 interface Service {
 	id: number;
@@ -18,6 +21,8 @@ interface Service {
 
 export default function Service() {
 	const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string }[]>([]);
 
 	const services: Service[] = Array.from({ length: 12 }, (_, i) => ({
 		id: i + 1,
@@ -35,6 +40,25 @@ export default function Service() {
 		}
 		setSelectedServices(newSelected);
 	};
+
+	const handleApplyOffers = (offers: { id: number; name: string }[]) => {
+		setIsDialogOpen(false);
+		setSelectedOffers(offers);
+		toast.success('Offers have been saved successfully!', {
+			style: { color: '#4CAF50' },
+			position: 'top-right',
+			action: {
+				label: 'Undo',
+				onClick: () => {},
+			},
+		});
+	};
+
+	// // Load offers from localStorage when the dialog closes
+	// useEffect(() => {
+	// 	const storedUserOffers = JSON.parse(localStorage.getItem('selectedOffers') || '[]');
+	// 	setSelectedOffers([...storedUserOffers]);
+	// }, [isDialogOpen]);
 
 	return (
 		<div className='bg-slate-950 relative'>
@@ -124,12 +148,20 @@ export default function Service() {
 							<div className='flex flex-col gap-2'>
 								<div className='flex items-center justify-between'>
 									<div className='text-sm text-yellow-500'>Your benefits</div>
-									<div className='flex items-center gap-2'>
-										<span>Select offer</span>
-										<ChevronRight />
-									</div>
+									<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+										<DialogTrigger asChild>
+											<Button variant='link' className='flex items-center gap-2 text-blue-600'>
+												Select offer
+												<ChevronRight />
+											</Button>
+										</DialogTrigger>
+										<DialogOverlay />
+										<DialogContent className='bg-black/35 border text-white !max-w-xl'>
+											<Offers onApply={handleApplyOffers} />
+										</DialogContent>
+									</Dialog>
 								</div>
-								<div className='flex items-center justify-between'>
+								<div className='flex justify-between'>
 									<div>
 										<div className='text-lg'>{selectedServices.size} services selected</div>
 										<div className='text-xl flex items-center gap-2'>
@@ -138,6 +170,15 @@ export default function Service() {
 												{(selectedServices.size * 120000).toLocaleString()}K
 											</span>
 										</div>
+										{/* list offer */}
+										<div className='text-lg font-semibold'>Selected Offers:</div>
+										<ul className='space-y-2'>
+											{selectedOffers.map((offer) => (
+												<li key={offer.id} className='text-sm text-gray-700 dark:text-gray-300'>
+													{offer.name}
+												</li>
+											))}
+										</ul>
 									</div>
 									<Button
 										size='lg'
