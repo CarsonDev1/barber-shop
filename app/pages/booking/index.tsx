@@ -43,8 +43,8 @@ export default function BookingForm() {
 	];
 
 	return (
-		<div className='!overflow-hidden bg-black h-screen sec-com'>
-			<div className='relative'>
+		<div className='!overflow-hidden bg-black h-full sec-com'>
+			<div className='relative pt-10'>
 				<Image
 					src={BackGroundRoot}
 					alt='Barber Shop Logo'

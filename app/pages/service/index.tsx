@@ -67,7 +67,7 @@ export default function Service() {
 				alt='Barber Shop Logo'
 				width={1820}
 				height={1200}
-				className='absolute inset-0 w-full object-cover h-full'
+				className='absolute inset-0 w-full object-cover'
 			/>
 			<div className='relative container-lg !pt-20'>
 				{/* Header */}

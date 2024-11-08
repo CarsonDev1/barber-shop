@@ -8,32 +8,19 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { Menu, UserRound, X, Flag } from 'lucide-react';
+import { Menu, UserRound, X, Flag, Scissors, Gift, Edit, Calendar, ImageIcon, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
 import Logo from '@/public/root/Logo.png';
+import User from '@/public/root/user.png';
 import { useTranslation } from 'react-i18next';
 import '@/i18n';
-
-// function useMediaQuery(query: string) {
-// 	const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
-
-// 	useEffect(() => {
-// 		const media = window.matchMedia(query);
-// 		const listener = () => setMatches(media.matches);
-// 		media.addListener(listener);
-// 		return () => media.removeListener(listener);
-// 	}, [query]);
-
-// 	return matches;
-// }
 
 export default function Header() {
 	const { t, i18n } = useTranslation('common');
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
-	// const isLargeScreen = useMediaQuery('(min-width: 768px)');
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -43,12 +30,6 @@ export default function Header() {
 		window.addEventListener('scroll', handleScroll);
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
-
-	// useEffect(() => {
-	// 	if (isLargeScreen) {
-	// 		setIsOpen(false);
-	// 	}
-	// }, [isLargeScreen]);
 
 	const languages = useMemo(
 		() => [
@@ -114,6 +95,51 @@ export default function Header() {
 										{lang.label}
 									</DropdownMenuItem>
 								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<div className='flex items-center gap-1 cursor-pointer'>
+									<span>User</span>
+									<Image
+										src={User}
+										alt='Barber Shop User'
+										width={80}
+										height={98}
+										className='h-8 w-10 mx-auto'
+									/>
+								</div>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
+								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+									<Link href='/history' className='flex items-center gap-1'>
+										<Scissors className='mr-2 h-4 w-4' />
+										<span>History of haircut</span>
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+									<Gift className='mr-2 h-4 w-4' />
+									<span>Your Offer</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+									<Link href='/profile' className='flex items-center gap-1'>
+										<Edit className='mr-2 h-4 w-4' />
+										<span>Edit information</span>
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+									<Calendar className='mr-2 h-4 w-4' />
+									<span>View schedule appointment</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+									<ImageIcon className='mr-2 h-4 w-4' />
+									<span>Image saved</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer text-red-400'>
+									<LogOut className='mr-2 h-4 w-4' />
+									<span>Log out</span>
+								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 

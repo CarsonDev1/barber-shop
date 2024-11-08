@@ -5,6 +5,7 @@ import Header from '@/app/components/header';
 import '@/app/globals.css';
 import Chats from '@/app/components/chats';
 import { Toaster } from '@/components/ui/sonner';
+import Footer from '@/app/components/footer';
 
 const poppins = Poppins({
 	weight: ['400', '500', '600', '700', '800', '900'],
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				{children}
 				<Chats />
 				<Toaster />
+				<Footer />
 			</body>
 		</html>
 	);
