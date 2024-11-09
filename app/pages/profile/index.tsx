@@ -22,7 +22,7 @@ export default function ProfilePage() {
 				height={1200}
 				className='absolute inset-0 w-full object-cover h-full'
 			/>
-			<div className='max-w-4xl mx-auto pt-10'>
+			<div className='max-w-4xl mx-auto'>
 				<h1 className='text-2xl md:text-3xl font-bold mb-8 text-center'>Edit profile</h1>
 				<div className='bg-gray-900/30 backdrop-blur-sm rounded-xl border border-gray-800 p-6 md:p-8'>
 					<div className='grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8'>

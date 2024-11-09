@@ -47,15 +47,17 @@ export default function Header() {
 		>
 			<div className='container-lg'>
 				<nav className='flex items-center justify-between h-16 md:h-20'>
-					<div className='flex items-center gap-2'>
-						<Image
-							src={Logo}
-							alt='Barber Shop Logo'
-							width={80}
-							height={98}
-							className='size-14 md:size-20'
-						/>
-					</div>
+					<Link href='/'>
+						<div className='flex items-center gap-2'>
+							<Image
+								src={Logo}
+								alt='Barber Shop Logo'
+								width={80}
+								height={98}
+								className='size-14 md:size-20'
+							/>
+						</div>
+					</Link>
 					<div className='hidden md:flex items-center gap-8'>
 						{/* Navigation Items */}
 						{[
@@ -119,8 +121,10 @@ export default function Header() {
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-									<Gift className='mr-2 h-4 w-4' />
-									<span>Your Offer</span>
+									<Link href='/offer' className='flex items-center gap-1'>
+										<Gift className='mr-2 h-4 w-4' />
+										<span>Your Offer</span>
+									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 									<Link href='/profile' className='flex items-center gap-1'>
