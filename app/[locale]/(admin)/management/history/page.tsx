@@ -7,8 +7,11 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, History } from 'lucide-react';
 import PageContainer from '@/app/components/page-container';
 import ServiceImage from '@/public/root/service-img.png';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const barbers = Array(18).fill({
+	id: '1',
 	name: 'Xinh Đỗ',
 	phone: '0123456789',
 	address: 'Son Tra, Da Nang, Viet Nam',
@@ -26,36 +29,45 @@ export default function BarberHistory() {
 		return barbers.slice(startIndex, endIndex);
 	};
 
+	const router = useRouter();
+
 	return (
 		<PageContainer>
-			<div className='container-lg flex flex-col gap-5'>
+			<div className='container-lg flex flex-col gap-6'>
 				<h1 className='text-2xl font-bold text-center text-white'>MANAGEMENT BABER HISTORY</h1>
-				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
+
+				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
 					{getCurrentBarbers().map((barber, index) => (
 						<Card
 							key={index}
 							className='bg-gray-200 overflow-hidden transition-shadow hover:shadow-lg rounded-lg'
 						>
 							<CardContent className='p-4'>
-								<div className='relative h-48 mb-4 rounded-md overflow-hidden'>
+								<div className='relative h-40 mb-3 rounded-md overflow-hidden'>
 									<Image src={barber.image} alt={barber.name} fill className='object-cover' />
 									<span className='absolute top-2 right-2 bg-black text-white px-2 py-1 text-xs font-bold rounded'>
 										BARBER
 									</span>
 								</div>
-								<h3 className='font-bold text-lg mb-1'>{barber.name}</h3>
-								<p className='text-sm text-gray-600'>{barber.phone}</p>
-								<p className='text-sm text-gray-600'>{barber.address}</p>
+								<h3 className='font-bold text-base mb-1 truncate' title={barber.name}>
+									{barber.name}
+								</h3>
+								<p className='text-sm text-gray-600 truncate'>{barber.phone}</p>
+								<p className='text-sm text-gray-600 truncate' title={barber.address}>
+									{barber.address}
+								</p>
 							</CardContent>
 							<CardFooter className='bg-gray-300 p-2'>
-								<Button
-									variant='default'
-									size='sm'
-									className='w-full bg-orange-500 hover:bg-orange-600 text-black font-semibold'
-								>
-									<History className='w-4 h-4 mr-2' />
-									View history
-								</Button>
+								<Link href={`/management/history/${barber.id}`} className='w-full'>
+									<Button
+										variant='default'
+										size='sm'
+										className='w-full bg-orange-500 hover:bg-orange-600 text-black font-semibold'
+									>
+										<History className='w-4 h-4 mr-2' />
+										View history
+									</Button>
+								</Link>
 							</CardFooter>
 						</Card>
 					))}
