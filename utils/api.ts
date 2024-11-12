@@ -19,6 +19,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
 	(response) => response,
 	async (error) => {
+		console.log('Error in interceptor:', error.response?.status); // Debugging line
 		const originalRequest = error.config;
 		if (error.response?.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true;
@@ -30,14 +31,14 @@ api.interceptors.response.use(
 				originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
 				return api(originalRequest);
 			} catch {
-				// Xử lý khi refresh token cũng hết hạn
 				localStorage.removeItem('accessToken');
 				localStorage.removeItem('refreshToken');
-				window.location.href = '/login'; // Điều hướng về trang đăng nhập
+				window.location.href = '/login';
 			}
 		}
 		return Promise.reject(error);
 	}
 );
+
 
 export default api;

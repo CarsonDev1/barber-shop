@@ -1,5 +1,5 @@
 'use client';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Banner from '@/app/pages/home/banner';
 import Introduce from '@/app/pages/home/introduce';
 import Feature from '@/app/pages/home/feature';
@@ -10,11 +10,19 @@ import { useAuth } from '@/context/AuthProvider';
 
 export default function Home() {
 	const { isAuthenticated } = useAuth();
+	const [isClient, setIsClient] = useState(false);
 
-	if (!isAuthenticated) {
-		window.location.href = '/login';
+	useEffect(() => {
+		setIsClient(true);
+		if (!isAuthenticated) {
+			window.location.href = '/login';
+		}
+	}, [isAuthenticated]);
+
+	if (!isClient || !isAuthenticated) {
 		return null;
 	}
+
 	return (
 		<Fragment>
 			<Banner />

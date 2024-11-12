@@ -15,12 +15,25 @@ import { useState, useEffect, useMemo } from 'react';
 import Logo from '@/public/root/Logo.png';
 import User from '@/public/root/user.png';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { getAccount } from '@/app/apis/getProfile';
 import '@/i18n';
 
 export default function Header() {
 	const { t, i18n } = useTranslation('common');
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
+
+	const {
+		data: dataProfile,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['dataProfile'],
+		queryFn: getAccount,
+	});
+
+	console.log('dataProfile', dataProfile);
 
 	useEffect(() => {
 		const handleScroll = () => {
