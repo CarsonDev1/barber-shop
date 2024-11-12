@@ -26,7 +26,7 @@ export default function Service() {
 
 	const services: Service[] = Array.from({ length: 12 }, (_, i) => ({
 		id: i + 1,
-		title: 'Combo fit step hot',
+		title: 'Combo fit step hottttt',
 		price: 120000,
 		image: '/placeholder.svg?height=100&width=150',
 	}));
