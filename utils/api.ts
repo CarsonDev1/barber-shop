@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'https://52.187.14.110/api',
+	baseURL: 'http://52.187.14.110/api',
 	headers: {
 		'Content-Type': 'application/json',
 	},
@@ -10,9 +10,11 @@ const api = axios.create({
 // Thêm interceptor vào axios instance
 api.interceptors.request.use((config) => {
 	const token = localStorage.getItem('accessToken');
+	console.log('Token:', token); // Debugging line
 	if (token) {
 		config.headers['Authorization'] = `Bearer ${token}`;
 	}
+	console.log('Request headers:', config.headers); // Debugging line
 	return config;
 });
 
@@ -39,6 +41,5 @@ api.interceptors.response.use(
 		return Promise.reject(error);
 	}
 );
-
 
 export default api;

@@ -13,9 +13,10 @@ import Meta from '@/public/root/meta.png';
 import Apple from '@/public/root/apple.png';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Link from 'next/link';
-import api from '@/utils/api'; // Ensure you have your API setup
+import api from '@/utils/api';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 
 // Define the validation schema with Zod for login
 const schema = z.object({
@@ -36,7 +37,7 @@ type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 export default function LoginForm() {
 	const [loading, setLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
-	const [isForgotPassword, setIsForgotPassword] = useState(false); // State for toggling between login and forgot password forms
+	const [isForgotPassword, setIsForgotPassword] = useState(false);
 	const router = useRouter();
 
 	const {
@@ -66,9 +67,15 @@ export default function LoginForm() {
 			if (response?.data?.status === 200) {
 				const accessToken = response.data.payload;
 				localStorage.setItem('accessToken', accessToken);
+				const decoded: any = jwtDecode(accessToken);
+				const userRole = decoded?.role;
 
 				toast.success('Login successful!');
-				router.push('/');
+				if (userRole === 'ROLE_ADMIN') {
+					router.push('/management');
+				} else {
+					router.push('/');
+				}
 			} else {
 				toast.error(response?.data?.message || 'Login failed');
 			}

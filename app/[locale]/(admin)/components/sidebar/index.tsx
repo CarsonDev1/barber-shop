@@ -9,7 +9,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
 import {
 	Sidebar,
 	SidebarContent,
@@ -50,11 +49,17 @@ export interface NavItem {
 	title: string;
 	href: string;
 	icon: any;
+	subItems?: NavItem[];
 }
 
 const navItems: NavItem[] = [
 	{ title: 'MANAGEMENT STYLIST', href: '/management/stylist', icon: Scissors },
-	{ title: 'MANAGEMENT SERVICE', href: '/management/service', icon: Settings },
+	{
+		title: 'MANAGEMENT SERVICE',
+		href: '/management/service',
+		icon: Settings,
+		subItems: [{ title: 'Service Type', href: '/management/service/service-type', icon: Settings }],
+	},
 	{ title: 'MANAGEMENT CUSTOMER', href: '/management/customer', icon: Users },
 	{ title: 'MANAGEMENT FEEDBACK', href: '/management/feedback', icon: MessageSquare },
 	{ title: 'MANAGEMENT BOOKING', href: '/management/booking', icon: Calendar },
@@ -65,11 +70,17 @@ const navItems: NavItem[] = [
 
 export default function AppSidebar({ children }: { children: React.ReactNode }) {
 	const [mounted, setMounted] = React.useState(false);
+	const [openSubMenu, setOpenSubMenu] = React.useState<string | null>(null); // Track which submenu is open
 	const pathname = usePathname();
 
 	React.useEffect(() => {
 		setMounted(true);
 	}, []);
+
+	const toggleSubMenu = (itemHref: string) => {
+		// Toggle the submenu open/close based on the current state
+		setOpenSubMenu((prev) => (prev === itemHref ? null : itemHref));
+	};
 
 	if (!mounted) {
 		return null;
@@ -94,16 +105,40 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 						<SidebarGroupLabel className='text-white'>Overview</SidebarGroupLabel>
 						<SidebarMenu className='flex flex-col gap-3 text-white'>
 							{navItems.map((item) => (
-								<SidebarMenuItem key={item.href}>
-									<SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.href}>
-										<Link href={item.href}>
-											<div className='flex items-center gap-1'>
-												<item.icon className='mr-3 size-6' />
-												<span>{item.title}</span>
-											</div>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
+								<React.Fragment key={item.href}>
+									<SidebarMenuItem>
+										<SidebarMenuButton
+											asChild
+											tooltip={item.title}
+											isActive={pathname === item.href}
+											onClick={() => item.subItems && toggleSubMenu(item.href)} // Toggle submenu when clicked
+										>
+											<Link href={item.href}>
+												<div className='flex items-center gap-1'>
+													<item.icon className='mr-3 size-6' />
+													<span>{item.title}</span>
+												</div>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+									{/* Render subItems if they exist */}
+									{item.subItems && openSubMenu === item.href && (
+										<div className='ml-6'>
+											{item.subItems.map((subItem) => (
+												<SidebarMenuItem key={subItem.href}>
+													<SidebarMenuButton asChild isActive={pathname === subItem.href}>
+														<Link href={subItem.href}>
+															<div className='flex items-center gap-1'>
+																<subItem.icon className='mr-3 size-5' />
+																<span>{subItem.title}</span>
+															</div>
+														</Link>
+													</SidebarMenuButton>
+												</SidebarMenuItem>
+											))}
+										</div>
+									)}
+								</React.Fragment>
 							))}
 						</SidebarMenu>
 					</SidebarGroup>
@@ -147,7 +182,6 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 										</div>
 									</DropdownMenuLabel>
 									<DropdownMenuSeparator />
-
 									<DropdownMenuGroup>
 										<DropdownMenuItem>
 											<BadgeCheck />
