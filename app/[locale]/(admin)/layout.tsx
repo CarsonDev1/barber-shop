@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import SideBar from '@/app/[locale]/(admin)/components/sidebar';
 import '@/app/globals.css';
 import Provider from '@/utils/Provider';
+import { AuthProvider } from '@/context/AuthProvider';
 
 const poppins = Poppins({
 	weight: ['400', '500', '600', '700', '800', '900'],
@@ -23,9 +24,11 @@ export default function RootLayout({
 		<html lang='en'>
 			<body className={poppins.className}>
 				<Provider>
-					<SideBar>
-						<div className='bg-gray-900 text-gray-200'>{children}</div>
-					</SideBar>
+					<AuthProvider>
+						<SideBar>
+							<div className='bg-gray-900 text-gray-200'>{children}</div>
+						</SideBar>
+					</AuthProvider>
 				</Provider>
 			</body>
 		</html>

@@ -14,15 +14,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getServices } from '@/app/apis/service/getServices';
 import { ServiceResponse } from '@/types/Service.type';
 
-// const services = Array(18).fill({
-// 	name: 'Combo 10 step hair cut and shampoo',
-// 	description: 'Combo Cut and Massage Shampoo',
-// 	duration: '45 minutes',
-// 	price: '120K',
-// 	label: 'Same price all week',
-// 	image: ServiceImage,
-// });
-
 export default function Service() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isModalOpen, setModalOpen] = useState(false);
@@ -81,7 +72,7 @@ export default function Service() {
 				ADD SERVICE
 			</Button>
 
-			<div className='grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8'>
+			<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8'>
 				{getCurrentServices().map((service, index) => (
 					<Card
 						key={index}

@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
+import { getAccount } from '@/app/apis/getProfile';
+import Provider from '@/utils/Provider';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from 'react-toastify';
@@ -11,6 +14,9 @@ interface AuthContextType {
 	cartCount: number;
 	addToCart: (product: any) => void;
 	clearCart: () => void;
+	dataProfile: any;
+	isLoading: boolean;
+	error: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +35,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [cartCount, setCartCount] = useState<number>(0);
 
 	useEffect(() => {
-		// Load initial cart count from localStorage
 		const storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
 		setCartCount(storedCart.length);
 	}, []);
@@ -39,7 +44,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		const updatedCart = [...existingCart, product];
 		localStorage.setItem('cart', JSON.stringify(updatedCart));
 		setCartCount(updatedCart.length);
-
 		toast.success('Thêm vào giỏ hàng thành công!');
 	};
 
@@ -64,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			localStorage.removeItem('refreshToken');
 			localStorage.removeItem('cart'); // Clear cart when logging out
 			setIsAuthenticated(false);
-			setCartCount(0); // Reset cart count
+			setCartCount(0);
 			console.log('Logged out successfully');
 			router.push('/login'); // Navigate to login page immediately
 		} else {
@@ -72,15 +76,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		}
 	};
 
+	// Fetch user profile
+	const {
+		data: dataProfile,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['dataProfile'],
+		queryFn: getAccount,
+	});
+
 	useEffect(() => {
-		// Update authentication state on initial load
 		setIsAuthenticated(!!localStorage.getItem('accessToken'));
+		dataProfile;
 	}, []);
 
 	return (
-		<AuthContext.Provider value={{ isAuthenticated, login, logout, cartCount, addToCart, clearCart }}>
-			{children}
-		</AuthContext.Provider>
+		<Provider>
+			<AuthContext.Provider
+				value={{
+					isAuthenticated,
+					login,
+					logout,
+					cartCount,
+					addToCart,
+					clearCart,
+					dataProfile,
+					isLoading,
+					error,
+				}}
+			>
+				{children}
+			</AuthContext.Provider>
+		</Provider>
 	);
 };
 

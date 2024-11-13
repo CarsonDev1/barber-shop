@@ -41,9 +41,12 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import Logo from '@/public/root/Logo.png';
+import { useQuery } from '@tanstack/react-query';
+import { getAccount } from '@/app/apis/getProfile';
+import { getLogOut } from '@/app/apis/getLogout';
 
 export interface NavItem {
 	title: string;
@@ -72,6 +75,33 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 	const [mounted, setMounted] = React.useState(false);
 	const [openSubMenu, setOpenSubMenu] = React.useState<string | null>(null); // Track which submenu is open
 	const pathname = usePathname();
+	const router = useRouter();
+
+	const {
+		data: dataProfile,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['dataProfile'],
+		queryFn: getAccount,
+	});
+
+	const handleLogout = async () => {
+		const accessToken = localStorage.getItem('accessToken');
+		if (!accessToken) {
+			console.warn('No access token found');
+			return;
+		}
+
+		try {
+			await getLogOut({ Authorization: accessToken });
+			localStorage.removeItem('accessToken');
+			sessionStorage.removeItem('cartitems');
+			router.push('/login');
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+	};
 
 	React.useEffect(() => {
 		setMounted(true);
@@ -153,12 +183,12 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 										className=' text-gray-200 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
 									>
 										<Avatar className='h-8 w-8 rounded-lg'>
-											<AvatarImage src='' alt='' />
-											<AvatarFallback className='rounded-lg'>{'CN'}</AvatarFallback>
+											<AvatarImage src={dataProfile?.avatar.thumbUrl} alt={dataProfile?.name} />
+											<AvatarFallback className='rounded-lg'>{dataProfile?.name}</AvatarFallback>
 										</Avatar>
 										<div className='grid flex-1 text-left text-sm leading-tight'>
-											<span className='truncate font-semibold'>{'CN'}</span>
-											<span className='truncate text-xs'>{'CN'}</span>
+											<span className='truncate font-semibold'>{dataProfile?.name}</span>
+											<span className='truncate text-xs'>{dataProfile?.name}</span>
 										</div>
 										<ChevronsUpDown className='ml-auto size-4' />
 									</SidebarMenuButton>
@@ -172,12 +202,17 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 									<DropdownMenuLabel className='p-0 font-normal'>
 										<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
 											<Avatar className='h-8 w-8 rounded-lg'>
-												<AvatarImage src='' alt='' />
-												<AvatarFallback className='rounded-lg'>{'CN'}</AvatarFallback>
+												<AvatarImage
+													src={dataProfile?.avatar.thumbUrl}
+													alt={dataProfile?.name}
+												/>
+												<AvatarFallback className='rounded-lg'>
+													{dataProfile?.name}
+												</AvatarFallback>
 											</Avatar>
 											<div className='grid flex-1 text-left text-sm leading-tight'>
-												<span className='truncate font-semibold'>{'CN'}</span>
-												<span className='truncate text-xs'>{'CN'}</span>
+												<span className='truncate font-semibold'>{dataProfile?.name}</span>
+												<span className='truncate text-xs'>{dataProfile?.name}</span>
 											</div>
 										</div>
 									</DropdownMenuLabel>
@@ -197,7 +232,7 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 										</DropdownMenuItem>
 									</DropdownMenuGroup>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem>
+									<DropdownMenuItem onClick={handleLogout}>
 										<LogOut />
 										Log out
 									</DropdownMenuItem>

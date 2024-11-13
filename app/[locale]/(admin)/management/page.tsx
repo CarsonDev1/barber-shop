@@ -3,15 +3,30 @@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import PageContainer from '@/app/components/page-container';
+import { useAuth } from '@/context/AuthProvider';
 
 const timeFilters = ['1 Week', '1 Month', '6 Month', '1 Year', 'Ever'];
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658'];
 
 export default function DashBoardPage() {
 	const [selectedFilter, setSelectedFilter] = useState('1 Week');
+
+	const { isAuthenticated } = useAuth();
+	const [isClient, setIsClient] = useState(false);
+
+	useEffect(() => {
+		setIsClient(true);
+		if (!isAuthenticated) {
+			window.location.href = '/login';
+		}
+	}, [isAuthenticated]);
+
+	if (!isClient || !isAuthenticated) {
+		return null;
+	}
 
 	// Dữ liệu mẫu
 	const bookingsData = [

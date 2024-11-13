@@ -18,11 +18,15 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { getAccount } from '@/app/apis/getProfile';
 import '@/i18n';
+import { getLogOut } from '@/app/apis/getLogout';
+import { useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function Header() {
 	const { t, i18n } = useTranslation('common');
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
+	const router = useRouter();
 
 	const {
 		data: dataProfile,
@@ -33,7 +37,22 @@ export default function Header() {
 		queryFn: getAccount,
 	});
 
-	console.log('dataProfile', dataProfile);
+	const handleLogout = async () => {
+		const accessToken = localStorage.getItem('accessToken');
+		if (!accessToken) {
+			console.warn('No access token found');
+			return;
+		}
+
+		try {
+			await getLogOut({ Authorization: accessToken });
+			localStorage.removeItem('accessToken');
+			sessionStorage.removeItem('cartitems');
+			router.push('/login');
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+	};
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -113,63 +132,67 @@ export default function Header() {
 							</DropdownMenuContent>
 						</DropdownMenu>
 
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<div className='flex items-center gap-1 cursor-pointer'>
-									<span>User</span>
-									<Image
-										src={User}
-										alt='Barber Shop User'
-										width={80}
-										height={98}
-										className='h-8 w-10 mx-auto'
-									/>
-								</div>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
-								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-									<Link href='/history' className='flex items-center gap-1'>
-										<Scissors className='mr-2 h-4 w-4' />
-										<span>History of haircut</span>
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-									<Link href='/offer' className='flex items-center gap-1'>
-										<Gift className='mr-2 h-4 w-4' />
-										<span>Your Offer</span>
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-									<Link href='/profile' className='flex items-center gap-1'>
-										<Edit className='mr-2 h-4 w-4' />
-										<span>Edit information</span>
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-									<Calendar className='mr-2 h-4 w-4' />
-									<span>View schedule appointment</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-									<ImageIcon className='mr-2 h-4 w-4' />
-									<span>Image saved</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer text-red-400'>
-									<LogOut className='mr-2 h-4 w-4' />
-									<span>Log out</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-
-						{/* Login Button */}
-						<Link href='/login'>
-							<Button
-								className='hidden md:flex items-center gap-2 bg-transparent hover:bg-white hover:text-black transition-colors'
-								variant='outline'
-							>
-								<UserRound className='w-4 h-4' />
-								<span>{t('login')}</span>
-							</Button>
-						</Link>
+						{dataProfile ? (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<div className='flex items-center gap-1 cursor-pointer'>
+										<span>{dataProfile.name}</span>
+										<Avatar>
+											<AvatarImage
+												src={dataProfile.avatar.thumbUrl}
+												alt={dataProfile.avatar.name}
+											/>
+											<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
+										</Avatar>
+									</div>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
+									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+										<Link href='/history' className='flex items-center gap-1'>
+											<Scissors className='mr-2 h-4 w-4' />
+											<span>History of haircut</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+										<Link href='/offer' className='flex items-center gap-1'>
+											<Gift className='mr-2 h-4 w-4' />
+											<span>Your Offer</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+										<Link href='/profile' className='flex items-center gap-1'>
+											<Edit className='mr-2 h-4 w-4' />
+											<span>Edit information</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+										<Calendar className='mr-2 h-4 w-4' />
+										<span>View schedule appointment</span>
+									</DropdownMenuItem>
+									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+										<ImageIcon className='mr-2 h-4 w-4' />
+										<span>Image saved</span>
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className='hover:bg-gray-800 cursor-pointer text-red-400'
+										onClick={handleLogout}
+									>
+										<LogOut className='mr-2 h-4 w-4' />
+										<span>Log out</span>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						) : (
+							<Link href='/login'>
+								<Button
+									className='hidden md:flex items-center gap-2 bg-transparent hover:bg-white hover:text-black transition-colors'
+									variant='outline'
+								>
+									<UserRound className='w-4 h-4' />
+									<span>{t('login')}</span>
+								</Button>
+							</Link>
+						)}
 
 						{/* Mobile Menu (Sheet) */}
 						<Sheet open={isOpen} onOpenChange={setIsOpen}>

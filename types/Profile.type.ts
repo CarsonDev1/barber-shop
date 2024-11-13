@@ -9,19 +9,15 @@ export type Avatar = {
 };
 
 export type UserProfile = {
-  status: number;
-  message: string;
-  payload: {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-    dob: string;
-    avatar: Avatar;
-    verified: boolean;
-    blocked: boolean;
-    role: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  dob: string;
+  avatar: Avatar;
+  verified: boolean;
+  blocked: boolean;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
 };

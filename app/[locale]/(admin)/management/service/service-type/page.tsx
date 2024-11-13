@@ -14,6 +14,7 @@ import { createServiceType } from '@/app/apis/service/createServiceType';
 
 const ServiceType = () => {
 	const queryClient = useQueryClient();
+	const [dialogOpen, setDialogOpen] = useState(false); // State for dialog open/close
 	const {
 		data: serviceTypeData,
 		isLoading: isLoadingServiceType,
@@ -61,6 +62,7 @@ const ServiceType = () => {
 		if (newServiceName.trim()) {
 			mutateCreateService(newServiceName);
 			setNewServiceName('');
+			setDialogOpen(false); // Close dialog on success
 		} else {
 			Swal.fire({
 				title: 'Warning!',
@@ -85,9 +87,11 @@ const ServiceType = () => {
 	return (
 		<PageContainer>
 			<div className='flex justify-between mb-4'>
-				<Dialog>
+				<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 					<DialogTrigger asChild>
-						<Button variant='default'>Create Service Type</Button>
+						<Button variant='default' onClick={() => setDialogOpen(true)}>
+							Create Service Type
+						</Button>
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
@@ -106,7 +110,12 @@ const ServiceType = () => {
 								/>
 							</div>
 							<div className='flex justify-end mt-4'>
-								<Button variant='outline' type='button' className='mr-2'>
+								<Button
+									variant='outline'
+									type='button'
+									className='mr-2'
+									onClick={() => setDialogOpen(false)}
+								>
 									Cancel
 								</Button>
 								<Button variant='default' type='submit'>

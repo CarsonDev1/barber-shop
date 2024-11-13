@@ -4,7 +4,6 @@ import api from '@/utils/api';
 export const getAccount = async (): Promise<UserProfile> => {
 	try {
 		const response = await api.get<{ status: string; message: string; payload: UserProfile }>('/users/profile');
-		console.log('responseee', response);
 
 		return response.data.payload;
 	} catch (error: unknown) {

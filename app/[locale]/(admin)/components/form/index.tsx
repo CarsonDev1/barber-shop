@@ -1,13 +1,17 @@
+'use client';
+
+import { SetStateAction, useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import Image from 'next/image';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import Swal from 'sweetalert2';
+import { createService } from '@/app/apis/service/createService';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { getServiceTypes } from '@/app/apis/service/getServiceType';
 
@@ -18,6 +22,36 @@ interface EditStylistFormProps {
 }
 
 export default function EditStylistForm({ stylist, mode, onClose }: EditStylistFormProps) {
+	const queryClient = useQueryClient();
+	const [serviceTypeId, setServiceTypeId] = useState<string>(stylist?.serviceTypeId || '');
+
+	// Mutation for creating a new service
+	const { mutate: mutateCreateService } = useMutation({
+		mutationFn: async (serviceData: FormData) => {
+			await createService(serviceData);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataServices'] });
+			Swal.fire({
+				title: 'Success!',
+				text: 'Service created successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			onClose(); // Close the modal after success
+		},
+		onError: (error) => {
+			console.error('Error creating service:', error);
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error creating the service.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	// Fetch service types for dropdown
 	const { data: serviceTypeData, isLoading: isLoadingServiceType } = useQuery<ApiResponseServiceType>({
 		queryKey: ['dataServiceType'],
 		queryFn: getServiceTypes,
@@ -25,45 +59,48 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 
 	const serviceTypes = serviceTypeData?.payload || [];
 
-	const handleValueChange = (value: string) => {
-		// Handle the serviceTypeId as a string now
-		console.log('Selected Service Type ID:', value);
+	// Handle form submission
+	const handleFormSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		const formData = new FormData();
+		formData.append('serviceTypeId', serviceTypeId);
+		formData.append('name', (e.target as any).name.value);
+		formData.append('description', (e.target as any).description.value);
+		formData.append('price', (e.target as any).price.value);
+		formData.append('estimateTime', (e.target as any).estimateTime.value);
+
+		// Append files to FormData
+		const images = (e.target as HTMLFormElement).images.files;
+		if (images) {
+			Array.from(images).forEach((file) => {
+				if (file instanceof File) {
+					formData.append('images', file);
+				}
+			});
+		}
+
+		// Trigger mutation
+		mutateCreateService(formData);
 	};
 
 	return (
-		<div className='relative overflow-y-auto w-full'>
-			<Card className='mx-auto w-full max-w-lg sm:max-w-2xl lg:max-w-4xl bg-gray-900 text-white relative z-10 px-4 py-6 sm:p-8 border-none'>
+		<form onSubmit={handleFormSubmit} className='relative overflow-y-auto w-full'>
+			<Card className='mx-auto w-full max-w-lg sm:max-w-2xl lg:max-w-4xl bg-gray-900 text-white relative z-10 px-4 py-2 sm:p-3 border-none'>
 				<CardContent className='p-3'>
 					<h1 className='mb-2 text-center text-2xl font-bold'>
 						{mode === 'edit' ? 'Edit Service Information' : 'Add Service Information'}
 					</h1>
 
-					<div className='grid gap-6 sm:gap-8 md:grid-cols-[200px_1fr]'>
+					<div className='flex flex-col gap-3'>
 						{/* Profile Picture Section */}
-						<div className='text-center'>
-							<div className='relative mx-auto mb-3 h-32 w-32 sm:h-48 sm:w-48 overflow-hidden rounded-lg'>
-								<Image
-									src='/placeholder.svg?height=200&width=200'
-									alt='Profile picture'
-									fill
-									className='object-cover'
-								/>
-								<div className='absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity hover:opacity-100'>
-									<Plus className='h-8 w-8' />
-								</div>
-							</div>
-							<p className='text-sm text-gray-300'>Edit profile picture</p>
-						</div>
 
 						{/* Form Section */}
 						<div className='grid gap-3'>
 							{/* Service Type */}
 							<div className='space-y-2'>
 								<Label htmlFor='serviceTypeId'>Service Type</Label>
-								<Select
-									defaultValue={String(stylist?.serviceTypeId)} // Make sure it's a string here
-									onValueChange={handleValueChange} // Pass a string here
-								>
+								<Select defaultValue={serviceTypeId} onValueChange={(value) => setServiceTypeId(value)}>
 									<SelectTrigger className='bg-gray-700/50 border-gray-600'>
 										<SelectValue placeholder='Select service type' />
 									</SelectTrigger>
@@ -77,7 +114,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								</Select>
 							</div>
 
-							{/* Other fields like Name, Description, etc. */}
+							{/* Name */}
 							<div className='space-y-2'>
 								<Label htmlFor='name'>Name</Label>
 								<Input
@@ -87,6 +124,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
+							{/* Description */}
 							<div className='space-y-2'>
 								<Label htmlFor='description'>Description</Label>
 								<Textarea
@@ -96,6 +134,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
+							{/* Price */}
 							<div className='space-y-2'>
 								<Label htmlFor='price'>Price</Label>
 								<Input
@@ -106,6 +145,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
+							{/* Estimated Time */}
 							<div className='space-y-2'>
 								<Label htmlFor='estimateTime'>Estimated Time</Label>
 								<Input
@@ -116,7 +156,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
-							{/* Image upload section */}
+							{/* Images */}
 							<div className='space-y-2'>
 								<Label htmlFor='images'>Images</Label>
 								<Input id='images' type='file' multiple className='bg-gray-700/50 border-gray-600' />
@@ -125,7 +165,10 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 
 						{/* Buttons */}
 						<div className='flex flex-col gap-4 pt-4 sm:flex-row sm:justify-end'>
-							<Button className='bg-orange-500 hover:bg-orange-600 text-black font-semibold'>
+							<Button
+								type='submit'
+								className='bg-orange-500 hover:bg-orange-600 text-black font-semibold'
+							>
 								{mode === 'edit' ? 'UPDATE' : 'ADD'}
 							</Button>
 							<Button
@@ -139,6 +182,6 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 					</div>
 				</CardContent>
 			</Card>
-		</div>
+		</form>
 	);
 }
