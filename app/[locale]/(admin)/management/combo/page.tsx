@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@/components/ui/dialog';
 import Select, { MultiValue } from 'react-select';
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import Swal from 'sweetalert2';
 import { getServices } from '@/app/apis/service/getServices';
 import { getCombos } from '@/app/apis/combo/getCombo';
@@ -46,8 +46,8 @@ interface Combo {
 
 const ComboManagement = () => {
 	const queryClient = useQueryClient();
-
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+	const [isDetailDialogOpen, setIsDetailDialogOpen] = useState<boolean>(false);
 	const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
 	const [comboData, setComboData] = useState({
 		serviceIds: [] as number[],
@@ -57,8 +57,9 @@ const ComboManagement = () => {
 		estimateTime: 0,
 		images: [] as File[],
 	});
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 5;
 
-	// Fetch combos
 	const {
 		data: combosData,
 		isLoading: isLoadingCombos,
@@ -68,7 +69,6 @@ const ComboManagement = () => {
 		queryFn: getCombos,
 	});
 
-	// Fetch services
 	const {
 		data: servicesData,
 		isLoading: isLoadingServices,
@@ -79,8 +79,6 @@ const ComboManagement = () => {
 	});
 
 	const services = servicesData?.payload || [];
-
-	// Format services for react-select
 	const serviceOptions = services.map((service) => ({
 		value: service.id,
 		label: service.name,
@@ -96,7 +94,6 @@ const ComboManagement = () => {
 		}
 	};
 
-	// Mutation for creating a combo
 	const { mutate: mutateCreateCombo } = useMutation({
 		mutationFn: async () => {
 			const formData = new FormData();
@@ -107,7 +104,6 @@ const ComboManagement = () => {
 			if (comboData.images[0]) {
 				formData.append('images', comboData.images[0]);
 			}
-
 			comboData.serviceIds.forEach((id, index) => {
 				formData.append(`serviceIds[${index}]`, id.toString());
 			});
@@ -135,7 +131,6 @@ const ComboManagement = () => {
 		},
 	});
 
-	// Handle input changes
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		setComboData({
 			...comboData,
@@ -143,7 +138,6 @@ const ComboManagement = () => {
 		});
 	};
 
-	// Handle service selection
 	const handleServiceSelect = (selectedOptions: MultiValue<{ value: number; label: string }>) => {
 		const selectedIds = selectedOptions.map((option) => option.value);
 		setComboData((prev) => ({
@@ -151,16 +145,21 @@ const ComboManagement = () => {
 			serviceIds: selectedIds,
 		}));
 	};
-	// Handle form submission
+
 	const handleSubmit = () => {
 		mutateCreateCombo();
 	};
 
-	// Loading and error handling for combos
+	const openDetailDialog = (combo: Combo) => {
+		setSelectedCombo(combo);
+		setIsDetailDialogOpen(true);
+	};
+
 	if (isLoadingCombos) return <PageContainer>Loading...</PageContainer>;
 	if (errorCombos) return <PageContainer>Error loading combos data.</PageContainer>;
 
 	const combos = combosData?.payload || [];
+	const paginatedCombos = combos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
 	return (
 		<PageContainer>
@@ -183,7 +182,7 @@ const ComboManagement = () => {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{combos.map((combo) => (
+					{paginatedCombos.map((combo) => (
 						<TableRow key={combo.id}>
 							<TableCell>{combo.name}</TableCell>
 							<TableCell>{combo.description}</TableCell>
@@ -193,7 +192,7 @@ const ComboManagement = () => {
 								<Image src={combo.images[0].thumbUrl} width={100} height={100} alt='combo image' />
 							</TableCell>
 							<TableCell>
-								<Button variant='secondary' size='sm' onClick={() => setSelectedCombo(combo)}>
+								<Button variant='secondary' size='sm' onClick={() => openDetailDialog(combo)}>
 									View Details
 								</Button>
 							</TableCell>
@@ -201,6 +200,20 @@ const ComboManagement = () => {
 					))}
 				</TableBody>
 			</Table>
+
+			{/* Pagination Controls */}
+			<div className='flex justify-center gap-4 items-center mt-4'>
+				<Button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
+					Previous
+				</Button>
+				<span>Page {currentPage}</span>
+				<Button
+					disabled={currentPage * itemsPerPage >= combos.length}
+					onClick={() => setCurrentPage(currentPage + 1)}
+				>
+					Next
+				</Button>
+			</div>
 
 			{/* Add Combo Dialog */}
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -221,6 +234,7 @@ const ComboManagement = () => {
 						onChange={handleInputChange}
 						className='mb-2 p-2 border'
 					/>
+					<label>Price</label>
 					<input
 						name='price'
 						type='number'
@@ -229,6 +243,7 @@ const ComboManagement = () => {
 						onChange={handleInputChange}
 						className='mb-2 p-2 border'
 					/>
+					<label>Estimate Time</label>
 					<input
 						name='estimateTime'
 						type='number'
@@ -253,6 +268,37 @@ const ComboManagement = () => {
 					</Button>
 				</DialogContent>
 			</Dialog>
+
+			{/* View Detail Dialog */}
+			{selectedCombo && (
+				<Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+					<DialogOverlay />
+					<DialogContent className='bg-white p-6'>
+						<h3 className='text-xl font-semibold mb-4'>Combo Details</h3>
+						<p>
+							<strong>Name:</strong> {selectedCombo.name}
+						</p>
+						<p>
+							<strong>Description:</strong> {selectedCombo.description}
+						</p>
+						<p>
+							<strong>Price:</strong> {selectedCombo.price.toLocaleString()} VND
+						</p>
+						<p>
+							<strong>Estimate Time:</strong> {selectedCombo.estimateTime} min
+						</p>
+						<h4 className='mt-4 mb-2'>Services Included:</h4>
+						<ul>
+							{selectedCombo.services.map((service) => (
+								<li key={service.id}>{service.name}</li>
+							))}
+						</ul>
+						<Button className='mt-4' onClick={() => setIsDetailDialogOpen(false)}>
+							Close
+						</Button>
+					</DialogContent>
+				</Dialog>
+			)}
 		</PageContainer>
 	);
 };

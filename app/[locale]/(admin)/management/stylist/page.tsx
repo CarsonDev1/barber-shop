@@ -1,6 +1,6 @@
 'use client';
 
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -9,19 +9,26 @@ import ServiceImage from '@/public/root/service-img.png';
 import PageContainer from '@/app/components/page-container';
 import EditStylistForm from '@/app/[locale]/(admin)/components/form';
 import { Modal } from '@/app/[locale]/(admin)/components/modal';
-
-const members = Array(18).fill({
-	name: 'Xinh Đỗ',
-	phone: '0123456789',
-	location: 'Son Tra, Da Nang, Viet Nam',
-	image: ServiceImage,
-});
+import { CustomersResponse, Customer } from '@/types/Customer.type';
+import { useQuery } from '@tanstack/react-query';
+import { getStaffs } from '@/app/apis/customer/getStaffs';
 
 export default function Stylist() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isModalOpen, setModalOpen] = useState(false);
-	const [selectedMember, setSelectedMember] = useState(null);
+	const [selectedMember, setSelectedMember] = useState<Customer | null>(null);
 	const [mode, setMode] = useState<'add' | 'edit'>('add');
+
+	const {
+		data: staffData,
+		isLoading: isLoadingStaffs,
+		error: errorStaffs,
+	} = useQuery<CustomersResponse>({
+		queryKey: ['dataStaffs'],
+		queryFn: getStaffs,
+	});
+
+	const members = staffData?.payload || [];
 
 	const membersPerPage = 10;
 	const totalPages = Math.ceil(members.length / membersPerPage);
@@ -32,7 +39,7 @@ export default function Stylist() {
 		return members.slice(startIndex, endIndex);
 	};
 
-	const handleEditClick = (member: SetStateAction<null>) => {
+	const handleEditClick = (member: Customer) => {
 		setSelectedMember(member);
 		setMode('edit');
 		setModalOpen(true);
@@ -64,15 +71,15 @@ export default function Stylist() {
 					<Card key={index} className='overflow-hidden transition-shadow hover:shadow-lg relative z-10'>
 						<CardContent className='p-0'>
 							<div className='relative h-48'>
-								<Image src={member.image} alt={member.name} fill className='object-cover' />
+								<Image src={member.avatar.thumbUrl} alt='avt' fill className='object-cover' />
 								<span className='absolute top-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold rounded'>
-									BARBER
+									{member.role}
 								</span>
 							</div>
 							<div className='p-4'>
 								<h3 className='font-bold text-lg mb-1'>{member.name}</h3>
 								<p className='text-sm text-gray-600'>{member.phone}</p>
-								<p className='text-sm text-gray-600'>{member.location}</p>
+								<p className='text-sm text-gray-600'>{member.verified}</p>
 							</div>
 						</CardContent>
 						<CardFooter className='bg-gray-50 border-t flex justify-between p-2'>
@@ -98,7 +105,7 @@ export default function Stylist() {
 				))}
 			</div>
 
-			<div className='flex justify-between items-center'>
+			<div className='flex justify-center gap-4 items-center'>
 				<Button
 					variant='outline'
 					onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

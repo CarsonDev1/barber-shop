@@ -1,24 +1,42 @@
+'use client';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronDown, MessageSquare, Star } from 'lucide-react';
+import { ArrowLeft, ChevronDown, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
-import StylistImage from '@/public/root/service-img.png';
-
-interface StylistProps {
-	id: number;
-	name: string;
-	rating: number;
-	image: string;
-}
+import { useQuery } from '@tanstack/react-query';
+import { CustomersResponse } from '@/types/Customer.type';
+import { getStaffs } from '@/app/apis/customer/getStaffs';
+import { useRouter } from 'next/navigation';
 
 export default function StylistPage() {
-	const stylists: StylistProps[] = Array.from({ length: 6 }, (_, i) => ({
-		id: i + 1,
-		name: 'Xinh Đỗ',
-		rating: Math.floor(Math.random() * 5) + 1,
-		image: '/placeholder.svg?height=200&width=300',
-	}));
+	const {
+		data: staffData,
+		isLoading: isLoadingStaffs,
+		error: errorStaffs,
+	} = useQuery<CustomersResponse>({
+		queryKey: ['dataStaffs'],
+		queryFn: getStaffs,
+	});
+
+	const stylists = staffData?.payload || [];
+	const [selectedStylistId, setSelectedStylistId] = useState<number | null>(null);
+	const router = useRouter();
+
+	const handleSelectStylist = (stylistId: number) => {
+		setSelectedStylistId(stylistId);
+	};
+
+	const handleConfirmSelection = () => {
+		const selectedStylist = stylists.find((stylist) => stylist.id === selectedStylistId);
+		if (selectedStylist) {
+			const storedData = JSON.parse(localStorage.getItem('bookingData') || '{}');
+			storedData.selectedStylist = selectedStylist;
+			localStorage.setItem('bookingData', JSON.stringify(storedData));
+			router.push('/book');
+		}
+	};
 
 	return (
 		<div className='min-h-screen bg-slate-950 text-white p-4 space-y-6 !pt-24 relative'>
@@ -36,51 +54,47 @@ export default function StylistPage() {
 					<Button variant='ghost' size='icon' className='text-white'>
 						<ArrowLeft className='h-6 w-6' />
 					</Button>
-					<h1 className='text-xl font-semibold'>CHOSE STYLIST</h1>
+					<h1 className='text-xl font-semibold'>CHOOSE STYLIST</h1>
 				</div>
 
 				{/* Stylist Grid */}
-				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+				<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4'>
 					{stylists.map((stylist) => (
 						<Card
 							key={stylist.id}
 							className='group white backdrop-blur-sm border-gray-800 hover:border-orange-500 transition-colors'
 						>
-							<CardContent className='p-3'>
-								<div className='relative aspect-[16/9] mb-3 overflow-hidden rounded-md'>
-									<Image
-										src={StylistImage}
-										alt='stylist'
-										fill
-										className='object-cover transition-transform duration-300 group-hover:scale-105'
-									/>
+							<CardContent className='p-2'>
+								<div className='relative h-48'>
+									<Image src={stylist.avatar.thumbUrl} alt='avatar' fill className='object-contain' />
+									<span className='absolute top-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold rounded'>
+										{stylist.role}
+									</span>
+									
 								</div>
 								<div className='flex items-center justify-between'>
 									<span className='font-medium'>{stylist.name}</span>
-									<MessageSquare className='h-5 w-5 text-gray-400' />
-								</div>
-								<div className='flex items-center gap-1 mt-1'>
-									{Array.from({ length: 5 }).map((_, index) => (
-										<Star
-											key={index}
-											className={`h-4 w-4 ${
-												index < stylist.rating
-													? 'text-yellow-400 fill-yellow-400'
-													: 'text-gray-400'
-											}`}
-										/>
-									))}
+									<input
+										type='checkbox'
+										checked={selectedStylistId === stylist.id}
+										onChange={() => handleSelectStylist(stylist.id)}
+										className='absolute bottom-2 right-2 h-5 w-5 text-orange-500'
+									/>
 								</div>
 							</CardContent>
 						</Card>
 					))}
 				</div>
 
-				{/* View More Button */}
+				{/* Confirm Selection Button */}
 				<div className='flex justify-center pt-4'>
-					<Button variant='ghost' className='text-white'>
-						View more
-						<ChevronDown className='ml-2 h-4 w-4' />
+					<Button
+						variant='ghost'
+						className='text-white'
+						onClick={handleConfirmSelection}
+						disabled={selectedStylistId === null}
+					>
+						Confirm Selection
 					</Button>
 				</div>
 			</div>

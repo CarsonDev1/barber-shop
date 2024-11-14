@@ -12,6 +12,7 @@ import Offers from '@/app/components/offers';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getCombos } from '@/app/apis/combo/getCombo';
+import { useRouter } from 'next/navigation';
 
 interface Service {
 	id: number;
@@ -26,6 +27,8 @@ export default function Service() {
 	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string }[]>([]);
 	const [visibleCount, setVisibleCount] = useState(4);
 	const [totalPrice, setTotalPrice] = useState(0);
+	const [selectedCombos, setSelectedCombos] = useState<any[]>([]);
+	const router = useRouter();
 
 	const {
 		data: combosData,
@@ -64,6 +67,34 @@ export default function Service() {
 				onClick: () => {},
 			},
 		});
+	};
+
+	const handleFinished = () => {
+		// Collect selected combo data
+		const selectedCombos =
+			combosData?.payload
+				.filter((combo) => selectedServices.has(combo.id))
+				.map((combo) => ({
+					id: combo.id,
+					name: combo.name,
+					description: combo.description,
+					price: combo.price,
+					estimateTime: combo.estimateTime,
+					images: combo.images,
+					services: combo.services,
+				})) || [];
+
+		// Create a detailed object with all selected combos and total payment
+		const bookingData = {
+			selectedCombos,
+			totalPayment: totalPrice,
+		};
+
+		// Save in localStorage
+		localStorage.setItem('bookingData', JSON.stringify(bookingData));
+
+		// Redirect to booking page
+		router.push('/book');
 	};
 
 	return (
@@ -199,6 +230,7 @@ export default function Service() {
 									<Button
 										size='lg'
 										className='bg-blue-600 hover:bg-blue-700 text-white'
+										onClick={handleFinished}
 										disabled={selectedServices.size === 0}
 									>
 										Finished
