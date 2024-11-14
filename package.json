@@ -44,6 +44,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.53.2",
     "react-i18next": "^15.1.0",
+    "react-select": "^5.8.3",
     "react-toastify": "^10.0.6",
     "recharts": "^2.13.3",
     "sonner": "^1.7.0",

@@ -137,7 +137,7 @@ export default function RegisterForm() {
 					{/* Date of Birth Field */}
 					<div>
 						<Input
-							className='h-12 bg-white text-black placeholder:text-gray-500 text-lg'
+							className='h-12 bg-gray-200 block text-black placeholder:text-gray-500 text-lg w-full'
 							placeholder='Date of Birth'
 							type='date'
 							{...register('dob')}

@@ -1,13 +1,17 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { getCombos } from '@/app/apis/combo/getCombo';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageContainer from '@/app/components/page-container';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@/components/ui/dialog';
-import { useState } from 'react';
+import Select, { MultiValue } from 'react-select';
+import { SetStateAction, useState } from 'react';
+import Swal from 'sweetalert2';
+import { getServices } from '@/app/apis/service/getServices';
+import { getCombos } from '@/app/apis/combo/getCombo';
+import { createCombo } from '@/app/apis/combo/createCombo';
 
 interface Service {
 	id: number;
@@ -41,6 +45,20 @@ interface Combo {
 }
 
 const ComboManagement = () => {
+	const queryClient = useQueryClient();
+
+	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+	const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
+	const [comboData, setComboData] = useState({
+		serviceIds: [] as number[],
+		name: '',
+		description: '',
+		price: 0,
+		estimateTime: 0,
+		images: [] as File[],
+	});
+
+	// Fetch combos
 	const {
 		data: combosData,
 		isLoading: isLoadingCombos,
@@ -50,34 +68,108 @@ const ComboManagement = () => {
 		queryFn: getCombos,
 	});
 
-	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // State to manage the dialog visibility
-	const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null); // State to hold the selected combo
+	// Fetch services
+	const {
+		data: servicesData,
+		isLoading: isLoadingServices,
+		error: errorServices,
+	} = useQuery({
+		queryKey: ['dataServices'],
+		queryFn: getServices,
+	});
 
-	const combos: Combo[] = combosData?.payload || [];
+	const services = servicesData?.payload || [];
 
-	if (isLoadingCombos) {
-		return <PageContainer>Loading...</PageContainer>;
-	}
+	// Format services for react-select
+	const serviceOptions = services.map((service) => ({
+		value: service.id,
+		label: service.name,
+	}));
 
-	if (errorCombos) {
-		return <PageContainer>Error loading combos data.</PageContainer>;
-	}
-
-	// Function to open dialog and set the selected combo
-	const handleViewDetails = (combo: Combo) => {
-		setSelectedCombo(combo);
-		setIsDialogOpen(true);
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (files && files.length > 0) {
+			setComboData((prev) => ({
+				...prev,
+				images: [files[0]],
+			}));
+		}
 	};
 
-	// Close dialog
-	const handleCloseDialog = () => {
-		setIsDialogOpen(false);
-		setSelectedCombo(null);
+	// Mutation for creating a combo
+	const { mutate: mutateCreateCombo } = useMutation({
+		mutationFn: async () => {
+			const formData = new FormData();
+			formData.append('name', comboData.name);
+			formData.append('description', comboData.description);
+			formData.append('price', comboData.price.toString());
+			formData.append('estimateTime', comboData.estimateTime.toString());
+			if (comboData.images[0]) {
+				formData.append('images', comboData.images[0]);
+			}
+
+			comboData.serviceIds.forEach((id, index) => {
+				formData.append(`serviceIds[${index}]`, id.toString());
+			});
+
+			await createCombo(formData);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataCombos'] });
+			Swal.fire({
+				title: 'Success!',
+				text: 'Combo created successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setIsDialogOpen(false);
+		},
+		onError: (error) => {
+			console.error('Error creating combo:', error);
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error creating the combo.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	// Handle input changes
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+		setComboData({
+			...comboData,
+			[e.target.name]: e.target.value,
+		});
 	};
+
+	// Handle service selection
+	const handleServiceSelect = (selectedOptions: MultiValue<{ value: number; label: string }>) => {
+		const selectedIds = selectedOptions.map((option) => option.value);
+		setComboData((prev) => ({
+			...prev,
+			serviceIds: selectedIds,
+		}));
+	};
+	// Handle form submission
+	const handleSubmit = () => {
+		mutateCreateCombo();
+	};
+
+	// Loading and error handling for combos
+	if (isLoadingCombos) return <PageContainer>Loading...</PageContainer>;
+	if (errorCombos) return <PageContainer>Error loading combos data.</PageContainer>;
+
+	const combos = combosData?.payload || [];
 
 	return (
 		<PageContainer>
-			<h2 className='text-2xl font-semibold mb-6'>Combo Management</h2>
+			<div className='flex justify-between items-center'>
+				<h2 className='text-2xl font-semibold mb-6'>Combo Management</h2>
+				<Button className='bg-green-600 hover:bg-green-700' onClick={() => setIsDialogOpen(true)}>
+					Add Combo
+				</Button>
+			</div>
 
 			<Table>
 				<TableHeader>
@@ -91,7 +183,7 @@ const ComboManagement = () => {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{combos?.map((combo) => (
+					{combos.map((combo) => (
 						<TableRow key={combo.id}>
 							<TableCell>{combo.name}</TableCell>
 							<TableCell>{combo.description}</TableCell>
@@ -101,7 +193,7 @@ const ComboManagement = () => {
 								<Image src={combo.images[0].thumbUrl} width={100} height={100} alt='combo image' />
 							</TableCell>
 							<TableCell>
-								<Button variant='secondary' size='sm' onClick={() => handleViewDetails(combo)}>
+								<Button variant='secondary' size='sm' onClick={() => setSelectedCombo(combo)}>
 									View Details
 								</Button>
 							</TableCell>
@@ -110,32 +202,57 @@ const ComboManagement = () => {
 				</TableBody>
 			</Table>
 
-			{selectedCombo && (
-				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-					<DialogTrigger asChild>
-						<Button>View Services</Button>
-					</DialogTrigger>
-					<DialogOverlay />
-					<DialogContent className='bg-black/35 border text-white !max-w-xl'>
-						<h3 className='text-xl font-semibold mb-4'>{selectedCombo.name} - Services</h3>
-						<ul className='space-y-4'>
-							{selectedCombo.services?.map((service) => (
-								<li key={service.id} className='border-b border-gray-300 pb-2'>
-									<h4 className='text-lg font-medium'>{service.name}</h4>
-									<p>{service.description}</p>
-									<div className='flex justify-between mt-2'>
-										<span>{service.price.toLocaleString()} VND</span>
-										<span>{service.estimateTime} min</span>
-									</div>
-								</li>
-							))}
-						</ul>
-						<Button variant='default' size='sm' onClick={handleCloseDialog} className='mt-4'>
-							Close
-						</Button>
-					</DialogContent>
-				</Dialog>
-			)}
+			{/* Add Combo Dialog */}
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogOverlay />
+				<DialogContent className='bg-white p-6'>
+					<h3 className='text-xl font-semibold mb-4'>Add New Combo</h3>
+					<input
+						name='name'
+						placeholder='Name'
+						value={comboData.name}
+						onChange={handleInputChange}
+						className='mb-2 p-2 border'
+					/>
+					<textarea
+						name='description'
+						placeholder='Description'
+						value={comboData.description}
+						onChange={handleInputChange}
+						className='mb-2 p-2 border'
+					/>
+					<input
+						name='price'
+						type='number'
+						placeholder='Price'
+						value={comboData.price}
+						onChange={handleInputChange}
+						className='mb-2 p-2 border'
+					/>
+					<input
+						name='estimateTime'
+						type='number'
+						placeholder='Estimate Time'
+						value={comboData.estimateTime}
+						onChange={handleInputChange}
+						className='mb-2 p-2 border'
+					/>
+					<input type='file' accept='image/*' onChange={handleImageChange} className='mb-2 p-2 border' />
+					<div className='mb-4'>
+						<h4>Select Services</h4>
+						<Select
+							isMulti
+							options={serviceOptions}
+							onChange={handleServiceSelect}
+							placeholder='Select services'
+						/>
+					</div>
+
+					<Button onClick={handleSubmit} className='mt-4 bg-blue-600 hover:bg-blue-700'>
+						Submit
+					</Button>
+				</DialogContent>
+			</Dialog>
 		</PageContainer>
 	);
 };
