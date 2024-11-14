@@ -130,6 +130,8 @@ export default function BookingForm() {
 				serviceIds,
 				comboIds,
 			});
+			localStorage.removeItem('bookingData');
+			setBookingData(null);
 			router.push('/booking-success');
 		} catch (error) {
 			alert('An error occurred while booking. Please try again.');
