@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, ArrowLeft, Clock, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
-import ServiceImage from '@/public/root/service-img.png';
 import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@/components/ui/dialog';
 import Offers from '@/app/components/offers';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { getCombos } from '@/app/apis/combo/getCombo';
 
 interface Service {
 	id: number;
@@ -23,22 +24,33 @@ export default function Service() {
 	const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string }[]>([]);
+	const [visibleCount, setVisibleCount] = useState(4);
+	const [totalPrice, setTotalPrice] = useState(0);
 
-	const services: Service[] = Array.from({ length: 12 }, (_, i) => ({
-		id: i + 1,
-		title: 'Combo fit step hottttt',
-		price: 120000,
-		image: '/placeholder.svg?height=100&width=150',
-	}));
+	const {
+		data: combosData,
+		isLoading: isLoadingCombos,
+		error: errorCombos,
+	} = useQuery({
+		queryKey: ['dataCombos'],
+		queryFn: getCombos,
+	});
 
-	const toggleService = (id: number) => {
+	const services = combosData?.payload.slice(0, visibleCount) || [];
+
+	const toggleService = (id: number, price: number) => {
 		const newSelected = new Set(selectedServices);
+		let newTotal = totalPrice;
+
 		if (newSelected.has(id)) {
 			newSelected.delete(id);
+			newTotal -= price;
 		} else {
 			newSelected.add(id);
+			newTotal += price;
 		}
 		setSelectedServices(newSelected);
+		setTotalPrice(newTotal);
 	};
 
 	const handleApplyOffers = (offers: { id: number; name: string }[]) => {
@@ -54,12 +66,6 @@ export default function Service() {
 		});
 	};
 
-	// // Load offers from localStorage when the dialog closes
-	// useEffect(() => {
-	// 	const storedUserOffers = JSON.parse(localStorage.getItem('selectedOffers') || '[]');
-	// 	setSelectedOffers([...storedUserOffers]);
-	// }, [isDialogOpen]);
-
 	return (
 		<div className='bg-slate-950 relative'>
 			<Image
@@ -74,7 +80,7 @@ export default function Service() {
 				<div className='relative p-4 space-y-4 z-10 max-w-xl mx-auto'>
 					<div className='flex items-center justify-between gap-4 text-white'>
 						<ArrowLeft className='w-6 h-6' />
-						<span className=''>Select service(s = 1000d)</span>
+						<span>Select service(s = 1000d)</span>
 						<span></span>
 					</div>
 					<Input type='search' placeholder='Search service, service combo...' className='bg-white' />
@@ -85,12 +91,12 @@ export default function Service() {
 					{services.map((service) => (
 						<Card
 							key={service.id}
-							className='w-full max-w-sm overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 backdrop-blur-xl border border-gray-200/20 dark:border-gray-800/20'
+							className='w-full max-w-sm overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 backdrop-blur-xl border border-gray-200/20 dark:border-gray-800/20 flex flex-col justify-between'
 						>
 							<CardContent className='p-0'>
 								<div className='relative aspect-[16/9] overflow-hidden'>
 									<Image
-										src={ServiceImage}
+										src={service.images[0].thumbUrl}
 										alt='service'
 										width={1000}
 										height={800}
@@ -100,14 +106,18 @@ export default function Service() {
 									<div className='absolute bottom-3 left-3 right-3 z-30'>
 										<div className='flex items-center gap-2 text-white'>
 											<Clock className='h-4 w-4' />
-											<span className='text-sm font-medium'>45 minutes</span>
+											<span className='text-sm font-medium'>{service.estimateTime} minutes</span>
 										</div>
 									</div>
 								</div>
-								<div className='space-y-4 p-4'>
+								<div className='p-4 flex flex-col justify-between h-56'>
 									<div>
-										<h3 className='font-semibold text-xl leading-tight mb-1'>{service.title}</h3>
-										<p className='text-sm text-muted-foreground'>Combo Cut and Massage Shampoo</p>
+										<h3 className='font-semibold text-lg leading-tight mb-1 h-7 line-clamp-2'>
+											{service.name}
+										</h3>
+										<p className='text-sm text-muted-foreground line-clamp-2'>
+											{service.description}
+										</p>
 									</div>
 									<div className='inline-block'>
 										<span className='inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-3 py-1 text-sm font-medium text-amber-800 dark:text-amber-500'>
@@ -120,11 +130,11 @@ export default function Service() {
 									</div>
 								</div>
 							</CardContent>
-							<CardFooter className='p-5 pt-0'>
+							<CardFooter className='p-3 pt-0'>
 								<Button
 									className='w-full bg-blue-600 hover:bg-blue-700 text-white transition-colors'
 									size='lg'
-									onClick={() => toggleService(service.id)}
+									onClick={() => toggleService(service.id, service.price)}
 								>
 									{selectedServices.has(service.id) ? 'Remove service' : 'Add service'}
 								</Button>
@@ -135,14 +145,20 @@ export default function Service() {
 
 				{/* View More Button */}
 				<div className='flex justify-center pb-24'>
-					<Button variant='ghost' className='text-white'>
-						View more
-						<ChevronDown className='ml-2 h-4 w-4' />
-					</Button>
+					{visibleCount < (combosData?.payload.length || 0) && (
+						<Button
+							variant='ghost'
+							className='text-white'
+							onClick={() => setVisibleCount((prev) => prev + 4)} // Load 4 more items
+						>
+							View more
+							<ChevronDown className='ml-2 h-4 w-4' />
+						</Button>
+					)}
 				</div>
 
 				{/* Bottom Bar */}
-				<div className='fixed max-w-4xl mx-auto bottom-0 left-0 right-0 bg-[#e4e3e3] p-4 shadow-xl rounded-md'>
+				<div className='fixed max-w-4xl mx-auto bottom-10 left-0 right-0 bg-white z-30 p-4 shadow-xl rounded-md'>
 					<div className='container-lg mx-auto flex items-center justify-between flex-col'>
 						<div className='space-y-1 w-full'>
 							<div className='flex flex-col gap-2'>
@@ -165,9 +181,9 @@ export default function Service() {
 									<div>
 										<div className='text-lg'>{selectedServices.size} services selected</div>
 										<div className='text-xl flex items-center gap-2'>
-											Total payment:{' '}
+											Total payment:
 											<span className='text-yellow-500 text-2xl font-semibold'>
-												{(selectedServices.size * 120000).toLocaleString()}K
+												{totalPrice.toLocaleString()}K
 											</span>
 										</div>
 										{/* list offer */}

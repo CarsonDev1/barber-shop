@@ -67,13 +67,13 @@ const navItems: NavItem[] = [
 	{ title: 'MANAGEMENT FEEDBACK', href: '/management/feedback', icon: MessageSquare },
 	{ title: 'MANAGEMENT BOOKING', href: '/management/booking', icon: Calendar },
 	{ title: 'BARBER HISTORY', href: '/management/history', icon: Clock4 },
-	{ title: 'ADD A HAIRCUT', href: '/management/haircut/add', icon: PlusSquare },
+	{ title: 'MANAGEMENT COMBO', href: '/management/combo', icon: PlusSquare },
 	{ title: 'MANAGEMENT INCOME', href: '/management/income', icon: DollarSign },
 ];
 
 export default function AppSidebar({ children }: { children: React.ReactNode }) {
 	const [mounted, setMounted] = React.useState(false);
-	const [openSubMenu, setOpenSubMenu] = React.useState<string | null>(null); // Track which submenu is open
+	const [openSubMenu, setOpenSubMenu] = React.useState<string | null>(null);
 	const pathname = usePathname();
 	const router = useRouter();
 
@@ -120,15 +120,17 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 		<SidebarProvider>
 			<Sidebar collapsible='icon' className='bg-gray-900 text-gray-200 !border-slate-700 hover:!border-slate-700'>
 				<SidebarHeader className='bg-gray-900'>
-					<div className='flex items-center gap-2 py-2 text-sidebar-accent-foreground'>
-						<Image
-							src={Logo}
-							alt='Barber Shop Logo'
-							width={80}
-							height={98}
-							className='size-14 md:size-20 mx-auto relative z-20'
-						/>
-					</div>
+					<Link href='/'>
+						<div className='flex items-center gap-2 py-2 text-sidebar-accent-foreground'>
+							<Image
+								src={Logo}
+								alt='Barber Shop Logo'
+								width={80}
+								height={98}
+								className='size-14 md:size-20 mx-auto relative z-20'
+							/>
+						</div>
+					</Link>
 				</SidebarHeader>
 				<SidebarContent className='overflow-x-hidden bg-gray-900'>
 					<SidebarGroup>
@@ -141,7 +143,7 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 											asChild
 											tooltip={item.title}
 											isActive={pathname === item.href}
-											onClick={() => item.subItems && toggleSubMenu(item.href)} // Toggle submenu when clicked
+											onClick={() => item.subItems && toggleSubMenu(item.href)}
 										>
 											<Link href={item.href}>
 												<div className='flex items-center gap-1'>

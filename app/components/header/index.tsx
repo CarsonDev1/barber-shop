@@ -135,15 +135,15 @@ export default function Header() {
 						{dataProfile ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<div className='flex items-center gap-1 cursor-pointer'>
-										<span>{dataProfile.name}</span>
-										<Avatar>
+									<div className='flex items-center gap-2 cursor-pointer'>
+										<Avatar className='size-7'>
 											<AvatarImage
 												src={dataProfile.avatar.thumbUrl}
 												alt={dataProfile.avatar.name}
 											/>
 											<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
 										</Avatar>
+										<span className='text-xs'>{dataProfile.name}</span>
 									</div>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
@@ -166,8 +166,10 @@ export default function Header() {
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-										<Calendar className='mr-2 h-4 w-4' />
-										<span>View schedule appointment</span>
+										<Link href='/booking-calender' className='flex items-center gap-1'>
+											<Calendar className='mr-2 h-4 w-4' />
+											<span>View schedule appointment</span>
+										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<ImageIcon className='mr-2 h-4 w-4' />
