@@ -149,7 +149,7 @@ export default function BookingForm() {
 					className='absolute inset-0 w-full object-cover h-screen'
 				/>
 				<div className='absolute inset-0 bg-black bg-opacity-50 h-screen'></div>
-				<div className='w-full max-w-xl mx-auto p-4 sec-com relative z-50'>
+				<div className='w-full max-w-xl mx-auto p-4 sec-com relative z-10'>
 					<div className='bg-white/10 backdrop-blur-sm rounded-3xl p-6 space-y-6'>
 						<div className='space-y-4'>
 							<h2 className='text-xl text-white font-semibold'>Choose service</h2>
