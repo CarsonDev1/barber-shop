@@ -9,5 +9,17 @@
 	"service": "서비스",
 	"contact": "연락",
 	"reviewFeedback": "검토 및 피드백",
-	"loginRegister": "로그인"
+	"loginRegister": "로그인",
+	"letBook": "지금 예약하기",
+	"payAffer": "컷팅 후 결제, 취소 문제 없음",
+	"logOut": "로그아웃",
+	"introduce": "소개",
+	"featuredService": "주요 서비스",
+	"topStylistMonth": "이달의 최고 스타일리스트",
+	"addressBarber": "주소 이발사",
+	"register": "등록",
+	"chooseAcccount": "계정 선택",
+	"registrationSuccessful": "등록 성공",
+	"customerName": "고객 이름",
+	"chooseDate": "날짜 선택"
 }

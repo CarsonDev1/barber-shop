@@ -9,5 +9,17 @@
 	"service": "Service",
 	"contact": "Contact",
 	"reviewFeedback": "Review & feedback",
-	"loginRegister": "Log in"
+	"loginRegister": "Log in",
+	"letBook": "LET’S BOOK NOW",
+	"payAffter": "PAY AFTER CUTTING, NO PROBLEM TO CANCEL",
+	"logOut": "Log out",
+	"introduce": "Introduce",
+	"featuredService": "Featured Service",
+	"topStylistMonth": "Top stylist of the month",
+	"addressBarber ": "Address barber",
+	"register": "Register",
+	"chooseAcccount": "Choose an account",
+	"registrationSuccessful": "Registration Successful",
+	"customerName": "Customer name",
+	"chooseDate": "Choose date"
 }
