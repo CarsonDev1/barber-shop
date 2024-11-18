@@ -45,9 +45,9 @@ export default function Banner() {
 								<div className='bg-gray-600/90 backdrop-blur-sm rounded-3xl p-6 mb-6'>
 									<div className='mb-4'>
 										<h2 className='text-2xl md:text-3xl font-bold text-white mb-1'>
-											LET&apos;S BOOK NOW
+											{t('letBook')}
 										</h2>
-										<p className='text-sm text-gray-200'>PAY AFTER CUTTING, NO PROBLEM TO CANCEL</p>
+										<p className='text-sm text-gray-200'>{t('payAffer')}</p>
 									</div>
 
 									<form onSubmit={handleSubmit} className='flex gap-3'>
@@ -69,7 +69,7 @@ export default function Banner() {
 
 								{/* AI Recommend Button */}
 								<button className='mx-auto flex items-center gap-2 bg-white rounded-md pl-6 pr-4 py-3 shadow-lg hover:shadow-xl transition-shadow'>
-									<span className='font-medium'>Hair Style Recommend</span>
+									<span className='font-medium'>{t('hairRecommend')}</span>
 									<div className='relative'>
 										<Image src={AI} alt='btn-chat' className='size-10' />
 									</div>

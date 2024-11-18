@@ -3,8 +3,10 @@ import Feature01 from '@/public/home/feature-01.png';
 import Feature02 from '@/public/home/feature-02.png';
 import Feature03 from '@/public/home/feature-03.png';
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 
 export default function Feature() {
+	const { t } = useTranslation('common');
 	const services = [
 		{
 			name: '10 Step Haircut',
@@ -30,7 +32,7 @@ export default function Feature() {
 		<div className='bg-white sec-com'>
 			<div className='container-lg'>
 				<div className='text-center max-w-2xl mx-auto mb-12'>
-					<h2 className='text-3xl md:text-4xl font-bold mb-4'>FEATURED SERVICES</h2>
+					<h2 className='text-3xl md:text-4xl font-bold mb-4'>{t('featuredService')}</h2>
 					<p className='text-gray-600'>
 						Our outstanding services will satisfy everyone and these are the most used services at Barbaer.
 					</p>

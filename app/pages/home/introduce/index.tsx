@@ -1,7 +1,9 @@
 import Image from 'next/image';
 import IntroImage from '@/public/home/introduce-img.png';
+import { useTranslation } from 'react-i18next';
 
 export default function Introduce() {
+	const { t } = useTranslation('common');
 	return (
 		<div className='bg-[#0a0a0a] sec-com'>
 			<div className='container-lg'>
@@ -19,7 +21,7 @@ export default function Introduce() {
 
 					{/* Content */}
 					<div className='space-y-6 w-full md:w-1/2'>
-						<h2 className='text-4xl md:text-5xl font-bold text-white'>Introduce</h2>
+						<h2 className='text-4xl md:text-5xl font-bold text-white'>{t('introduce')}</h2>
 						<p className='text-gray-300 text-lg leading-relaxed'>
 							Barber is the ideal destination for those who love youthfulness and dynamism. With a modern
 							space and a team of talented hairdressers, we are committed to bringing you the most
