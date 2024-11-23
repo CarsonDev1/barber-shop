@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, ChevronRight, Scissors, Upload } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns'; // Import addDays from date-fns
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Face from '@/public/root/face.png';
 import Link from 'next/link';
 import { createBook } from '@/app/apis/booking/createBook';
 import { useRouter } from 'next/navigation';
+import { ApiResponseServiceType } from '@/types/ServiceType.type';
+import { useQuery } from '@tanstack/react-query';
+import { getStaffShiftById } from '@/app/apis/staff-shift/getStaffShiftById';
 
 interface Image {
 	id: number;
@@ -50,6 +53,11 @@ interface Stylist {
 	role: string;
 	avatar: Image;
 }
+interface Shift {
+	date: string;
+	startTime: string;
+	endTime: string;
+}
 
 interface BookingData {
 	selectedCombos: Combo[];
@@ -57,11 +65,52 @@ interface BookingData {
 	selectedStylist?: Stylist;
 }
 
+const generateTimeSlots = (startTime: string, endTime: string, interval: number): string[] => {
+	const timeSlots: string[] = [];
+	const start = new Date(`1970-01-01T${startTime}:00`);
+	const end = new Date(`1970-01-01T${endTime}:00`);
+
+	while (start <= end) {
+		const hours = start.getHours();
+		const minutes = start.getMinutes();
+		timeSlots.push(`${hours}h${minutes.toString().padStart(2, '0')}`);
+		start.setMinutes(start.getMinutes() + interval);
+	}
+
+	return timeSlots;
+};
+
+const getNextWeek = (date: Date) => {
+	const nextWeekDate = new Date(date);
+	nextWeekDate.setDate(date.getDate() + 7);
+	const startDate = new Date(nextWeekDate.getFullYear(), 0, 1);
+	const diff = nextWeekDate.getTime() - startDate.getTime();
+	const oneDay = 1000 * 60 * 60 * 24;
+	const dayOfYear = Math.floor(diff / oneDay);
+	return Math.ceil((dayOfYear + 1) / 7);
+};
+
 export default function BookingForm() {
-	const [date, setDate] = useState<Date | undefined>(new Date());
+	const [date, setDate] = useState<Date | undefined>(addDays(new Date(), 1)); // Set initial date to tomorrow
 	const [selectedTime, setSelectedTime] = useState<string | null>(null);
 	const [bookingData, setBookingData] = useState<BookingData | null>(null);
+	const currentDate = new Date();
+	const currentYear = currentDate.getFullYear();
+	const currentWeek = getNextWeek(currentDate);
 	const router = useRouter();
+
+	const staff_id = bookingData?.selectedStylist?.id || 0; // Đảm bảo có giá trị mặc định
+	const {
+		data: staffShiftByIdData,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['dataShiftById', { week: currentWeek, year: currentYear, staff_id }],
+		queryFn: () => getStaffShiftById({ week: currentWeek, year: currentYear, staff_id }),
+		enabled: !!staff_id, // Chỉ gọi API khi staff_id có giá trị
+	});
+
+	console.log('staffShiftByIdData', staffShiftByIdData);
 
 	useEffect(() => {
 		const storedData = localStorage.getItem('bookingData');
@@ -75,32 +124,29 @@ export default function BookingForm() {
 		}
 	}, []);
 
-	const timeSlots = [
-		'7h20',
-		'8h40',
-		'10h20',
-		'12h20',
-		'13h40',
-		'15h20',
-		'7h40',
-		'9h00',
-		'10h40',
-		'12h40',
-		'14h00',
-		'15h40',
-		'8h00',
-		'9h20',
-		'11h00',
-		'13h00',
-		'14h20',
-		'16h00',
-		'8h20',
-		'10h00',
-		'12h00',
-		'13h20',
-		'15h00',
-		'16h20',
-	];
+	// Hàm kiểm tra xem timeSlot có bị trùng với ca làm việc đã có
+	const isTimeSlotUnavailable = (time: string, selectedDate: Date | undefined): boolean => {
+		if (!staffShiftByIdData?.payload || !selectedDate) return false;
+
+		const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
+
+		return staffShiftByIdData.payload.some((shift: Shift) => {
+			if (shift.date !== selectedDateString) return false;
+
+			const [shiftStartHours, shiftStartMinutes] = shift.startTime.split(':').map(Number);
+			const [shiftEndHours, shiftEndMinutes] = shift.endTime.split(':').map(Number);
+
+			const shiftStart = new Date(1970, 0, 1, shiftStartHours, shiftStartMinutes);
+			const shiftEnd = new Date(1970, 0, 1, shiftEndHours, shiftEndMinutes);
+
+			const [slotHours, slotMinutes] = time.replace('h', ':').split(':').map(Number);
+			const slotTime = new Date(1970, 0, 1, slotHours, slotMinutes);
+
+			return slotTime >= shiftStart && slotTime < shiftEnd;
+		});
+	};
+
+	const timeSlots = generateTimeSlots('07:20', '16:20', 20); // Generate time slots from 7:20 to 16:20, with 20-minute intervals
 
 	const handleBooking = async () => {
 		if (!bookingData || !date || !selectedTime) {
@@ -130,6 +176,8 @@ export default function BookingForm() {
 				serviceIds,
 				comboIds,
 			});
+			localStorage.setItem('bookingResponse', JSON.stringify(response));
+
 			localStorage.removeItem('bookingData');
 			setBookingData(null);
 			router.push('/booking-success');
@@ -165,7 +213,7 @@ export default function BookingForm() {
 						</div>
 
 						{/* Display selected combos below the button */}
-						{bookingData && bookingData.selectedCombos.length > 0 && (
+						{bookingData && bookingData?.selectedCombos?.length > 0 && (
 							<div className='mt-4 p-4 bg-white/20 rounded-lg space-y-2'>
 								<h3 className='text-lg font-semibold text-white'>Selected Combos</h3>
 								<div className='space-y-1'>
@@ -237,30 +285,35 @@ export default function BookingForm() {
 							</Popover>
 
 							<div className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
-								{timeSlots.map((time) => (
-									<Button
-										key={time}
-										variant='outline'
-										className={`bg-white text-black ${
-											selectedTime === time
-												? 'bg-[#F0B35B] text-white ring-2 ring-black hover:bg-[#F0B35B] hover:text-white'
-												: ''
-										}`}
-										onClick={() => setSelectedTime(time)}
-									>
-										{time}
-									</Button>
-								))}
+								{timeSlots.map((time) => {
+									const isUnavailable = isTimeSlotUnavailable(time, date);
+									return (
+										<Button
+											key={time}
+											variant='outline'
+											disabled={isUnavailable}
+											className={`bg-white text-black ${
+												selectedTime === time
+													? 'bg-[#5bb4f0] text-white ring-2 ring-[#F0B35B]'
+													: ''
+											} ${isUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+											onClick={() => !isUnavailable && setSelectedTime(time)}
+										>
+											{time}
+										</Button>
+									);
+								})}
 							</div>
+
+							<Button
+								variant='default'
+								className='w-full bg-[#F0B35B] text-white'
+								onClick={handleBooking}
+							>
+								Book Appointment
+							</Button>
 						</div>
 					</div>
-
-					<Button
-						className='w-full mt-6 bg-[#F5A524] hover:bg-[#F5A524]/90 text-black font-semibold py-6 text-lg'
-						onClick={handleBooking}
-					>
-						BOOK
-					</Button>
 				</div>
 			</div>
 		</div>

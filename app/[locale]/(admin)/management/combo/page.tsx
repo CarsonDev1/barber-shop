@@ -12,6 +12,8 @@ import Swal from 'sweetalert2';
 import { getServices } from '@/app/apis/service/getServices';
 import { getCombos } from '@/app/apis/combo/getCombo';
 import { createCombo } from '@/app/apis/combo/createCombo';
+import { deleteCombo } from '@/app/apis/combo/deleteCombo';
+import { updateCombo } from '@/app/apis/combo/updateCombo';
 
 interface Service {
 	id: number;
@@ -55,7 +57,8 @@ const ComboManagement = () => {
 		description: '',
 		price: 0,
 		estimateTime: 0,
-		images: [] as File[],
+		images: [] as any,
+		id: '' as any,
 	});
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 5;
@@ -89,9 +92,47 @@ const ComboManagement = () => {
 		if (files && files.length > 0) {
 			setComboData((prev) => ({
 				...prev,
-				images: [files[0]],
+				images: Array.from(files),
 			}));
 		}
+	};
+
+	const { mutate: mutateDeleteCombo } = useMutation({
+		mutationFn: async (id: number) => {
+			await deleteCombo(id);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataCombos'] });
+			Swal.fire({
+				title: 'Deleted!',
+				text: 'Shift deleted successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error deleting the shift.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	const handleDeleteShift = (id: number) => {
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Yes, delete it!',
+			cancelButtonText: 'Cancel',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				mutateDeleteCombo(id);
+			}
+		});
 	};
 
 	const { mutate: mutateCreateCombo } = useMutation({
@@ -131,6 +172,44 @@ const ComboManagement = () => {
 		},
 	});
 
+	const { mutate: mutateUpdateCombo } = useMutation({
+		mutationFn: async () => {
+			const formData = new FormData();
+			formData.append('id', comboData.id.toString());
+			formData.append('name', comboData.name);
+			formData.append('description', comboData.description);
+			formData.append('price', comboData.price.toString());
+			formData.append('estimateTime', comboData.estimateTime.toString());
+			if (comboData.images[0]) {
+				formData.append('images', comboData.images[0]);
+			}
+			comboData.serviceIds.forEach((id, index) => {
+				formData.append(`serviceIds[${index}]`, id.toString());
+			});
+
+			await updateCombo(formData);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataCombos'] });
+			Swal.fire({
+				title: 'Success!',
+				text: 'Combo updated successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setIsDialogOpen(false);
+		},
+		onError: (error) => {
+			console.error('Error updating combo:', error);
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error updating the combo.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		setComboData({
 			...comboData,
@@ -147,12 +226,34 @@ const ComboManagement = () => {
 	};
 
 	const handleSubmit = () => {
-		mutateCreateCombo();
+		if (selectedCombo && !comboData.id) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Combo ID not found.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return;
+		}
+		if (selectedCombo) {
+			mutateUpdateCombo();
+		} else {
+			mutateCreateCombo();
+		}
 	};
 
 	const openDetailDialog = (combo: Combo) => {
 		setSelectedCombo(combo);
-		setIsDetailDialogOpen(true);
+		setComboData({
+			serviceIds: combo.services.map((service) => service.id),
+			name: combo.name,
+			description: combo.description,
+			price: combo.price,
+			estimateTime: combo.estimateTime,
+			images: combo.images,
+			id: combo.id,
+		});
+		setIsDialogOpen(true);
 	};
 
 	if (isLoadingCombos) return <PageContainer>Loading...</PageContainer>;
@@ -193,7 +294,12 @@ const ComboManagement = () => {
 							</TableCell>
 							<TableCell>
 								<Button variant='secondary' size='sm' onClick={() => openDetailDialog(combo)}>
-									View Details
+									Update
+								</Button>
+							</TableCell>
+							<TableCell>
+								<Button variant='destructive' onClick={() => handleDeleteShift(combo.id)}>
+									Delete
 								</Button>
 							</TableCell>
 						</TableRow>
@@ -219,7 +325,7 @@ const ComboManagement = () => {
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 				<DialogOverlay />
 				<DialogContent className='bg-white p-6'>
-					<h3 className='text-xl font-semibold mb-4'>Add New Combo</h3>
+					<h3 className='text-xl font-semibold mb-4'>{selectedCombo ? 'Update Combo' : 'Add New Combo'}</h3>
 					<input
 						name='name'
 						placeholder='Name'
@@ -259,6 +365,7 @@ const ComboManagement = () => {
 							isMulti
 							options={serviceOptions}
 							onChange={handleServiceSelect}
+							value={serviceOptions.filter((option) => comboData.serviceIds.includes(option.value))}
 							placeholder='Select services'
 						/>
 					</div>
@@ -268,37 +375,6 @@ const ComboManagement = () => {
 					</Button>
 				</DialogContent>
 			</Dialog>
-
-			{/* View Detail Dialog */}
-			{selectedCombo && (
-				<Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-					<DialogOverlay />
-					<DialogContent className='bg-white p-6'>
-						<h3 className='text-xl font-semibold mb-4'>Combo Details</h3>
-						<p>
-							<strong>Name:</strong> {selectedCombo.name}
-						</p>
-						<p>
-							<strong>Description:</strong> {selectedCombo.description}
-						</p>
-						<p>
-							<strong>Price:</strong> {selectedCombo.price.toLocaleString()} VND
-						</p>
-						<p>
-							<strong>Estimate Time:</strong> {selectedCombo.estimateTime} min
-						</p>
-						<h4 className='mt-4 mb-2'>Services Included:</h4>
-						<ul>
-							{selectedCombo.services.map((service) => (
-								<li key={service.id}>{service.name}</li>
-							))}
-						</ul>
-						<Button className='mt-4' onClick={() => setIsDetailDialogOpen(false)}>
-							Close
-						</Button>
-					</DialogContent>
-				</Dialog>
-			)}
 		</PageContainer>
 	);
 };

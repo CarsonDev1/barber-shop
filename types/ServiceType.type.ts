@@ -25,6 +25,11 @@ export type ServiceType = {
 	services: Service[];
 	createdAt: string;
 	updatedAt: string;
+	startTime: string;
+	endTime: string;
+	staffId: number;
+	shiftId: number;
+	date: string;
 };
 
 export type ApiResponseServiceType = {

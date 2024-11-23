@@ -6,10 +6,32 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { getVNPayUrl } from '@/app/apis/payment/getVnpay';
+import { useRouter } from 'next/navigation';
 
 export default function BookingSuccess() {
 	const [confettiActive, setConfettiActive] = useState(true);
 	const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 });
+
+	const storedResponse = localStorage.getItem('bookingResponse');
+	const bookingIds = storedResponse ? [JSON.parse(storedResponse).payload?.id] : [];
+	const router = useRouter();
+
+	const {
+		data: getVnPay,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['getVnPay', { bookingIds: bookingIds }],
+		queryFn: () => getVNPayUrl(bookingIds),
+		enabled: bookingIds.length > 0,
+	});
+
+	if (getVnPay?.payload) {
+		router.push(getVnPay.payload);
+		localStorage.removeItem('bookingResponse');
+	}
 
 	useEffect(() => {
 		const { innerWidth: width, innerHeight: height } = window;
