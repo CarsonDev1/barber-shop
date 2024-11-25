@@ -12,7 +12,6 @@ import { Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { createService } from '@/app/apis/service/createService';
-import { updateService } from '@/app/apis/service/updateService'; // Import updateService API
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { getServiceTypes } from '@/app/apis/service/getServiceType';
 
@@ -52,32 +51,6 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 		},
 	});
 
-	// Mutation for updating an existing service
-	const { mutate: mutateUpdateService } = useMutation({
-		mutationFn: async (serviceData: FormData) => {
-			await updateService(serviceData);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['dataServices'] });
-			Swal.fire({
-				title: 'Success!',
-				text: 'Service updated successfully.',
-				icon: 'success',
-				confirmButtonText: 'OK',
-			});
-			onClose(); // Close the modal after success
-		},
-		onError: (error) => {
-			console.error('Error updating service:', error);
-			Swal.fire({
-				title: 'Error!',
-				text: 'There was an error updating the service.',
-				icon: 'error',
-				confirmButtonText: 'OK',
-			});
-		},
-	});
-
 	// Fetch service types for dropdown
 	const { data: serviceTypeData, isLoading: isLoadingServiceType } = useQuery<ApiResponseServiceType>({
 		queryKey: ['dataServiceType'],
@@ -107,13 +80,8 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 			});
 		}
 
-		// Trigger mutation based on the mode (add or edit)
-		if (mode === 'edit') {
-			formData.append('id', stylist.id); // Include the service ID for update
-			mutateUpdateService(formData);
-		} else {
-			mutateCreateService(formData);
-		}
+		// Trigger mutation
+		mutateCreateService(formData);
 	};
 
 	return (
@@ -132,12 +100,9 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 							{/* Service Type */}
 							<div className='space-y-2'>
 								<Label htmlFor='serviceTypeId'>Service Type</Label>
-								<Select
-									defaultValue={stylist?.serviceTypeId}
-									onValueChange={(value) => setServiceTypeId(value)}
-								>
+								<Select defaultValue={serviceTypeId} onValueChange={(value) => setServiceTypeId(value)}>
 									<SelectTrigger className='bg-gray-700/50 border-gray-600'>
-										<SelectValue placeholder={'Select service type'} defaultValue={serviceTypeId} />
+										<SelectValue placeholder='Select service type' />
 									</SelectTrigger>
 									<SelectContent>
 										{serviceTypes.map((type) => (

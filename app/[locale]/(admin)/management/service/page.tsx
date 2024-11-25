@@ -10,11 +10,14 @@ import EditStylistForm from '@/app/[locale]/(admin)/components/form';
 import { Modal } from '@/app/[locale]/(admin)/components/modal';
 import ServiceImage from '@/public/root/service-img.png';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getServices } from '@/app/apis/service/getServices';
 import { ServiceResponse } from '@/types/Service.type';
+import Swal from 'sweetalert2';
+import { deleteService } from '@/app/apis/service/deleteService';
 
 export default function Service() {
+	const queryClient = useQueryClient();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isModalOpen, setModalOpen] = useState(false);
 	const [selectedService, setSelectedService] = useState(null);
@@ -28,6 +31,44 @@ export default function Service() {
 		queryKey: ['dataServices'],
 		queryFn: getServices,
 	});
+
+	const { mutate: mutateDeleteCombo } = useMutation({
+		mutationFn: async (id: number) => {
+			await deleteService(id);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataServices'] });
+			Swal.fire({
+				title: 'Deleted!',
+				text: 'Shift deleted successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error deleting the shift.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	const handleDeleteService = (id: number) => {
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Yes, delete it!',
+			cancelButtonText: 'Cancel',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				mutateDeleteCombo(id);
+			}
+		});
+	};
 
 	const services = servicesData?.payload || [];
 
@@ -44,11 +85,6 @@ export default function Service() {
 		setSelectedService(service);
 		setMode('edit');
 		setModalOpen(true);
-	};
-
-	const handleDeleteClick = (service: any) => {
-		// Add your delete logic here, e.g., removing the service from the list
-		console.log('Deleting service:', service);
 	};
 
 	const handleAddServiceClick = () => {
@@ -72,7 +108,7 @@ export default function Service() {
 				ADD SERVICE
 			</Button>
 
-			<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8'>
+			<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8 container'>
 				{getCurrentServices().map((service, index) => (
 					<Card
 						key={index}
@@ -110,7 +146,7 @@ export default function Service() {
 								variant='outline'
 								size='sm'
 								className='text-red-600 hover:text-red-700 hover:bg-red-50 w-1/2'
-								onClick={() => handleDeleteClick(service)}
+								onClick={() => handleDeleteService(service.id)}
 							>
 								<Trash2 className='w-4 h-4 mr-2' />
 								Delete

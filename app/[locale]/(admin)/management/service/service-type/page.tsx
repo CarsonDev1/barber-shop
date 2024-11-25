@@ -11,10 +11,15 @@ import { Input } from '@/components/ui/input';
 import Swal from 'sweetalert2';
 import PageContainer from '@/app/components/page-container';
 import { createServiceType } from '@/app/apis/service/createServiceType';
+import { updateServiceType } from '@/app/apis/service/updateServiceType';
+import { deleteServiceType } from '@/app/apis/service/deleteServiceType';
 
 const ServiceType = () => {
 	const queryClient = useQueryClient();
-	const [dialogOpen, setDialogOpen] = useState(false); // State for dialog open/close
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingServiceType, setEditingServiceType] = useState<any | null>(null);
+	const [newServiceName, setNewServiceName] = useState('');
+
 	const {
 		data: serviceTypeData,
 		isLoading: isLoadingServiceType,
@@ -43,8 +48,9 @@ const ServiceType = () => {
 				icon: 'success',
 				confirmButtonText: 'OK',
 			});
+			setDialogOpen(false);
 		},
-		onError: (error) => {
+		onError: () => {
 			Swal.fire({
 				title: 'Error!',
 				text: 'There was an error creating the service type.',
@@ -54,19 +60,115 @@ const ServiceType = () => {
 		},
 	});
 
-	const [newServiceName, setNewServiceName] = useState('');
+	// Mutation for updating an existing service type
+	const { mutate: mutateUpdateServiceType } = useMutation({
+		mutationFn: async ({ id, name }: { id: number; name: string }) => {
+			const serviceData = { id, name }; // Ensure both id and name are passed
+			await updateServiceType(serviceData); // This will send {id, name} to the API
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataServiceType'] });
+			Swal.fire({
+				title: 'Updated!',
+				text: 'Service Type updated successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setEditingServiceType(null);
+			setDialogOpen(false);
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error updating the service type.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
 
-	// Handle form submission for creating a new service type
+	// Mutation for deleting a service type
+	const { mutate: mutateDeleteServiceType } = useMutation({
+		mutationFn: async (id: number) => {
+			await deleteServiceType(id);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataServiceType'] });
+			Swal.fire({
+				title: 'Deleted!',
+				text: 'Service Type deleted successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error deleting the service type.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	const handleDeleteServiceType = (id: number) => {
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Yes, delete it!',
+			cancelButtonText: 'Cancel',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				mutateDeleteServiceType(id);
+			}
+		});
+	};
+
+	const handleEditServiceType = (serviceType: any) => {
+		if (serviceType?.id && serviceType.id > 0) {
+			setEditingServiceType(serviceType);
+			setNewServiceName(serviceType.name);
+			setDialogOpen(true);
+		} else {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Invalid service type ID.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		}
+	};
+
 	const handleCreateServiceType = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (newServiceName.trim()) {
 			mutateCreateService(newServiceName);
 			setNewServiceName('');
-			setDialogOpen(false); // Close dialog on success
 		} else {
 			Swal.fire({
 				title: 'Warning!',
 				text: 'Service Type Name cannot be empty.',
+				icon: 'warning',
+				confirmButtonText: 'OK',
+			});
+		}
+	};
+
+	const handleUpdateServiceType = (e: React.FormEvent) => {
+		e.preventDefault();
+		// Check if ID and name are valid
+		if (newServiceName.trim() && editingServiceType?.id > 0) {
+			mutateUpdateServiceType({
+				id: editingServiceType.id, // Ensure id is passed
+				name: newServiceName, // Pass the updated name
+			});
+			setNewServiceName('');
+		} else {
+			Swal.fire({
+				title: 'Warning!',
+				text: 'Service Type Name cannot be empty, or Service Type ID is invalid.',
 				icon: 'warning',
 				confirmButtonText: 'OK',
 			});
@@ -90,14 +192,16 @@ const ServiceType = () => {
 				<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 					<DialogTrigger asChild>
 						<Button variant='default' onClick={() => setDialogOpen(true)}>
-							Create Service Type
+							{editingServiceType ? 'Edit Service Type' : 'Create Service Type'}
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Create Service Type</DialogTitle>
+							<DialogTitle>
+								{editingServiceType ? 'Edit Service Type' : 'Create Service Type'}
+							</DialogTitle>
 						</DialogHeader>
-						<form onSubmit={handleCreateServiceType}>
+						<form onSubmit={editingServiceType ? handleUpdateServiceType : handleCreateServiceType}>
 							<div className='space-y-4'>
 								<Input
 									id='name'
@@ -119,7 +223,7 @@ const ServiceType = () => {
 									Cancel
 								</Button>
 								<Button variant='default' type='submit'>
-									Create
+									{editingServiceType ? 'Update' : 'Create'}
 								</Button>
 							</div>
 						</form>
@@ -139,6 +243,7 @@ const ServiceType = () => {
 								<TableRow>
 									<TableHead>Service Id</TableHead>
 									<TableHead>Service Type Name</TableHead>
+									<TableHead>Actions</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -146,6 +251,24 @@ const ServiceType = () => {
 									<TableRow key={serviceType.id}>
 										<TableCell>{serviceType.id}</TableCell>
 										<TableCell>{serviceType.name}</TableCell>
+										<TableCell>
+											<div className='flex space-x-2'>
+												<Button
+													variant='outline'
+													className='bg-blue-500 text-white hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-500'
+													onClick={() => handleEditServiceType(serviceType)}
+												>
+													Edit
+												</Button>
+												<Button
+													variant='outline'
+													className='bg-red-500 text-white hover:bg-red-600 hover:text-white focus:ring-2 focus:ring-red-500'
+													onClick={() => handleDeleteServiceType(serviceType.id)}
+												>
+													Delete
+												</Button>
+											</div>
+										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
@@ -154,47 +277,23 @@ const ServiceType = () => {
 				</div>
 			</div>
 
-			<div className='flex items-center justify-between mt-4'>
-				<div className='flex items-center space-x-2'>
-					<Button
-						variant='outline'
-						size='icon'
-						className='text-gray-400'
-						onClick={goToFirstPage}
-						disabled={currentPage === 1}
-					>
-						<ChevronFirst className='h-4 w-4' />
+			<div className='flex justify-between items-center mt-4'>
+				<div className='flex space-x-2'>
+					<Button onClick={goToFirstPage} disabled={currentPage === 1}>
+						<ChevronFirst />
 					</Button>
-					<Button
-						variant='outline'
-						size='icon'
-						className='text-gray-400'
-						onClick={goToPreviousPage}
-						disabled={currentPage === 1}
-					>
-						<ChevronLeft className='h-4 w-4' />
+					<Button onClick={goToPreviousPage} disabled={currentPage === 1}>
+						<ChevronLeft />
 					</Button>
-					<span className='text-sm text-gray-400'>
-						Page <span className='text-white'>{currentPage}</span> of {totalPages}
-					</span>
-					<Button
-						variant='outline'
-						size='icon'
-						className='text-gray-400'
-						onClick={goToNextPage}
-						disabled={currentPage === totalPages}
-					>
-						<ChevronRight className='h-4 w-4' />
+					<Button onClick={goToNextPage} disabled={currentPage === totalPages}>
+						<ChevronRight />
 					</Button>
-					<Button
-						variant='outline'
-						size='icon'
-						className='text-gray-400'
-						onClick={goToLastPage}
-						disabled={currentPage === totalPages}
-					>
-						<ChevronLast className='h-4 w-4' />
+					<Button onClick={goToLastPage} disabled={currentPage === totalPages}>
+						<ChevronLast />
 					</Button>
+				</div>
+				<div>
+					Page {currentPage} of {totalPages}
 				</div>
 			</div>
 		</PageContainer>
