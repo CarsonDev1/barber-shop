@@ -91,7 +91,7 @@ const getNextWeek = (date: Date) => {
 };
 
 export default function BookingForm() {
-	const [date, setDate] = useState<Date | undefined>(addDays(new Date(), 1)); // Set initial date to tomorrow
+	const [date, setDate] = useState<Date | undefined>(addDays(new Date(), 1));
 	const [selectedTime, setSelectedTime] = useState<string | null>(null);
 	const [bookingData, setBookingData] = useState<BookingData | null>(null);
 	const currentDate = new Date();
@@ -99,7 +99,7 @@ export default function BookingForm() {
 	const currentWeek = getNextWeek(currentDate);
 	const router = useRouter();
 
-	const staff_id = bookingData?.selectedStylist?.id || 0; // Đảm bảo có giá trị mặc định
+	const staff_id = bookingData?.selectedStylist?.id || 0;
 	const {
 		data: staffShiftByIdData,
 		isLoading,
@@ -107,7 +107,7 @@ export default function BookingForm() {
 	} = useQuery({
 		queryKey: ['dataShiftById', { week: currentWeek, year: currentYear, staff_id }],
 		queryFn: () => getStaffShiftById({ week: currentWeek, year: currentYear, staff_id }),
-		enabled: !!staff_id, // Chỉ gọi API khi staff_id có giá trị
+		enabled: !!staff_id,
 	});
 
 	console.log('staffShiftByIdData', staffShiftByIdData);
@@ -146,7 +146,7 @@ export default function BookingForm() {
 		});
 	};
 
-	const timeSlots = generateTimeSlots('07:20', '16:20', 20); // Generate time slots from 7:20 to 16:20, with 20-minute intervals
+	const timeSlots = generateTimeSlots('07:20', '16:20', 20);
 
 	const handleBooking = async () => {
 		if (!bookingData || !date || !selectedTime) {
@@ -201,7 +201,7 @@ export default function BookingForm() {
 					<div className='bg-white/10 backdrop-blur-sm rounded-3xl p-6 space-y-6'>
 						<div className='space-y-4'>
 							<h2 className='text-xl text-white font-semibold'>Choose service</h2>
-							<Link href='/service'>
+							<Link href='/combo'>
 								<Button className='flex items-center justify-between w-full bg-white hover:bg-gray-300'>
 									<div className='flex items-center'>
 										<Scissors className='mr-2 h-4 w-4 text-gray-900' />

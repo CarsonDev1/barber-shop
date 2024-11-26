@@ -97,7 +97,7 @@ export default function Header() {
 							{ name: t('aboutBarber'), href: '/about' },
 							{ name: t('book'), href: '/book' },
 							{ name: t('service'), href: '/service' },
-							{ name: t('contact'), href: '/contact' },
+							{ name: t('Stylist'), href: '/stylist' },
 							{ name: t('reviewFeedback'), href: '/feedback' },
 						].map((item) => (
 							<Link
