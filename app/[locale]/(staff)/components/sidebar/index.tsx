@@ -57,7 +57,7 @@ export interface NavItem {
 
 const navItems: NavItem[] = [
 	{ title: 'MANAGEMENT STAFF SHIFT', href: '/management-staff/staff-shift', icon: Clock4 },
-	{ title: 'MANAGEMENT SHIFT', href: '/management-staff/shift', icon: ChevronsUpDown },
+	{ title: 'MANAGEMENT BOOKING', href: '/management-staff/booking', icon: ChevronsUpDown },
 ];
 
 export default function AppSidebar({ children }: { children: React.ReactNode }) {
