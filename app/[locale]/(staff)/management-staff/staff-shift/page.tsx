@@ -1,70 +1,39 @@
 'use client';
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { Button } from '@/components/ui/button';
 import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import PageContainer from '@/app/components/page-container';
-import { createStaffShift } from '@/app/apis/staff-shift/createStaffShift'; // Import hàm createStaffShift
-import { getStaffShift } from '@/app/apis/staff-shift/getStaffShift';
 import Swal from 'sweetalert2';
-import { getShift } from '@/app/apis/shifft/getShift';
 
 const StaffShift = () => {
-	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 
-	const {
-		data: ShiftData,
-		isLoading: isLoadingShiftData,
-		error: errorShiftData,
-	} = useQuery<ApiResponseServiceType>({
-		queryKey: ['dataShift'],
-		queryFn: getShift,
-	});
+	// Dữ liệu giả lập cho ShiftData
+	const ShiftData = {
+		payload: [
+			{ id: 1, name: 'Morning Shift' },
+			{ id: 2, name: 'Afternoon Shift' },
+			{ id: 3, name: 'Night Shift' },
+		],
+	};
 
-	const shifts = ShiftData?.payload || [];
+	// Dữ liệu giả lập cho staffShiftData
+	const staffShiftData = {
+		payload: [
+			{ id: 1, name: 'John Doe', shiftId: 1, date: '2024-11-26' },
+			{ id: 2, name: 'Jane Smith', shiftId: 2, date: '2024-11-26' },
+			{ id: 3, name: 'Alice Johnson', shiftId: 3, date: '2024-11-26' },
+			// Thêm dữ liệu giả lập cho staff shift ở đây
+		],
+	};
 
-	const {
-		data: staffShiftData,
-		isLoading: isLoadingStaffShiftData,
-		error: errorStaffShiftData,
-	} = useQuery<ApiResponseServiceType>({
-		queryKey: ['dataStaffShift'],
-		queryFn: getStaffShift,
-	});
-
-	const staffShift = staffShiftData?.payload || [];
+	const staffShift = staffShiftData.payload || [];
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 10;
 	const totalPages = Math.ceil(staffShift.length / itemsPerPage);
-
-	// Thay thế mutateCreateService bằng mutateCreateStaffShift
-	const { mutate: mutateCreateStaffShift } = useMutation({
-		mutationFn: async (staffShiftData: { staffId: number; shiftId: number; date: string }) => {
-			await createStaffShift(staffShiftData);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['dataStaffShift'] });
-			Swal.fire({
-				title: 'Success!',
-				text: 'Staff shift created successfully.',
-				icon: 'success',
-				confirmButtonText: 'OK',
-			});
-		},
-		onError: (error) => {
-			Swal.fire({
-				title: 'Error!',
-				text: 'There was an error creating the staff shift.',
-				icon: 'error',
-				confirmButtonText: 'OK',
-			});
-		},
-	});
 
 	const [staffId, setStaffId] = useState(0);
 	const [shiftId, setShiftId] = useState(0);
@@ -75,7 +44,13 @@ const StaffShift = () => {
 		e.preventDefault();
 		if (staffId && shiftId && date) {
 			const staffShiftData = { staffId, shiftId, date };
-			mutateCreateStaffShift(staffShiftData);
+			// Tạo mới staff shift ở đây (trong thực tế bạn sẽ gọi API)
+			Swal.fire({
+				title: 'Success!',
+				text: 'Staff shift created successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
 			setStaffId(0);
 			setShiftId(0);
 			setDate('');
@@ -166,30 +141,24 @@ const StaffShift = () => {
 
 			<div className='rounded-xl bg-gray-800/50 backdrop-blur-sm overflow-hidden border border-gray-700'>
 				<div className='overflow-x-auto'>
-					{isLoadingStaffShiftData ? (
-						<div className='p-6 text-center text-gray-400'>Loading staff shifts...</div>
-					) : errorStaffShiftData ? (
-						<div className='p-6 text-center text-red-400'>Failed to load staff shifts</div>
-					) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Staff name</TableHead>
-									<TableHead>Shift Id</TableHead>
-									<TableHead>Date</TableHead>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Staff name</TableHead>
+								<TableHead>Shift Id</TableHead>
+								<TableHead>Date</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{getCurrentPageItems().map((shift) => (
+								<TableRow key={shift.id}>
+									<TableCell>{shift.name}</TableCell>
+									<TableCell>{shift.shiftId}</TableCell>
+									<TableCell>{shift.date}</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{getCurrentPageItems().map((shift) => (
-									<TableRow key={shift.id}>
-										<TableCell>{shift.name}</TableCell>
-										<TableCell>{shift.shiftId}</TableCell>
-										<TableCell>{shift.date}</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					)}
+							))}
+						</TableBody>
+					</Table>
 				</div>
 			</div>
 

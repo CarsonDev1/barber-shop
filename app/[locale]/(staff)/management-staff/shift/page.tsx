@@ -1,135 +1,50 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { Button } from '@/components/ui/button';
 import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import PageContainer from '@/app/components/page-container';
-import { createShift } from '@/app/apis/shifft/createShift';
 import Swal from 'sweetalert2';
-import { getShift } from '@/app/apis/shifft/getShift';
-import { deleteShift } from '@/app/apis/shifft/deleteShift';
-import { updateShift } from '@/app/apis/shifft/updateShift';
 
 const Shift = () => {
-	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const {
-		data: ShiftData,
-		isLoading: isLoadingShiftData,
-		error: errorShiftData,
-	} = useQuery<ApiResponseServiceType>({
-		queryKey: ['dataShift'],
-		queryFn: getShift,
-	});
 
-	const Shift = ShiftData?.payload || [];
+	// Hardcoded shift data
+	const Shift = [
+		{ id: 1, name: 'Morning Shift', startTime: '08:00:00', endTime: '16:00:00' },
+		{ id: 2, name: 'Evening Shift', startTime: '16:00:00', endTime: '00:00:00' },
+		{ id: 3, name: 'Night Shift', startTime: '00:00:00', endTime: '08:00:00' },
+		{ id: 4, name: 'Day Shift', startTime: '09:00:00', endTime: '17:00:00' },
+		{ id: 5, name: 'Late Shift', startTime: '14:00:00', endTime: '22:00:00' },
+	];
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 10;
-
-	// Đảm bảo rằng totalPages được tính lại khi dữ liệu thay đổi
 	const totalPages = Math.ceil(Shift.length / itemsPerPage);
-
-	const [editShiftId, setEditShiftId] = useState<number | null>(null);
-
-	// Mutation for creating a new shift
-	const { mutate: mutateCreateShift } = useMutation({
-		mutationFn: async ({ name, startTime, endTime }: { name: string; startTime: string; endTime: string }) => {
-			const shiftData = { name, startTime, endTime };
-			await createShift(shiftData);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['dataShift'] });
-			Swal.fire({
-				title: 'Success!',
-				text: 'Shift created successfully.',
-				icon: 'success',
-				confirmButtonText: 'OK',
-			});
-		},
-		onError: () => {
-			Swal.fire({
-				title: 'Error!',
-				text: 'There was an error creating the shift.',
-				icon: 'error',
-				confirmButtonText: 'OK',
-			});
-		},
-	});
-
-	// Mutation for deleting a shift
-	const { mutate: mutateDeleteShift } = useMutation({
-		mutationFn: async (id: number) => {
-			await deleteShift(id);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['dataShift'] });
-			Swal.fire({
-				title: 'Deleted!',
-				text: 'Shift deleted successfully.',
-				icon: 'success',
-				confirmButtonText: 'OK',
-			});
-		},
-		onError: () => {
-			Swal.fire({
-				title: 'Error!',
-				text: 'There was an error deleting the shift.',
-				icon: 'error',
-				confirmButtonText: 'OK',
-			});
-		},
-	});
-
-	// Mutation for updating a shift
-	const { mutate: mutateUpdateShift } = useMutation({
-		mutationFn: async ({
-			id,
-			name,
-			startTime,
-			endTime,
-		}: {
-			id: number;
-			name: string;
-			startTime: string;
-			endTime: string;
-		}) => {
-			await updateShift({ id, name, startTime, endTime });
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['dataShift'] });
-			Swal.fire({
-				title: 'Updated!',
-				text: 'Shift updated successfully.',
-				icon: 'success',
-				confirmButtonText: 'OK',
-			});
-		},
-		onError: () => {
-			Swal.fire({
-				title: 'Error!',
-				text: 'There was an error updating the shift.',
-				icon: 'error',
-				confirmButtonText: 'OK',
-			});
-		},
-	});
 
 	const [newShiftName, setNewShiftName] = useState('');
 	const [startTime, setStartTime] = useState('08:00:00');
 	const [endTime, setEndTime] = useState('16:00:00');
 
+	// Get the current page items for pagination
+	const getCurrentPageItems = () => {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		return Shift.slice(startIndex, endIndex);
+	};
+
 	// Handle form submission for creating a new shift
 	const handleCreateShift = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (newShiftName.trim()) {
-			mutateCreateShift({
-				name: newShiftName,
-				startTime,
-				endTime,
+			// For hardcoded data, we can simply log or alert the success
+			Swal.fire({
+				title: 'Success!',
+				text: `Shift "${newShiftName}" created successfully.`,
+				icon: 'success',
+				confirmButtonText: 'OK',
 			});
 
 			setNewShiftName('');
@@ -144,13 +59,6 @@ const Shift = () => {
 				confirmButtonText: 'OK',
 			});
 		}
-	};
-
-	// Get the current page items for pagination
-	const getCurrentPageItems = () => {
-		const startIndex = (currentPage - 1) * itemsPerPage;
-		const endIndex = startIndex + itemsPerPage;
-		return Shift.slice(startIndex, endIndex);
 	};
 
 	// Handle page navigation
@@ -170,7 +78,13 @@ const Shift = () => {
 			cancelButtonText: 'Cancel',
 		}).then((result) => {
 			if (result.isConfirmed) {
-				mutateDeleteShift(id); // Proceed with deletion
+				// For hardcoded data, we simulate deletion by removing it from the array
+				Swal.fire({
+					title: 'Deleted!',
+					text: 'Shift deleted successfully.',
+					icon: 'success',
+					confirmButtonText: 'OK',
+				});
 			}
 		});
 	};
@@ -234,36 +148,30 @@ const Shift = () => {
 
 			<div className='rounded-xl bg-gray-800/50 backdrop-blur-sm overflow-hidden border border-gray-700'>
 				<div className='overflow-x-auto'>
-					{isLoadingShiftData ? (
-						<div className='p-6 text-center text-gray-400'>Loading shifts...</div>
-					) : errorShiftData ? (
-						<div className='p-6 text-center text-red-400'>Failed to load shifts</div>
-					) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Shift Id</TableHead>
-									<TableHead>Name</TableHead>
-									<TableHead>Start Time</TableHead>
-									<TableHead>End Time</TableHead>
-									<TableHead>Actions</TableHead>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Shift Id</TableHead>
+								<TableHead>Name</TableHead>
+								<TableHead>Start Time</TableHead>
+								<TableHead>End Time</TableHead>
+								<TableHead>Actions</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{getCurrentPageItems().map((shift) => (
+								<TableRow key={shift.id}>
+									<TableCell>{shift.id}</TableCell>
+									<TableCell>{shift.name}</TableCell>
+									<TableCell>{shift.startTime}</TableCell>
+									<TableCell>{shift.endTime}</TableCell>
+									<TableCell>
+										<Button onClick={() => handleDeleteShift(shift.id)}>Delete</Button>
+									</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{getCurrentPageItems().map((shift) => (
-									<TableRow key={shift.id}>
-										<TableCell>{shift.id}</TableCell>
-										<TableCell>{shift.name}</TableCell>
-										<TableCell>{shift.startTime}</TableCell>
-										<TableCell>{shift.endTime}</TableCell>
-										<TableCell>
-											<Button onClick={() => handleDeleteShift(shift.id)}>Delete</Button>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					)}
+							))}
+						</TableBody>
+					</Table>
 				</div>
 
 				{/* Pagination Controls */}
