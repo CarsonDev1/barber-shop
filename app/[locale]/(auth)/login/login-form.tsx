@@ -73,6 +73,8 @@ export default function LoginForm() {
 				toast.success('Login successful!');
 				if (userRole === 'ROLE_ADMIN') {
 					router.push('/management');
+				} else if (userRole === 'ROLE_STAFF') {
+					router.push('/management-staff/staff-shift');
 				} else {
 					router.push('/');
 				}

@@ -56,7 +56,6 @@ export interface NavItem {
 }
 
 const navItems: NavItem[] = [
-	{ title: 'MANAGEMENT STYLIST', href: '/management-staff/stylist', icon: Scissors },
 	{ title: 'MANAGEMENT STAFF SHIFT', href: '/management-staff/staff-shift', icon: Clock4 },
 	{ title: 'MANAGEMENT SHIFT', href: '/management-staff/shift', icon: ChevronsUpDown },
 ];

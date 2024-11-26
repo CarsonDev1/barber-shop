@@ -66,6 +66,7 @@ export default function Booking() {
 										<TableRow className='hover:bg-gray-800/50 border-gray-700'>
 											<TableHead className='text-gray-200'>#</TableHead>
 											<TableHead className='text-gray-200'>Customer Name</TableHead>
+											<TableHead className='text-gray-200'>Staff Name</TableHead>
 											<TableHead className='text-gray-200'>Service</TableHead>
 											<TableHead className='text-gray-200'>Start Time</TableHead>
 											<TableHead className='text-gray-200'>End Time</TableHead>
@@ -84,12 +85,13 @@ export default function Booking() {
 														{index + 1 + (currentPage - 1) * itemsPerPage}
 													</Badge>
 												</TableCell>
+
 												<TableCell>
 													<Badge
 														variant='secondary'
 														className='bg-gray-700 text-gray-200 hover:bg-gray-600'
 													>
-														{booking.customer.name}
+														{booking?.customer?.name}
 													</Badge>
 												</TableCell>
 												<TableCell>
@@ -97,7 +99,15 @@ export default function Booking() {
 														variant='secondary'
 														className='bg-gray-700 text-gray-200 hover:bg-gray-600'
 													>
-														{booking.bookingDetails?.length
+														{booking?.staff ? booking?.staff.name : 'No Staff'}
+													</Badge>
+												</TableCell>
+												<TableCell>
+													<Badge
+														variant='secondary'
+														className='bg-gray-700 text-gray-200 hover:bg-gray-600'
+													>
+														{booking?.bookingDetails?.length
 															? booking.bookingDetails
 																	.map(
 																		(detail) =>
