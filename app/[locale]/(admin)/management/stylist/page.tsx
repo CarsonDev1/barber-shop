@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Edit, Trash2, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import PageContainer from '@/app/components/page-container';
-import EditStylistForm from '@/app/[locale]/(admin)/components/form';
 import { Modal } from '@/app/[locale]/(admin)/components/modal';
 import { CustomersResponse, Customer } from '@/types/Customer.type';
 import { useQuery } from '@tanstack/react-query';
@@ -187,9 +186,11 @@ export default function Stylist() {
 				</Button>
 			</div>
 
+			{/* Modal to set staff shift */}
 			<Modal isOpen={isShiftModalOpen} onClose={handleCloseModal}>
 				<div className='p-6'>
 					<h2 className='text-2xl font-semibold mb-4'>Set Staff Shift</h2>
+					{/* Shift selection */}
 					<div className='mb-4'>
 						<Label htmlFor='shiftSelect' className='block text-sm font-medium text-gray-700'>
 							Select Shift:
@@ -208,6 +209,7 @@ export default function Stylist() {
 							))}
 						</select>
 					</div>
+					{/* Date selection */}
 					<div className='mb-4'>
 						<Label htmlFor='shiftDate' className='block text-sm font-medium text-gray-700'>
 							Select Date:
@@ -220,14 +222,11 @@ export default function Stylist() {
 							className='w-full p-2 border border-gray-300 rounded-lg'
 						/>
 					</div>
+					{/* Set Shift Button */}
 					<Button onClick={handleCreateShift} className='w-full bg-green-600 text-white'>
 						Set Shift
 					</Button>
 				</div>
-			</Modal>
-
-			<Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-				<EditStylistForm stylist={selectedMember} mode={mode} onClose={handleCloseModal} />
 			</Modal>
 		</PageContainer>
 	);
