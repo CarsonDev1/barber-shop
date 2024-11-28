@@ -1,123 +1,289 @@
 'use client';
-
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import Swal from 'sweetalert2';
 import PageContainer from '@/app/components/page-container';
-import BackGroundRoot from '@/public/root/background-root.png';
-import { Search } from 'lucide-react';
-import { useState } from 'react';
-import Image from 'next/image';
+import { getSalary } from '@/app/apis/salary/getSalary';
+import { getSalaryById } from '@/app/apis/salary/getSalaryById'; // Import your getSalaryById function
+import { updateSalary } from '@/app/apis/salary/updateSalary';
 
-const timeFilters = ['1 Week', '1 Month', '6 Month', '1 Year', 'Ever'];
+interface FormData {
+	staff_id: number;
+	rate: number;
+	percentage: number;
+}
 
-export default function IncomePage() {
-	const [selectedFilter, setSelectedFilter] = useState('1 Week');
+const Income = () => {
+	const queryClient = useQueryClient();
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingSalary, setEditingSalary] = useState<any | null>(null);
+	const [salaryDetails, setSalaryDetails] = useState<any | null>(null); // For showing details
+	const [formData, setFormData] = useState<FormData>({
+		staff_id: 0,
+		rate: 0,
+		percentage: 0,
+	});
 
-	const bookings = [
-		{ id: 1, stylist: 'Thiep', service: 'Hớt tóc,lấy rấy tai,...', total: '100k' },
-		{ id: 2, stylist: 'Thiep', service: 'Hớt tóc,lấy rấy tai,...', total: '100k' },
-		{ id: 3, stylist: 'Thiep', service: 'Hớt tóc,lấy rấy tai,...', total: '100k' },
-		{ id: 4, stylist: 'Thiep', service: 'Hớt tóc,lấy rấy tai,...', total: '100k' },
-		{ id: 5, stylist: 'Thiep', service: 'Hớt tóc,lấy rấy tai,...', total: '100k' },
-	];
+	const {
+		data: salaryData,
+		isLoading: isLoadingSalary,
+		error: errorSalary,
+	} = useQuery<any>({
+		queryKey: ['dataSalary'],
+		queryFn: getSalary,
+	});
+
+	const staffData = salaryData?.payload || [];
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
+	const totalPages = Math.ceil(staffData.length / itemsPerPage);
+
+	const getCurrentPageItems = () => {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		return staffData.slice(startIndex, endIndex);
+	};
+
+	const goToFirstPage = () => setCurrentPage(1);
+	const goToLastPage = () => setCurrentPage(totalPages);
+	const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+	const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+
+	// Mutation for updating an existing salary
+	const { mutate: mutateUpdateSalary } = useMutation({
+		mutationFn: async (formData: FormData & { id: string }) => {
+			const staffData = { ...formData };
+			await updateSalary(staffData);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataSalary'] });
+			Swal.fire({
+				title: 'Updated!',
+				text: 'Staff member updated successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setDialogOpen(false);
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error updating the staff member.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	const handleUpdateSalary = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (formData && editingSalary?.id) {
+			mutateUpdateSalary({ id: editingSalary.id, ...formData });
+			setFormData({
+				staff_id: 0,
+				rate: 0,
+				percentage: 0,
+			});
+		} else {
+			Swal.fire({
+				title: 'Warning!',
+				text: 'Salary cannot be empty, or Salary ID is invalid.',
+				icon: 'warning',
+				confirmButtonText: 'OK',
+			});
+		}
+	};
+
+	const handleViewDetails = async (id: number) => {
+		try {
+			// Giả sử getSalaryById là một hàm lấy dữ liệu từ API trả về như bạn đã mô tả
+			const response = await getSalaryById(id);
+
+			// Kiểm tra xem response có đúng không
+			if (response.status === 200) {
+				const salaryDetails = response.payload; // Dữ liệu chi tiết ở trong trường 'payload'
+				setSalaryDetails(salaryDetails); // Lưu dữ liệu vào state để hiển thị
+				setDialogOpen(true); // Mở dialog
+			} else {
+				// Nếu không có dữ liệu hoặc lỗi
+				Swal.fire({
+					title: 'Error!',
+					text: 'Failed to fetch salary details.',
+					icon: 'error',
+					confirmButtonText: 'OK',
+				});
+			}
+		} catch (error) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Failed to fetch salary details.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		}
+	};
+
+	const handleEditClick = (salary: any) => {
+		if (salary?.id && salary.id > 0) {
+			setEditingSalary(salary);
+			setFormData({
+				staff_id: salary.staff.id || 0,
+				rate: salary.rate || 0,
+				percentage: salary.percentage || 0,
+			});
+			setDialogOpen(true);
+		} else {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Invalid service type ID.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		}
+	};
 
 	return (
 		<PageContainer>
-			<Image
-				src={BackGroundRoot}
-				alt='Barber Shop Logo'
-				width={1820}
-				height={1200}
-				className='absolute inset-0 w-full object-cover h-full'
-			/>
-			<div className='bg-transparent relative'>
-				<div className='rounded-lg bg-gray-800/50 backdrop-blur-sm p-6'>
-					{/* Header */}
-					<div className='flex justify-between items-center mb-6'>
-						<h1 className='text-2xl font-bold text-white'>INCOME MANAGEMENT</h1>
-						<div className='relative w-72'>
-							<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
-							<Input
-								placeholder='Search Stylist'
-								className='pl-9 bg-gray-700 border-gray-600 text-white placeholder:text-gray-400'
-							/>
-						</div>
-					</div>
-
-					<div className='grid md:grid-cols-3 gap-6'>
-						{/* Table */}
-						<div className='md:col-span-2'>
-							<div className='rounded-lg bg-gray-800/50 overflow-hidden'>
-								<Table>
-									<TableHeader>
-										<TableRow className='hover:bg-gray-800/50 border-gray-700'>
-											<TableHead className='text-gray-200'>Id</TableHead>
-											<TableHead className='text-gray-200'>Stylist</TableHead>
-											<TableHead className='text-gray-200'>Service</TableHead>
-											<TableHead className='text-gray-200'>Total</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{bookings.map((booking) => (
-											<TableRow key={booking.id} className='hover:bg-gray-700/50 border-gray-700'>
-												<TableCell className='font-medium text-gray-200'>
-													{booking.id}
-												</TableCell>
-												<TableCell className='text-gray-200'>{booking.stylist}</TableCell>
-												<TableCell className='text-gray-200'>{booking.service}</TableCell>
-												<TableCell className='text-gray-200'>{booking.total}</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-						</div>
-
-						{/* Stats Panel */}
-						<div className='space-y-4'>
-							<div className='rounded-lg bg-gray-800/50 p-4'>
-								<h3 className='text-sm font-medium text-gray-400 mb-2'>
-									Total Stylist working in week
-								</h3>
-								<div className='bg-gray-700 rounded-md px-4 py-2 text-white'>
-									Thiep, Sinh, Kha, Le, Hieu,... <span className='font-bold'>20</span>
+			<div className='flex justify-between mb-4'>
+				<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+					<DialogTrigger asChild>
+						<Button variant='default' onClick={() => setDialogOpen(true)}>
+							{editingSalary ? 'Edit Salary' : 'Create Salary'}
+						</Button>
+					</DialogTrigger>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>{editingSalary ? 'Edit Salary' : 'Salary Details'}</DialogTitle>
+						</DialogHeader>
+						{/* Form or View Salary Details */}
+						{editingSalary ? (
+							<form onSubmit={handleUpdateSalary}>
+								<div className='space-y-4'>
+									<Input
+										id='rate'
+										name='rate'
+										type='number'
+										placeholder='Rate'
+										className='w-full'
+										value={formData.rate}
+										onChange={(e) =>
+											setFormData({ ...formData, rate: parseInt(e.target.value, 10) })
+										}
+										required
+									/>
+									<Input
+										id='percentage'
+										name='percentage'
+										type='number'
+										placeholder='Percentage'
+										className='w-full'
+										value={formData.percentage}
+										onChange={(e) =>
+											setFormData({ ...formData, percentage: parseInt(e.target.value, 10) })
+										}
+										required
+									/>
 								</div>
-							</div>
-
-							<div className='rounded-lg bg-gray-800/50 p-4'>
-								<h3 className='text-sm font-medium text-gray-400 mb-2'>Total Service use in week</h3>
-								<div className='bg-gray-700 rounded-md px-4 py-2 text-white'>
-									Combo 1, combo2, hớt tóc,... <span className='font-bold'>40</span>
+								<div className='flex justify-end mt-4'>
+									<Button
+										variant='outline'
+										type='button'
+										className='mr-2'
+										onClick={() => setDialogOpen(false)}
+									>
+										Cancel
+									</Button>
+									<Button variant='default' type='submit'>
+										{editingSalary ? 'Update' : 'Create'}
+									</Button>
 								</div>
+							</form>
+						) : salaryDetails ? (
+							<div>
+								<p>
+									<strong>Staff Name:</strong> {salaryDetails.staff.name}
+								</p>
+								<p>
+									<strong>Email:</strong> {salaryDetails.staff.email}
+								</p>
+								<p>
+									<strong>Phone:</strong> {salaryDetails.staff.phone}
+								</p>
+								<p>
+									<strong>Rate:</strong> {salaryDetails.rate}
+								</p>
+								<p>
+									<strong>Percentage:</strong> {salaryDetails.percentage}%
+								</p>
+								<p>
+									<strong>Date of Birth:</strong> {salaryDetails.staff.dob}
+								</p>
+								<p>
+									<strong>Role:</strong> {salaryDetails.staff.role}
+								</p>
+								<p>
+									<strong>Created At:</strong> {new Date(salaryDetails.createdAt).toLocaleString()}
+								</p>
+								<p>
+									<strong>Updated At:</strong> {new Date(salaryDetails.updatedAt).toLocaleString()}
+								</p>
 							</div>
+						) : (
+							<p>No data available</p>
+						)}
+					</DialogContent>
+				</Dialog>
+			</div>
 
-							<div className='rounded-lg bg-gray-800/50 p-4'>
-								<h3 className='text-sm font-medium text-gray-400 mb-2'>Revenue in the week</h3>
-								<div className='bg-gray-700 rounded-md px-4 py-2 text-white font-bold'>10,000,000</div>
-							</div>
-						</div>
-					</div>
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead>Staff Name</TableHead>
+						<TableHead>Rate</TableHead>
+						<TableHead>Percentage</TableHead>
+						<TableHead>Action</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{getCurrentPageItems().map((salary: any) => (
+						<TableRow key={salary.id}>
+							<TableCell>{salary.staff.name}</TableCell>
+							<TableCell>{salary.rate}</TableCell>
+							<TableCell>{salary.percentage}</TableCell>
+							<TableCell>
+								<Button onClick={() => handleEditClick(salary)} variant='outline'>
+									Edit
+								</Button>
+								<Button onClick={() => handleViewDetails(salary.id)} variant='outline' className='ml-2'>
+									View Details
+								</Button>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
 
-					{/* Time Filters */}
-					<div className='flex gap-2 mt-6'>
-						{timeFilters.map((filter) => (
-							<Button
-								key={filter}
-								variant={selectedFilter === filter ? 'secondary' : 'ghost'}
-								className={`text-sm ${
-									selectedFilter === filter
-										? 'bg-gray-700 text-white'
-										: 'text-gray-400 hover:text-white hover:bg-gray-700'
-								}`}
-								onClick={() => setSelectedFilter(filter)}
-							>
-								{filter}
-							</Button>
-						))}
-					</div>
-				</div>
+			<div className='mt-4 flex justify-between'>
+				<Button variant='outline' onClick={goToFirstPage} disabled={currentPage === 1}>
+					<ChevronFirst />
+				</Button>
+				<Button variant='outline' onClick={goToPreviousPage} disabled={currentPage === 1}>
+					<ChevronLeft />
+				</Button>
+				<Button variant='outline' onClick={goToNextPage} disabled={currentPage === totalPages}>
+					<ChevronRight />
+				</Button>
+				<Button variant='outline' onClick={goToLastPage} disabled={currentPage === totalPages}>
+					<ChevronLast />
+				</Button>
 			</div>
 		</PageContainer>
 	);
-}
+};
+
+export default Income;

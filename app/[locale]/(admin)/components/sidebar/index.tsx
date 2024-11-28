@@ -70,7 +70,7 @@ const navItems: NavItem[] = [
 	{ title: 'MANAGEMENT BOOKING', href: '/management/booking', icon: Calendar },
 	{ title: 'BARBER HISTORY', href: '/management/history', icon: Clock4 },
 	{ title: 'MANAGEMENT COMBO', href: '/management/combo', icon: PlusSquare },
-	{ title: 'MANAGEMENT INCOME', href: '/management/income', icon: DollarSign },
+	{ title: 'MANAGEMENT SALARY', href: '/management/income', icon: DollarSign },
 ];
 
 export default function AppSidebar({ children }: { children: React.ReactNode }) {

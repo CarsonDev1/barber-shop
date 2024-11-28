@@ -8,7 +8,7 @@ import { Edit, Trash2, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import PageContainer from '@/app/components/page-container';
 import { Modal } from '@/app/[locale]/(admin)/components/modal';
 import { CustomersResponse, Customer } from '@/types/Customer.type';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getStaffs } from '@/app/apis/customer/getStaffs';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { getShift } from '@/app/apis/shifft/getShift';
@@ -17,6 +17,8 @@ import Swal from 'sweetalert2'; // Import SweetAlert2
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { createStaff } from '@/app/apis/stylist/createStaff';
+import { updateStaff } from '@/app/apis/stylist/updateStaff';
 
 interface FormData {
 	name: string;
@@ -24,10 +26,11 @@ interface FormData {
 	phone: string;
 	dob: string | null;
 	password: string;
-	role: 'ROLE_ADMIN' | 'ROLE_USER';
+	role: 'ROLE_STAFF' | 'ROLE_USER';
 }
 
 export default function Stylist() {
+	const queryClient = useQueryClient();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isShiftModalOpen, setShiftModalOpen] = useState(false);
 	const [isModalOpen, setModalOpen] = useState(false);
@@ -35,13 +38,70 @@ export default function Stylist() {
 	const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
 	const [shiftDate, setShiftDate] = useState<string>('');
 	const [mode, setMode] = useState<'add' | 'edit'>('add');
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingStaff, setEditingStaff] = useState<any | null>(null);
+
 	const [formData, setFormData] = useState<FormData>({
 		name: '',
 		email: '',
 		phone: '',
 		dob: '',
 		password: '',
-		role: 'ROLE_ADMIN',
+		role: 'ROLE_STAFF',
+	});
+
+	// Mutation for creating a new staff member
+	const { mutate: mutateCreateStaff } = useMutation({
+		mutationFn: async (formData: FormData) => {
+			const staffData = { ...formData, dob: formData.dob || '' };
+			await createStaff(staffData);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataStaffs'] });
+			Swal.fire({
+				title: 'Success!',
+				text: 'Staff member created successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setDialogOpen(false);
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error creating the staff member.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	// Mutation for updating an existing staff member
+	const { mutate: mutateUpdateStaff } = useMutation({
+		mutationFn: async (formData: FormData & { id: string }) => {
+			// Cập nhật thông tin nhân viên, bao gồm cả id
+			const staffData = { ...formData, dob: formData.dob || '' };
+			await updateStaff(staffData);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataStaffs'] });
+			Swal.fire({
+				title: 'Updated!',
+				text: 'Staff member updated successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setEditingStaff(null);
+			setDialogOpen(false);
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error updating the staff member.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
 	});
 
 	const {
@@ -74,23 +134,48 @@ export default function Stylist() {
 	};
 
 	const handleEditClick = (member: Customer) => {
-		setSelectedMember(member);
-		setMode('edit');
-		setModalOpen(true);
+		if (member?.id && member.id > 0) {
+			setEditingStaff(member);
+			setFormData({
+				name: member.name || '',
+				email: member.email || '',
+				phone: member.phone || '',
+				dob: member.dob ?? '',
+				password: '',
+				role: member.role as 'ROLE_STAFF' | 'ROLE_USER',
+			});
+			setMode('edit'); // Chuyển chế độ sang 'edit'
+			setDialogOpen(true);
+		} else {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Invalid service type ID.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		}
 	};
 
-	const handleAddMemberClick = () => {
-		setSelectedMember(null);
-		setMode('add');
-		setFormData({
-			name: '',
-			email: '',
-			phone: '',
-			dob: '',
-			password: '',
-			role: 'ROLE_ADMIN',
-		});
-		setModalOpen(true);
+	const handleCreateStaff = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (formData.name.trim() && formData.email.trim() && formData.phone.trim()) {
+			mutateCreateStaff(formData);
+			setFormData({
+				name: '',
+				email: '',
+				phone: '',
+				dob: '',
+				password: '',
+				role: 'ROLE_STAFF',
+			});
+		} else {
+			Swal.fire({
+				title: 'Warning!',
+				text: 'All fields are required. Please fill in the missing information.',
+				icon: 'warning',
+				confirmButtonText: 'OK',
+			});
+		}
 	};
 
 	const handleSetShiftClick = (member: Customer) => {
@@ -130,6 +215,29 @@ export default function Stylist() {
 		}
 	};
 
+	const handleUpdateStaf = (e: React.FormEvent) => {
+		e.preventDefault();
+		// Check if ID and name are valid
+		if (formData.name.trim() && formData.email.trim() && formData.phone.trim() && editingStaff?.id) {
+			mutateUpdateStaff({ id: editingStaff.id, ...formData });
+			setFormData({
+				name: '',
+				email: '',
+				phone: '',
+				dob: '',
+				password: '',
+				role: 'ROLE_STAFF',
+			});
+		} else {
+			Swal.fire({
+				title: 'Warning!',
+				text: 'Staff cannot be empty, or Staff ID is invalid.',
+				icon: 'warning',
+				confirmButtonText: 'OK',
+			});
+		}
+	};
+
 	// Handle form input changes
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
@@ -139,19 +247,14 @@ export default function Stylist() {
 		}));
 	};
 
-	const handleSubmit = () => {
-		// Handle form submission (add or edit member)
-		console.log(formData);
-	};
-
 	return (
 		<PageContainer>
-			<Dialog open={isModalOpen} onOpenChange={setModalOpen}>
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 				<DialogTrigger>
 					<Button
 						className='fixed top-8 right-8 rounded-full shadow-lg border'
 						size='lg'
-						onClick={handleAddMemberClick}
+						onClick={() => setDialogOpen(true)}
 					>
 						<Plus className='w-6 h-6 mr-2' />
 						ADD MEMBER
@@ -163,7 +266,7 @@ export default function Stylist() {
 						<DialogTitle>{mode === 'add' ? 'Add New Member' : 'Edit Member'}</DialogTitle>
 					</DialogHeader>
 
-					<div className='p-6'>
+					<form onSubmit={editingStaff ? handleUpdateStaf : handleCreateStaff} className='p-6'>
 						<div className='mb-4'>
 							<Label htmlFor='name' className='block text-sm font-medium text-gray-700'>
 								Name:
@@ -233,27 +336,10 @@ export default function Stylist() {
 								className='w-full p-2 border border-gray-300 rounded-lg'
 							/>
 						</div>
-
-						<div className='mb-4'>
-							<Label htmlFor='role' className='block text-sm font-medium text-gray-700'>
-								Role:
-							</Label>
-							<select
-								id='role'
-								name='role'
-								value={formData.role}
-								onChange={handleInputChange}
-								className='w-full p-2 border border-gray-300 rounded-lg'
-							>
-								<option value='ROLE_ADMIN'>Admin</option>
-								<option value='ROLE_USER'>User</option>
-							</select>
-						</div>
-					</div>
-
-					<CardFooter>
-						<Button onClick={handleSubmit}>Save</Button>
-					</CardFooter>
+						<Button variant='default' type='submit'>
+							{editingStaff ? 'Update' : 'Create'}
+						</Button>
+					</form>
 				</DialogContent>
 			</Dialog>
 
@@ -261,6 +347,7 @@ export default function Stylist() {
 				{getCurrentMembers().map((member, index) => (
 					<Card key={index} className='overflow-hidden transition-shadow hover:shadow-lg relative z-10'>
 						<CardContent className='p-0'>
+							<div></div>
 							<div className='relative h-48'>
 								<Image src={member.avatar.thumbUrl} alt='avt' fill className='object-contain' />
 								<span className='absolute top-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold rounded'>
@@ -271,6 +358,16 @@ export default function Stylist() {
 								<h3 className='font-bold text-lg mb-1'>{member.name}</h3>
 								<p className='text-sm text-gray-600'>{member.phone}</p>
 								<p className='text-sm text-gray-600'>{member.verified}</p>
+							</div>
+							<div className='px-2 mb-2'>
+								<Button
+									variant='outline'
+									size='sm'
+									className='text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+									onClick={() => handleSetShiftClick(member)}
+								>
+									Set Staff Shift
+								</Button>
 							</div>
 						</CardContent>
 						<CardFooter className='bg-gray-50 border-t flex justify-between p-2'>
@@ -283,14 +380,7 @@ export default function Stylist() {
 								<Edit className='w-4 h-4 mr-2' />
 								Edit
 							</Button>
-							<Button
-								variant='outline'
-								size='sm'
-								className='text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-								onClick={() => handleSetShiftClick(member)}
-							>
-								Set Staff Shift
-							</Button>
+
 							<Button
 								variant='outline'
 								size='sm'
