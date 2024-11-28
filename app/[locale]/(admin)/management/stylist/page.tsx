@@ -16,6 +16,16 @@ import { createStaffShift } from '@/app/apis/staff-shift/createStaffShift';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+interface FormData {
+	name: string;
+	email: string;
+	phone: string;
+	dob: string | null;
+	password: string;
+	role: 'ROLE_ADMIN' | 'ROLE_USER';
+}
 
 export default function Stylist() {
 	const [currentPage, setCurrentPage] = useState(1);
@@ -25,6 +35,14 @@ export default function Stylist() {
 	const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
 	const [shiftDate, setShiftDate] = useState<string>('');
 	const [mode, setMode] = useState<'add' | 'edit'>('add');
+	const [formData, setFormData] = useState<FormData>({
+		name: '',
+		email: '',
+		phone: '',
+		dob: '',
+		password: '',
+		role: 'ROLE_ADMIN',
+	});
 
 	const {
 		data: staffData,
@@ -64,6 +82,14 @@ export default function Stylist() {
 	const handleAddMemberClick = () => {
 		setSelectedMember(null);
 		setMode('add');
+		setFormData({
+			name: '',
+			email: '',
+			phone: '',
+			dob: '',
+			password: '',
+			role: 'ROLE_ADMIN',
+		});
 		setModalOpen(true);
 	};
 
@@ -104,16 +130,132 @@ export default function Stylist() {
 		}
 	};
 
+	// Handle form input changes
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		const { name, value } = e.target;
+		setFormData((prevData) => ({
+			...prevData,
+			[name]: value,
+		}));
+	};
+
+	const handleSubmit = () => {
+		// Handle form submission (add or edit member)
+		console.log(formData);
+	};
+
 	return (
 		<PageContainer>
-			<Button
-				className='fixed top-8 right-8 rounded-full shadow-lg border'
-				size='lg'
-				onClick={handleAddMemberClick}
-			>
-				<Plus className='w-6 h-6 mr-2' />
-				ADD MEMBER
-			</Button>
+			<Dialog open={isModalOpen} onOpenChange={setModalOpen}>
+				<DialogTrigger>
+					<Button
+						className='fixed top-8 right-8 rounded-full shadow-lg border'
+						size='lg'
+						onClick={handleAddMemberClick}
+					>
+						<Plus className='w-6 h-6 mr-2' />
+						ADD MEMBER
+					</Button>
+				</DialogTrigger>
+
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{mode === 'add' ? 'Add New Member' : 'Edit Member'}</DialogTitle>
+					</DialogHeader>
+
+					<div className='p-6'>
+						<div className='mb-4'>
+							<Label htmlFor='name' className='block text-sm font-medium text-gray-700'>
+								Name:
+							</Label>
+							<Input
+								type='text'
+								id='name'
+								name='name'
+								value={formData.name}
+								onChange={handleInputChange}
+								className='w-full p-2 border border-gray-300 rounded-lg'
+							/>
+						</div>
+
+						<div className='mb-4'>
+							<Label htmlFor='email' className='block text-sm font-medium text-gray-700'>
+								Email:
+							</Label>
+							<Input
+								type='email'
+								id='email'
+								name='email'
+								value={formData.email}
+								onChange={handleInputChange}
+								className='w-full p-2 border border-gray-300 rounded-lg'
+							/>
+						</div>
+
+						<div className='mb-4'>
+							<Label htmlFor='phone' className='block text-sm font-medium text-gray-700'>
+								Phone:
+							</Label>
+							<Input
+								type='text'
+								id='phone'
+								name='phone'
+								value={formData.phone}
+								onChange={handleInputChange}
+								className='w-full p-2 border border-gray-300 rounded-lg'
+							/>
+						</div>
+
+						<div className='mb-4'>
+							<Label htmlFor='dob' className='block text-sm font-medium text-gray-700'>
+								Date of Birth:
+							</Label>
+							<Input
+								type='date'
+								id='dob'
+								name='dob'
+								value={formData.dob ?? ''}
+								onChange={handleInputChange}
+								className='w-full p-2 border border-gray-300 rounded-lg'
+							/>
+						</div>
+
+						<div className='mb-4'>
+							<Label htmlFor='password' className='block text-sm font-medium text-gray-700'>
+								Password:
+							</Label>
+							<Input
+								type='password'
+								id='password'
+								name='password'
+								value={formData.password}
+								onChange={handleInputChange}
+								className='w-full p-2 border border-gray-300 rounded-lg'
+							/>
+						</div>
+
+						<div className='mb-4'>
+							<Label htmlFor='role' className='block text-sm font-medium text-gray-700'>
+								Role:
+							</Label>
+							<select
+								id='role'
+								name='role'
+								value={formData.role}
+								onChange={handleInputChange}
+								className='w-full p-2 border border-gray-300 rounded-lg'
+							>
+								<option value='ROLE_ADMIN'>Admin</option>
+								<option value='ROLE_USER'>User</option>
+							</select>
+						</div>
+					</div>
+
+					<CardFooter>
+						<Button onClick={handleSubmit}>Save</Button>
+					</CardFooter>
+				</DialogContent>
+			</Dialog>
 
 			<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8'>
 				{getCurrentMembers().map((member, index) => (
