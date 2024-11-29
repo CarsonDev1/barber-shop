@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { useQuery } from '@tanstack/react-query';
+import { getBookings } from '@/app/apis/booking/getBooking';
 
 type Booking = {
 	id: number;
@@ -35,43 +37,24 @@ type Booking = {
 	status: string;
 };
 
-const bookings: Booking[] = [
-	{ id: 1, name: 'Van Le', phone: '123', service: 'Combo 1', stylist: 'Xink Do', date: '01/08/2024', status: 'Done' },
-	{ id: 2, name: 'Long', phone: '1234', service: 'Combo 2', stylist: 'Thiep', date: '02/08/2024', status: 'Done' },
-	{ id: 3, name: 'Luong', phone: '234', service: 'Cắt tóc', stylist: 'Hieu', date: '02/08/2024', status: 'Done' },
-	{ id: 4, name: 'Khai', phone: '2345', service: 'Cạo râu', stylist: 'Hieu', date: '03/08/2024', status: 'Done' },
-	{ id: 5, name: 'Kha', phone: '345', service: 'Combo 1', stylist: 'Xink Do', date: '03/04/2024', status: 'Done' },
-	{
-		id: 6,
-		name: 'Thuat',
-		phone: '3456',
-		service: 'Cạo lông mày',
-		stylist: 'Thiep',
-		date: '04/08/2024',
-		status: 'Not Yet',
-	},
-	{ id: 7, name: 'A', phone: '456', service: 'Nhuộm tóc', stylist: 'Hieu', date: '04/08/2024', status: 'Done' },
-	{ id: 8, name: 'B', phone: '4567', service: 'Uốn tóc', stylist: 'Xink Do', date: '05/08/2024', status: 'Done' },
-	{ id: 9, name: 'C', phone: '567', service: 'Nhuộm & Uốn', stylist: 'Thiep', date: '05/08/2024', status: 'Not Yet' },
-	{ id: 10, name: 'D', phone: '5678', service: 'Cạo râu', stylist: 'Hieu', date: '06/08/2024', status: 'Not Yet' },
-	{ id: 11, name: 'E', phone: '678', service: 'Cắt tóc', stylist: 'Thiep', date: '07/08/2024', status: 'Done' },
-	{
-		id: 12,
-		name: 'F',
-		phone: '6789',
-		service: 'Uốn & Nhuộm',
-		stylist: 'Xink DO',
-		date: '08/08/2024',
-		status: 'Done',
-	},
-];
-
 export default function BookingCalender() {
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+	// Query bookings data
+	const {
+		data: bookingData,
+		isLoading: isLoadingBookings,
+		error: errorBookings,
+	} = useQuery<ApiResponseBooking>({
+		queryKey: ['dataBookings'],
+		queryFn: getBookings,
+	});
+
+	const bookings = bookingData?.payload || [];
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 10;
 	const totalPages = Math.ceil(bookings.length / itemsPerPage);
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
 	const handleEditClick = (booking: Booking) => {
 		setSelectedBooking(booking);
@@ -88,6 +71,11 @@ export default function BookingCalender() {
 		const startIndex = (currentPage - 1) * itemsPerPage;
 		const endIndex = startIndex + itemsPerPage;
 		return bookings.slice(startIndex, endIndex);
+	};
+
+	// Calculate total price for each booking
+	const calculateTotalPrice = (booking: any) => {
+		return booking.bookingDetails.reduce((total: any, detail: any) => total + (detail?.service?.price || 0), 0);
 	};
 
 	// Pagination control functions
@@ -117,12 +105,13 @@ export default function BookingCalender() {
 							<TableHeader>
 								<TableRow className='border-gray-700 hover:bg-gray-800/50'>
 									<TableHead className='text-gray-200'>ID</TableHead>
-									<TableHead className='text-gray-200'>Name</TableHead>
-									<TableHead className='text-gray-200'>Phone Number</TableHead>
+									<TableHead className='text-gray-200'>Note</TableHead>
 									<TableHead className='text-gray-200'>Service</TableHead>
-									<TableHead className='text-gray-200'>Stylist</TableHead>
-									<TableHead className='text-gray-200'>Date & Time</TableHead>
+									<TableHead className='text-gray-200'>Staff</TableHead>
+									<TableHead className='text-gray-200'>Start Time</TableHead>
+									<TableHead className='text-gray-200'>End Time</TableHead>
 									<TableHead className='text-gray-200'>Status</TableHead>
+									<TableHead className='text-gray-200'>Total Price</TableHead>
 									<TableHead className='text-gray-200 text-right'>Actions</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -130,21 +119,38 @@ export default function BookingCalender() {
 								{getCurrentPageItems().map((booking) => (
 									<TableRow key={booking.id} className='border-gray-700 hover:bg-gray-700/50'>
 										<TableCell className='font-medium text-gray-200'>{booking.id}</TableCell>
-										<TableCell className='text-gray-200'>{booking.name}</TableCell>
-										<TableCell className='text-gray-200'>{booking.phone}</TableCell>
-										<TableCell className='text-gray-200'>{booking.service}</TableCell>
-										<TableCell className='text-gray-200'>{booking.stylist}</TableCell>
-										<TableCell className='text-gray-200'>{booking.date}</TableCell>
+										<TableCell className='text-gray-200'>{booking.note}</TableCell>
+										<TableCell className='text-gray-200 w-64'>
+											<span className='line-clamp-1'>
+												{booking.bookingDetails.map((service) => service?.service?.name)}
+											</span>
+										</TableCell>
+										<TableCell className='text-gray-200 w-40'>{booking.staff.name}</TableCell>
+										<TableCell className='text-gray-200'>
+											{new Date(booking.startTime).toLocaleString('vi-VN', {
+												dateStyle: 'short',
+												timeStyle: 'short',
+											})}
+										</TableCell>
+										<TableCell className='text-gray-200'>
+											{new Date(booking.endTime).toLocaleString('vi-VN', {
+												dateStyle: 'short',
+												timeStyle: 'short',
+											})}
+										</TableCell>
 										<TableCell>
 											<span
 												className={`px-2 py-1 rounded-full text-xs font-medium ${
-													booking.status === 'Done'
+													booking.status === 'COMPLETED'
 														? 'bg-green-500/20 text-green-400'
 														: 'bg-yellow-500/20 text-yellow-400'
 												}`}
 											>
 												{booking.status}
 											</span>
+										</TableCell>
+										<TableCell className='text-gray-200'>
+											{calculateTotalPrice(booking).toLocaleString()} VND
 										</TableCell>
 										<TableCell className='text-right'>
 											<DropdownMenu>
@@ -160,7 +166,20 @@ export default function BookingCalender() {
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align='end' className='w-32'>
 													<DropdownMenuItem
-														onClick={() => handleEditClick(booking)}
+														onClick={() =>
+															handleEditClick({
+																...booking,
+																name: booking.staff.name,
+																phone: booking.staff.phone,
+																service: booking.bookingDetails
+																	.map((service) => service?.service?.name)
+																	.join(', '),
+																stylist: booking.staff.name,
+																date: new Date(booking.startTime).toLocaleDateString(
+																	'vi-VN'
+																),
+															})
+														}
 														className='text-green-600 hover:text-green-700'
 													>
 														<Pencil className='w-4 h-4 mr-2' />

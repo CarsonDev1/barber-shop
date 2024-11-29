@@ -16,10 +16,11 @@ export interface GetStaffShiftParams {
 
 export const getStaffShiftById = async (params: GetStaffShiftParams): Promise<any> => {
 	try {
-		const response = await api.get<{ status: string; data: StaffShift[] }>('/staff-shift/get-staff-shift', {
-			params,
-		});
-		return response.data.data;
+		const { staff_id, week, year } = params;
+		const response = await api.get<{ status: string; data: StaffShift[] }>(
+			`/staff-shift/get-staff-shift?staff_id=${staff_id}&week=${week}&year=${year}`
+		);
+		return response.data;
 	} catch (error) {
 		console.error('Error fetching staff shifts:', error);
 		throw error;

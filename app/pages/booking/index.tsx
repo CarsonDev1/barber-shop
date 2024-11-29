@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, ChevronRight, Scissors, Upload } from 'lucide-react';
-import { format, addDays } from 'date-fns'; // Import addDays from date-fns
+import { addDays, format } from 'date-fns'; // Import addDays from date-fns
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Face from '@/public/root/face.png';
 import Link from 'next/link';
 import { createBook } from '@/app/apis/booking/createBook';
 import { useRouter } from 'next/navigation';
-import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { useQuery } from '@tanstack/react-query';
 import { getStaffShiftById } from '@/app/apis/staff-shift/getStaffShiftById';
 import { getBookings } from '@/app/apis/booking/getBooking';
+import Swal from 'sweetalert2';
 
 interface Image {
 	id: number;
@@ -82,11 +82,9 @@ const generateTimeSlots = (startTime: string, endTime: string, interval: number)
 	return timeSlots;
 };
 
-const getNextWeek = (date: Date) => {
-	const nextWeekDate = new Date(date);
-	nextWeekDate.setDate(date.getDate() + 7);
-	const startDate = new Date(nextWeekDate.getFullYear(), 0, 1);
-	const diff = nextWeekDate.getTime() - startDate.getTime();
+const getCurrentWeek = (date: Date) => {
+	const startDate = new Date(date.getFullYear(), 0, 1);
+	const diff = date.getTime() - startDate.getTime();
 	const oneDay = 1000 * 60 * 60 * 24;
 	const dayOfYear = Math.floor(diff / oneDay);
 	return Math.ceil((dayOfYear + 1) / 7);
@@ -98,7 +96,7 @@ export default function BookingForm() {
 	const [bookingData, setBookingData] = useState<BookingData | null>(null);
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear();
-	const currentWeek = getNextWeek(currentDate);
+	const currentWeek = getCurrentWeek(currentDate); // Changed to get current week
 	const router = useRouter();
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;
@@ -111,6 +109,9 @@ export default function BookingForm() {
 		queryFn: () => getStaffShiftById({ week: currentWeek, year: currentYear, staff_id }),
 		enabled: !!staff_id,
 	});
+
+	const dataStaffShift = staffShiftByIdData?.payload ?? [];
+	console.log('dataStaffShift', dataStaffShift);
 
 	const {
 		data: bookingDatas,
@@ -161,7 +162,7 @@ export default function BookingForm() {
 		if (isCompletedBooking) return true; // If there's a completed booking, the slot is unavailable
 
 		// Check if the time falls within the staff's shift
-		return staffShiftByIdData.payload.some((shift: Shift) => {
+		return !staffShiftByIdData.payload.some((shift: Shift) => {
 			if (shift.date !== selectedDateString) return false;
 
 			const [shiftStartHours, shiftStartMinutes] = shift.startTime.split(':').map(Number);
@@ -181,7 +182,12 @@ export default function BookingForm() {
 
 	const handleBooking = async () => {
 		if (!bookingData || !date || !selectedTime) {
-			alert('Please select a date, time, and stylist.');
+			Swal.fire({
+				title: 'Warning!',
+				text: 'Please select a date, time, and stylist.',
+				icon: 'warning',
+				confirmButtonText: 'OK',
+			});
 			return;
 		}
 
@@ -213,7 +219,12 @@ export default function BookingForm() {
 			setBookingData(null);
 			router.push('/booking-success');
 		} catch (error) {
-			alert('An error occurred while booking. Please try again.');
+			Swal.fire({
+				title: 'Error!',
+				text: 'The time you selected may have already been booked, please choose another time.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
 		}
 	};
 
