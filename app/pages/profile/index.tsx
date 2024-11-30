@@ -12,12 +12,14 @@ import { updateProfile } from '@/app/apis/updateProfile';
 import { updateAvatar } from '@/app/apis/updateAvatar';
 import Swal from 'sweetalert2';
 import { UserProfile } from '@/types/Profile.type';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfilePage() {
 	const [profileImage, setProfileImage] = useState('/placeholder.svg');
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const queryClient = useQueryClient();
+	const { t } = useTranslation('common');
 
 	// Fetch profile data
 	const { data: dataProfile } = useQuery<UserProfile>({
@@ -99,8 +101,77 @@ export default function ProfilePage() {
 		}
 	};
 
+	// Validate profile data
+	const validateForm = () => {
+		const today = new Date();
+		const dob = new Date(formData.dob);
+		const age = today.getFullYear() - dob.getFullYear();
+		const isRoleStaff = formData.role === 'ROLE_STAFF';
+		const phonePattern = /^[0-9]{10}$/;
+		const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+		// Check if any required field is empty
+		if (!formData.name || !formData.email || !formData.phone || !formData.dob) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'All fields must be filled.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return false;
+		}
+
+		// Check birthday validation: Age must be between 12 and 70
+		if (age < 12 || age > 70) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Your age must be between 12 and 70 years.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return false;
+		}
+
+		// If role is STAFF, age must be 18 or older
+		if (isRoleStaff && age < 18) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'As a staff member, you must be at least 18 years old.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return false;
+		}
+
+		// Check phone number validation (10 digits)
+		if (!phonePattern.test(formData.phone)) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Phone number must be exactly 10 digits.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return false;
+		}
+
+		// Check email format validation
+		if (!emailPattern.test(formData.email)) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Please enter a valid email address.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return false;
+		}
+
+		return true;
+	};
+
 	// Handle avatar update on submit
 	const handleSubmit = async () => {
+		if (!validateForm()) return; // Stop if validation fails
+
 		try {
 			if (selectedFile) {
 				// Update avatar if a new file is selected
@@ -167,7 +238,7 @@ export default function ProfilePage() {
 						{/* Form Section */}
 						<div className='space-y-6'>
 							<div className='space-y-2'>
-								<Label htmlFor='name'>Full name</Label>
+								<Label htmlFor='name'>{t('fullName')}</Label>
 								<Input
 									id='name'
 									name='name'
@@ -177,7 +248,7 @@ export default function ProfilePage() {
 								/>
 							</div>
 							<div className='space-y-2'>
-								<Label htmlFor='dob'>Birthday</Label>
+								<Label htmlFor='dob'>{t('birthday')}</Label>
 								<div className='relative'>
 									<Input
 										id='dob'
@@ -191,7 +262,7 @@ export default function ProfilePage() {
 							</div>
 
 							<div className='space-y-2'>
-								<Label htmlFor='email'>Email</Label>
+								<Label htmlFor='email'>{t('email')}</Label>
 								<Input
 									id='email'
 									name='email'
@@ -202,7 +273,7 @@ export default function ProfilePage() {
 								/>
 							</div>
 							<div className='space-y-2'>
-								<Label htmlFor='phone'>Phone</Label>
+								<Label htmlFor='phone'>{t('phone')}</Label>
 								<Input
 									id='phone'
 									name='phone'

@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
 import { getBookings } from '@/app/apis/booking/getBooking';
+import Swal from 'sweetalert2';
 
 type Booking = {
 	id: number;
@@ -35,11 +36,21 @@ type Booking = {
 	stylist: string;
 	date: string;
 	status: string;
+	bookingDetails: Array<{
+		bookingDetailId: number;
+		service: { name: string; price: number };
+	}>;
+	startTime: string;
+	endTime: string;
 };
 
 export default function BookingCalender() {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+	const [staffComment, setStaffComment] = useState('');
+	const [staffRating, setStaffRating] = useState(0);
+	const [reviewDetails, setReviewDetails] = useState<{ [key: number]: { comment: string; rating: number } }>({});
+
 	// Query bookings data
 	const {
 		data: bookingData,
@@ -52,10 +63,45 @@ export default function BookingCalender() {
 
 	const bookings = bookingData?.payload || [];
 
+	// Pagination state
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 10;
 	const totalPages = Math.ceil(bookings.length / itemsPerPage);
+	const token = localStorage.getItem('accessToken');
 
+	// Handle review submission
+	const handleReviewSubmit = async () => {
+		if (!selectedBooking) return;
+
+		const reviewData = {
+			bookingId: selectedBooking.id,
+			staffComment,
+			staffRating,
+			reviewDetails: selectedBooking.bookingDetails.map((detail) => ({
+				comment: reviewDetails[detail.bookingDetailId]?.comment || '',
+				rating: reviewDetails[detail.bookingDetailId]?.rating || 0,
+				bookingDetailId: detail.bookingDetailId,
+			})),
+		};
+
+		try {
+			await fetch('https://52.187.14.110/api/review', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(reviewData),
+			});
+			Swal.fire('Success', 'Review submitted successfully', 'success');
+			setIsDialogOpen(false);
+			setSelectedBooking(null);
+		} catch (error) {
+			Swal.fire('Error', 'Failed to submit review', 'error');
+		}
+	};
+
+	// Handle edit dialog
 	const handleEditClick = (booking: Booking) => {
 		setSelectedBooking(booking);
 		setIsDialogOpen(true);
@@ -172,11 +218,20 @@ export default function BookingCalender() {
 																name: booking.staff.name,
 																phone: booking.staff.phone,
 																service: booking.bookingDetails
-																	.map((service) => service?.service?.name)
+																	.map((detail) => detail.service.name)
 																	.join(', '),
 																stylist: booking.staff.name,
 																date: new Date(booking.startTime).toLocaleDateString(
 																	'vi-VN'
+																),
+																bookingDetails: booking.bookingDetails.map(
+																	(detail) => ({
+																		bookingDetailId: detail.bookingDetailId,
+																		service: {
+																			name: detail.service.name,
+																			price: detail.service.price,
+																		},
+																	})
 																),
 															})
 														}
@@ -184,6 +239,44 @@ export default function BookingCalender() {
 													>
 														<Pencil className='w-4 h-4 mr-2' />
 														Edit
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={() => {
+															if (booking.status === 'COMPLETED') {
+																setSelectedBooking({
+																	...booking,
+																	name: booking.staff.name,
+																	phone: booking.staff.phone,
+																	service: booking.bookingDetails
+																		.map((detail) => detail.service.name)
+																		.join(', '),
+																	stylist: booking.staff.name,
+																	date: new Date(
+																		booking.startTime
+																	).toLocaleDateString('vi-VN'),
+																	bookingDetails: booking.bookingDetails.map(
+																		(detail) => ({
+																			bookingDetailId: detail.bookingDetailId,
+																			service: {
+																				name: detail.service.name,
+																				price: detail.service.price,
+																			},
+																		})
+																	),
+																});
+																setIsDialogOpen(true);
+															} else {
+																Swal.fire(
+																	'Warning',
+																	'You can only review completed bookings.',
+																	'warning'
+																);
+															}
+														}}
+														className='text-blue-600 hover:text-blue-700'
+													>
+														<Star className='w-4 h-4 mr-2' />
+														Review
 													</DropdownMenuItem>
 													<DropdownMenuItem className='text-red-600 hover:text-red-700'>
 														<Trash2 className='w-4 h-4 mr-2' />
@@ -196,134 +289,97 @@ export default function BookingCalender() {
 								))}
 							</TableBody>
 						</Table>
-					</div>
 
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center space-x-2'>
-							<Button
-								variant='outline'
-								size='icon'
-								className='text-gray-400'
-								onClick={goToFirstPage}
-								disabled={currentPage === 1}
-							>
-								<ChevronFirst className='h-4 w-4' />
-							</Button>
-							<Button
-								variant='outline'
-								size='icon'
-								className='text-gray-400'
-								onClick={goToPreviousPage}
-								disabled={currentPage === 1}
-							>
-								<ChevronLeft className='h-4 w-4' />
-							</Button>
-							<span className='text-sm text-gray-400'>
-								Page <span className='text-white'>{currentPage}</span> of {totalPages}
-							</span>
-							<Button
-								variant='outline'
-								size='icon'
-								className='text-gray-400'
-								onClick={goToNextPage}
-								disabled={currentPage === totalPages}
-							>
-								<ChevronRight className='h-4 w-4' />
-							</Button>
-							<Button
-								variant='outline'
-								size='icon'
-								className='text-gray-400'
-								onClick={goToLastPage}
-								disabled={currentPage === totalPages}
-							>
-								<ChevronLast className='h-4 w-4' />
-							</Button>
-						</div>
-
-						<div className='flex items-center gap-2'>
-							<Button variant='outline' className='gap-2 text-gray-400'>
-								<MessageSquare className='h-4 w-4' />
-								Comment
-							</Button>
-							<Button variant='outline' className='gap-2 text-gray-400'>
-								<Star className='h-4 w-4' />
-								Ratings
-							</Button>
+						{/* Pagination */}
+						<div className='flex justify-between items-center p-4'>
+							<div className='flex items-center'>
+								<Button variant='outline' onClick={goToFirstPage} className='mr-2'>
+									<ChevronFirst className='h-5 w-5' />
+								</Button>
+								<Button variant='outline' onClick={goToPreviousPage} className='mr-2'>
+									<ChevronLeft className='h-5 w-5' />
+								</Button>
+								<span className='text-sm text-gray-200'>
+									Page {currentPage} of {totalPages}
+								</span>
+								<Button variant='outline' onClick={goToNextPage} className='ml-2'>
+									<ChevronRight className='h-5 w-5' />
+								</Button>
+								<Button variant='outline' onClick={goToLastPage} className='ml-2'>
+									<ChevronLast className='h-5 w-5' />
+								</Button>
+							</div>
 						</div>
 					</div>
 				</div>
-
-				{/* Dialog for Editing Booking */}
-				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-					<DialogContent className='bg-gray-800 text-white'>
-						<DialogHeader>
-							<h2 className='text-xl font-bold'>Edit Booking</h2>
-						</DialogHeader>
-						<div className='space-y-4'>
-							<Label>
-								Name
-								<Input
-									value={selectedBooking?.name || ''}
-									onChange={(e) =>
-										setSelectedBooking((prev) => (prev ? { ...prev, name: e.target.value } : null))
-									}
-								/>
-							</Label>
-							<Label>
-								Phone
-								<Input
-									value={selectedBooking?.phone || ''}
-									onChange={(e) =>
-										setSelectedBooking((prev) => (prev ? { ...prev, phone: e.target.value } : null))
-									}
-								/>
-							</Label>
-							<Label>
-								Service
-								<Input
-									value={selectedBooking?.service || ''}
-									onChange={(e) =>
-										setSelectedBooking((prev) =>
-											prev ? { ...prev, service: e.target.value } : null
-										)
-									}
-								/>
-							</Label>
-							<Label>
-								Stylist
-								<Input
-									value={selectedBooking?.stylist || ''}
-									onChange={(e) =>
-										setSelectedBooking((prev) =>
-											prev ? { ...prev, stylist: e.target.value } : null
-										)
-									}
-								/>
-							</Label>
-							<Label>
-								Date
-								<Input
-									id='birthday'
-									type='date'
-									defaultValue={selectedBooking?.date}
-									value={selectedBooking?.date || ''}
-									className='block text-white'
-									onChange={(e) =>
-										setSelectedBooking((prev) => (prev ? { ...prev, date: e.target.value } : null))
-									}
-								/>
-							</Label>
-							<Button
-								className='mt-4 bg-blue-500 text-white hover:bg-blue-700'
-								onClick={handleCloseDialog}
-							>
-								Save Changes
-							</Button>
-						</div>
-					</DialogContent>
-				</Dialog>
 			</div>
+
+			{/* Review Dialog */}
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogContent className='bg-gray-800 text-white'>
+					<DialogHeader>
+						<h2 className='text-xl font-bold'>Submit Review</h2>
+					</DialogHeader>
+					<div className='space-y-4'>
+						<Label>
+							Staff Comment
+							<Input
+								value={staffComment}
+								onChange={(e) => setStaffComment(e.target.value)}
+								placeholder='Enter your comment'
+							/>
+						</Label>
+						<Label>
+							Staff Rating
+							<Input
+								type='number'
+								value={staffRating}
+								onChange={(e) => setStaffRating(Number(e.target.value))}
+								min={1}
+								max={5}
+								placeholder='Rate the staff'
+							/>
+						</Label>
+						{selectedBooking?.bookingDetails?.map((detail) => (
+							<div key={detail.bookingDetailId}>
+								<Label>Review for Service</Label>
+								<Input
+									value={reviewDetails[detail.bookingDetailId]?.comment || ''}
+									onChange={(e) =>
+										setReviewDetails((prev) => ({
+											...prev,
+											[detail.bookingDetailId]: {
+												...prev[detail.bookingDetailId],
+												comment: e.target.value,
+											},
+										}))
+									}
+									placeholder='Enter your review'
+								/>
+								<Input
+									type='number'
+									value={reviewDetails[detail.bookingDetailId]?.rating || 0}
+									onChange={(e) =>
+										setReviewDetails((prev) => ({
+											...prev,
+											[detail.bookingDetailId]: {
+												...prev[detail.bookingDetailId],
+												rating: Number(e.target.value),
+											},
+										}))
+									}
+									min={1}
+									max={5}
+									placeholder='Rate the service'
+								/>
+							</div>
+						))}
+						<Button className='mt-4 bg-blue-500 text-white hover:bg-blue-700' onClick={handleReviewSubmit}>
+							Submit Review
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

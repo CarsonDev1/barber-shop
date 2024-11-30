@@ -20,6 +20,7 @@ interface Services {
 }
 
 interface BookingDetail {
+	bookingDetailId: any;
 	id: number;
 	service: Services;
 	combo: null | any; // You can define this better if you have more information

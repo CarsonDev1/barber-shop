@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { ServiceResponse } from '@/types/Service.type';
 import { getServices } from '@/app/apis/service/getServices';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 interface Service {
 	id: number;
@@ -33,6 +34,7 @@ export default function Service() {
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [selectedCombos, setSelectedCombos] = useState<Set<number>>(new Set());
 	const router = useRouter();
+	const { t } = useTranslation('common');
 
 	const {
 		data: combosData,
@@ -165,7 +167,7 @@ export default function Service() {
 							<span>Select service(s = 1000d)</span>
 							<span></span>
 						</div>
-						<Input type='search' placeholder='Search service, service combo...' className='bg-white' />
+						<Input type='search' placeholder={t('searchService')} className='bg-white' />
 					</div>
 				</Link>
 
@@ -242,7 +244,11 @@ export default function Service() {
 											size='lg'
 											onClick={() => toggleService(service.id, service.price, 'service')}
 										>
-											{selectedServices.has(service.id) ? 'Remove service' : 'Add service'}
+											{selectedServices.has(service.id) ? (
+												'Remove service'
+											) : (
+												<span>{t('addService')}</span>
+											)}
 										</Button>
 									</CardFooter>
 								</Card>
@@ -314,11 +320,11 @@ export default function Service() {
 						<div className='space-y-1 w-full'>
 							<div className='flex flex-col gap-2'>
 								<div className='flex items-center justify-between'>
-									<div className='text-sm text-yellow-500'>Your benefits</div>
+									<div className='text-sm text-yellow-500'>{t('yourBenefits')}</div>
 									<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 										<DialogTrigger asChild>
 											<Button variant='link' className='flex items-center gap-2 text-blue-600'>
-												Select offer
+												{t('selectOffer')}
 												<ChevronRight />
 											</Button>
 										</DialogTrigger>
@@ -330,16 +336,18 @@ export default function Service() {
 								</div>
 								<div className='flex justify-between'>
 									<div>
-										<div className='text-lg'>{selectedServices.size} services selected</div>
+										<div className='text-lg'>
+											{selectedServices.size} <span>{t('noServicesSelected')}</span>
+										</div>
 										<div className='text-lg'>{selectedCombos.size} combos selected</div>
 										<div className='text-xl flex items-center gap-2'>
-											Total payment:
+											{t('totalPayment')}
 											<span className='text-yellow-500 text-2xl font-semibold'>
 												{totalPrice.toLocaleString()}K
 											</span>
 										</div>
 										{/* list offer */}
-										<div className='text-lg font-semibold'>Selected Offers:</div>
+										<div className='text-lg font-semibold'>{t('selectOffer')}:</div>
 										<ul className='space-y-2'>
 											{selectedOffers.map((offer) => (
 												<li key={offer.id} className='text-sm text-gray-700 dark:text-gray-300'>

@@ -17,6 +17,7 @@ import { getStaffShiftById } from '@/app/apis/staff-shift/getStaffShiftById';
 import { getBookings } from '@/app/apis/booking/getBooking';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/context/AuthProvider';
+import { useTranslation } from 'react-i18next';
 
 interface Image {
 	id: number;
@@ -88,7 +89,7 @@ const getCurrentWeek = (date: Date) => {
 	const diff = date.getTime() - startDate.getTime();
 	const oneDay = 1000 * 60 * 60 * 24;
 	const dayOfYear = Math.floor(diff / oneDay);
-	return Math.ceil((dayOfYear + 1) / 7);
+	return Math.ceil((dayOfYear + 1) / 7) + 1; // Increment week to get the next week
 };
 
 export default function BookingForm() {
@@ -97,9 +98,10 @@ export default function BookingForm() {
 	const [bookingData, setBookingData] = useState<BookingData | null>(null);
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear();
-	const currentWeek = getCurrentWeek(currentDate);
+	const currentWeek = getCurrentWeek(currentDate); // Get next week
 	const router = useRouter();
 	const { isAuthenticated } = useAuth();
+	const { t } = useTranslation('common');
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;
 	const {
@@ -254,7 +256,7 @@ export default function BookingForm() {
 				<div className='w-full max-w-xl mx-auto p-4 sec-com relative z-10'>
 					<div className='bg-white/10 backdrop-blur-sm rounded-3xl p-6 space-y-6'>
 						<div className='space-y-4'>
-							<h2 className='text-xl text-white font-semibold'>Choose service</h2>
+							<h2 className='text-xl text-white font-semibold'>{t('chooseService')}</h2>
 							<Link href='/combo'>
 								<Button className='flex items-center justify-between w-full bg-white hover:bg-gray-300'>
 									<div className='flex items-center'>
@@ -306,7 +308,7 @@ export default function BookingForm() {
 							)}
 
 						<div className='space-y-4'>
-							<h2 className='text-xl text-white font-semibold'>Choose date, time & stylist</h2>
+							<h2 className='text-xl text-white font-semibold'>{t('chooseDateStylist')}</h2>
 							<div className='flex gap-2'>
 								<Link href='/stylist'>
 									<Button variant='outline' className='flex-1 bg-white text-black'>
@@ -317,7 +319,7 @@ export default function BookingForm() {
 								</Link>
 								<Button variant='outline' className='flex-1 bg-white text-black'>
 									<Upload className='mr-2 h-4 w-4' />
-									Upload my hairstyle
+									{t('uploadHairstyle')}
 								</Button>
 							</div>
 							{bookingData?.selectedStylist && (
@@ -384,7 +386,7 @@ export default function BookingForm() {
 								className='w-full bg-[#F0B35B] text-white'
 								onClick={handleBooking}
 							>
-								Book Appointment
+								{t('book')}
 							</Button>
 						</div>
 					</div>

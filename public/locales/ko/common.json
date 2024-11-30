@@ -40,7 +40,7 @@
 	"standardPrice": "표준 가격",
 	"addService": "서비스 추가",
 	"viewMore": "더 보기",
-	"noServicesSelected": "선택한 서비스 0개",
+	"noServicesSelected": "선택한 서비스 개",
 	"yourBenefits": "혜택",
 	"totalPayment": "총 결제액",
 	"selectOffer": "혜택 선택",
@@ -128,5 +128,6 @@
 	"allowance": "허용량: 500k",
 	"advance": "진행: 2000k",
 	"tax": "세금: 10%",
-	"numberOfTurns": "회전 수: 100회"
+	"numberOfTurns": "회전 수: 100회",
+	"stylist": "문장가"
 }

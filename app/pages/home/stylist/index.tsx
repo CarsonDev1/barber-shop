@@ -4,6 +4,7 @@ import StyleList01 from '@/public/home/stylelist-01.png';
 import StyleList02 from '@/public/home/stylelist-02.png';
 import StyleList03 from '@/public/home/stylelist-03.png';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 export default function StyleList() {
 	const stylists = [
@@ -36,16 +37,18 @@ export default function StyleList() {
 		},
 	];
 
+	const { t } = useTranslation('common');
+
 	return (
 		<div className='bg-[#0a0a0a] sec-com relative'>
 			{/* Vertical "STYLISTS" text */}
 			<div className='hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 transform -rotate-90 origin-center'>
-				<span className='text-[#4A5568] text-6xl font-bold tracking-wider'>STYLISTS</span>
+				<span className='text-[#4A5568] text-6xl font-bold tracking-wider'>{t('stylist')}</span>
 			</div>
 
 			<div className='container-lg'>
 				<h2 className='text-4xl md:text-5xl lg:text-6xl font-bold text-[#4A5568] text-center mb-16'>
-					TOP STYLIST OF THE MONTH
+					{t('topStylistMonth')}
 				</h2>
 
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto'>

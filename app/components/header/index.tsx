@@ -97,7 +97,7 @@ export default function Header() {
 							{ name: t('aboutBarber'), href: '/about' },
 							{ name: t('book'), href: '/book' },
 							{ name: t('service'), href: '/service' },
-							{ name: t('Stylist'), href: '/stylist' },
+							{ name: t('stylist'), href: '/staff' },
 							{ name: t('reviewFeedback'), href: '/feedback' },
 						].map((item) => (
 							<Link
@@ -148,39 +148,39 @@ export default function Header() {
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-										<Link href='/history' className='flex items-center gap-1'>
+										<Link href='/booking-calender' className='flex items-center gap-1'>
 											<Scissors className='mr-2 h-4 w-4' />
-											<span>History of haircut</span>
+											<span>{t('historyHaircut')}</span>
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/offer' className='flex items-center gap-1'>
 											<Gift className='mr-2 h-4 w-4' />
-											<span>Your Offer</span>
+											<span>{t('yourOffer')}</span>
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/profile' className='flex items-center gap-1'>
 											<Edit className='mr-2 h-4 w-4' />
-											<span>Edit information</span>
+											<span>{t('editInformation')}</span>
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/booking-calender' className='flex items-center gap-1'>
 											<Calendar className='mr-2 h-4 w-4' />
-											<span>View schedule appointment</span>
+											<span>{t('viewAppointment')}</span>
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<ImageIcon className='mr-2 h-4 w-4' />
-										<span>Image saved</span>
+										<span>{t('imageSaved')}</span>
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										className='hover:bg-gray-800 cursor-pointer text-red-400'
 										onClick={handleLogout}
 									>
 										<LogOut className='mr-2 h-4 w-4' />
-										<span>Log out</span>
+										<span>{t('logOut')}</span>
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>

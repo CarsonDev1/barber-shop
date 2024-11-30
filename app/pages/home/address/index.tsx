@@ -3,12 +3,16 @@ import { Facebook, Instagram, Twitter } from 'lucide-react';
 import AddressImage from '@/public/home/address.png';
 import Logo from '@/public/root/Logo-footer.png';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 export default function Address() {
+	const { t } = useTranslation('common');
 	return (
 		<div className='bg-white sec-com'>
 			<div className='container-lg'>
-				<h2 className='text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-8 md:mb-12'>Address Barber</h2>
+				<h2 className='text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-8 md:mb-12'>
+					{t('addressBarber')}
+				</h2>
 
 				{/* Address Image Card */}
 				<div className='max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto mb-8 md:mb-12'>
