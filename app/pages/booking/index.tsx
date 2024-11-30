@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getStaffShiftById } from '@/app/apis/staff-shift/getStaffShiftById';
 import { getBookings } from '@/app/apis/booking/getBooking';
 import Swal from 'sweetalert2';
+import { useAuth } from '@/context/AuthProvider';
 
 interface Image {
 	id: number;
@@ -96,8 +97,9 @@ export default function BookingForm() {
 	const [bookingData, setBookingData] = useState<BookingData | null>(null);
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear();
-	const currentWeek = getCurrentWeek(currentDate); // Changed to get current week
+	const currentWeek = getCurrentWeek(currentDate);
 	const router = useRouter();
+	const { isAuthenticated } = useAuth();
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;
 	const {
@@ -181,6 +183,16 @@ export default function BookingForm() {
 	const timeSlots = generateTimeSlots('07:20', '16:20', 20);
 
 	const handleBooking = async () => {
+		if (!isAuthenticated) {
+			Swal.fire({
+				title: 'Please login first!',
+				text: 'You need to be logged in to book an appointment.',
+				icon: 'info',
+				confirmButtonText: 'OK',
+			});
+			return;
+		}
+
 		if (!bookingData || !date || !selectedTime) {
 			Swal.fire({
 				title: 'Warning!',
