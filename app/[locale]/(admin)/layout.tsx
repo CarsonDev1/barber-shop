@@ -4,6 +4,8 @@ import SideBar from '@/app/[locale]/(admin)/components/sidebar';
 import '@/app/globals.css';
 import Provider from '@/utils/Provider';
 import { AuthProvider } from '@/context/AuthProvider';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const poppins = Poppins({
 	weight: ['400', '500', '600', '700', '800', '900'],
@@ -30,6 +32,7 @@ export default function RootLayout({
 						</SideBar>
 					</AuthProvider>
 				</Provider>
+				<ToastContainer />
 			</body>
 		</html>
 	);

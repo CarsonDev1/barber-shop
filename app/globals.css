@@ -87,6 +87,9 @@ body {
 input[type='date']::-webkit-calendar-picker-indicator {
 	filter: invert(1);
 }
+.swal2-container {
+	z-index: 9999 !important;
+}
 
 .sec-com {
 	--padding-section: 48px;

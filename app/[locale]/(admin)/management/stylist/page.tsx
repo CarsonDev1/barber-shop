@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { createStaff } from '@/app/apis/stylist/createStaff';
 import { updateStaff } from '@/app/apis/stylist/updateStaff';
+import { toast } from 'react-toastify';
 
 interface FormData {
 	name: string;
@@ -158,24 +159,45 @@ export default function Stylist() {
 
 	const handleCreateStaff = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (formData.name.trim() && formData.email.trim() && formData.phone.trim()) {
-			mutateCreateStaff(formData);
-			setFormData({
-				name: '',
-				email: '',
-				phone: '',
-				dob: '',
-				password: '',
-				role: 'ROLE_STAFF',
-			});
-		} else {
-			Swal.fire({
-				title: 'Warning!',
-				text: 'All fields are required. Please fill in the missing information.',
-				icon: 'warning',
-				confirmButtonText: 'OK',
-			});
+
+		// Validate name, email, phone, and DOB
+		if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+			toast.error('All fields are required. Please fill in the missing information.');
+			return;
 		}
+
+		// Validate phone number (must be exactly 10 digits)
+		const phoneRegex = /^[0-9]{10}$/;
+		if (!phoneRegex.test(formData.phone)) {
+			toast.error('Phone number must be exactly 10 digits.');
+			return;
+		}
+
+		// Validate date of birth (must be between 18 and 40 years old)
+		if (formData.dob) {
+			const dob = new Date(formData.dob);
+			const today = new Date();
+			const age = today.getFullYear() - dob.getFullYear();
+			const m = today.getMonth() - dob.getMonth();
+
+			if (age < 18 || age > 40 || (age === 40 && m < 0)) {
+				toast.error('Date of birth must make the staff member between 18 and 40 years old.');
+				return;
+			}
+		}
+
+		// If all validations pass, proceed with the mutation
+		mutateCreateStaff(formData);
+		setFormData({
+			name: '',
+			email: '',
+			phone: '',
+			dob: '',
+			password: '',
+			role: 'ROLE_STAFF',
+		});
+
+		toast.success('Staff member created successfully.');
 	};
 
 	const handleSetShiftClick = (member: Customer) => {
