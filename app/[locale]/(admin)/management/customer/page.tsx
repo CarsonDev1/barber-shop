@@ -13,10 +13,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import PageContainer from '@/app/components/page-container';
 import { useQuery } from '@tanstack/react-query';
-import { getCustomers } from '@/app/apis/customer/getCustomers';
+import { getCustomers } from '@/app/api/customer/getCustomers';
 import { CustomersResponse } from '@/types/Customer.type';
-import { getStaffs } from '@/app/apis/customer/getStaffs';
-import { getReceptionists } from '@/app/apis/customer/getReceptionists';
+import { getStaffs } from '@/app/api/customer/getStaffs';
+import { getReceptionists } from '@/app/api/customer/getReceptionists';
 
 export default function Customer() {
 	// Customer data query

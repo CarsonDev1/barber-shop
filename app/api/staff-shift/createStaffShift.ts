@@ -1,6 +1,6 @@
 import api from '@/utils/api';
 
-export const createStaffShift = async (staffShiftData: { staffId: number; shiftId: number; date: string }) => {
+export const createStaffShift = async (staffShiftData: { staffId: number; shiftId: number; dates: string[] }) => {
 	try {
 		const response = await api.post('/staff-shift', staffShiftData);
 		return response.data;

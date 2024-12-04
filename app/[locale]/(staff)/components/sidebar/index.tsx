@@ -45,8 +45,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import Logo from '@/public/root/Logo.png';
 import { useQuery } from '@tanstack/react-query';
-import { getAccount } from '@/app/apis/getProfile';
-import { getLogOut } from '@/app/apis/getLogout';
+import { getAccount } from '@/app/api/getProfile';
+import { getLogOut } from '@/app/api/getLogout';
 
 export interface NavItem {
 	title: string;

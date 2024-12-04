@@ -8,9 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import Swal from 'sweetalert2';
 import PageContainer from '@/app/components/page-container';
-import { getSalary } from '@/app/apis/salary/getSalary';
-import { getSalaryById } from '@/app/apis/salary/getSalaryById'; // Import your getSalaryById function
-import { updateSalary } from '@/app/apis/salary/updateSalary';
+import { getSalary } from '@/app/api/salary/getSalary';
+import { getSalaryById } from '@/app/api/salary/getSalaryById'; // Import your getSalaryById function
+import { updateSalary } from '@/app/api/salary/updateSalary';
 
 interface FormData {
 	staff_id: number;

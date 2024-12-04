@@ -7,7 +7,7 @@ import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { getVNPayUrl } from '@/app/apis/payment/getVnpay';
+import { getVNPayUrl } from '@/app/api/payment/getVnpay';
 import { useRouter } from 'next/navigation';
 
 export default function BookingSuccess() {

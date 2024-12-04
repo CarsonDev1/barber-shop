@@ -25,7 +25,7 @@ import {
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
-import { getBookings } from '@/app/apis/booking/getBooking';
+import { getBookings } from '@/app/api/booking/getBooking';
 import Swal from 'sweetalert2';
 
 type Booking = {

@@ -11,10 +11,10 @@ import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@/component
 import Offers from '@/app/components/offers';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { getCombos } from '@/app/apis/combo/getCombo';
+import { getCombos } from '@/app/api/combo/getCombo';
 import { useRouter } from 'next/navigation';
 import { ServiceResponse } from '@/types/Service.type';
-import { getServices } from '@/app/apis/service/getServices';
+import { getServices } from '@/app/api/service/getServices';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { getAccount } from '@/app/apis/getProfile';
+import { getAccount } from '@/app/api/getProfile';
 import Provider from '@/utils/Provider';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';

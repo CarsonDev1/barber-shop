@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import PageContainer from '@/app/components/page-container';
 import { useQuery } from '@tanstack/react-query';
-import { getBookings } from '@/app/apis/booking/getBooking';
+import { getBookings } from '@/app/api/booking/getBooking';
 
 export default function Booking() {
 	// Query bookings data

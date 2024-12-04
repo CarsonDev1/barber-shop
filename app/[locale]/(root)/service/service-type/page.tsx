@@ -3,16 +3,16 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
-import { getServiceTypes } from '@/app/apis/service/getServiceType';
+import { getServiceTypes } from '@/app/api/service/getServiceType';
 import { Button } from '@/components/ui/button';
 import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import Swal from 'sweetalert2';
 import PageContainer from '@/app/components/page-container';
-import { createServiceType } from '@/app/apis/service/createServiceType';
-import { updateServiceType } from '@/app/apis/service/updateServiceType';
-import { deleteServiceType } from '@/app/apis/service/deleteServiceType';
+import { createServiceType } from '@/app/api/service/createServiceType';
+import { updateServiceType } from '@/app/api/service/updateServiceType';
+import { deleteServiceType } from '@/app/api/service/deleteServiceType';
 
 const ServiceType = () => {
 	const queryClient = useQueryClient();

@@ -16,9 +16,9 @@ import Logo from '@/public/root/Logo.png';
 import User from '@/public/root/user.png';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { getAccount } from '@/app/apis/getProfile';
+import { getAccount } from '@/app/api/getProfile';
 import '@/i18n';
-import { getLogOut } from '@/app/apis/getLogout';
+import { getLogOut } from '@/app/api/getLogout';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 

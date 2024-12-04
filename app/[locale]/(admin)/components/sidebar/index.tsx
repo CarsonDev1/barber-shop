@@ -38,6 +38,7 @@ import {
 	ChevronsUpDown,
 	CreditCard,
 	LogOut,
+	Ticket,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -45,8 +46,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import Logo from '@/public/root/Logo.png';
 import { useQuery } from '@tanstack/react-query';
-import { getAccount } from '@/app/apis/getProfile';
-import { getLogOut } from '@/app/apis/getLogout';
+import { getAccount } from '@/app/api/getProfile';
+import { getLogOut } from '@/app/api/getLogout';
 
 export interface NavItem {
 	title: string;
@@ -68,6 +69,7 @@ const navItems: NavItem[] = [
 	{ title: 'MANAGEMENT CUSTOMER', href: '/management/customer', icon: Users },
 	{ title: 'MANAGEMENT FEEDBACK', href: '/management/feedback', icon: MessageSquare },
 	{ title: 'MANAGEMENT BOOKING', href: '/management/booking', icon: Calendar },
+	{ title: 'MANAGEMENT VOUCHER', href: '/management/voucher', icon: Ticket },
 	{ title: 'BARBER HISTORY', href: '/management/history', icon: Clock4 },
 	{ title: 'MANAGEMENT COMBO', href: '/management/combo', icon: PlusSquare },
 	{ title: 'MANAGEMENT SALARY', href: '/management/income', icon: DollarSign },

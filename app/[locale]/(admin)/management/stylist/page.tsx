@@ -9,16 +9,16 @@ import PageContainer from '@/app/components/page-container';
 import { Modal } from '@/app/[locale]/(admin)/components/modal';
 import { CustomersResponse, Customer } from '@/types/Customer.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getStaffs } from '@/app/apis/customer/getStaffs';
+import { getStaffs } from '@/app/api/customer/getStaffs';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
-import { getShift } from '@/app/apis/shifft/getShift';
-import { createStaffShift } from '@/app/apis/staff-shift/createStaffShift';
+import { getShift } from '@/app/api/shifft/getShift';
+import { createStaffShift } from '@/app/api/staff-shift/createStaffShift';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { createStaff } from '@/app/apis/stylist/createStaff';
-import { updateStaff } from '@/app/apis/stylist/updateStaff';
+import { createStaff } from '@/app/api/stylist/createStaff';
+import { updateStaff } from '@/app/api/stylist/updateStaff';
 import { toast } from 'react-toastify';
 
 interface FormData {
@@ -216,7 +216,7 @@ export default function Stylist() {
 				const staffShiftData = {
 					staffId: selectedMember.id,
 					shiftId: selectedShiftId,
-					date: shiftDate,
+					dates: [shiftDate],
 				};
 				await createStaffShift(staffShiftData);
 				Swal.fire({
@@ -442,18 +442,19 @@ export default function Stylist() {
 
 			{/* Modal to set staff shift */}
 			<Modal isOpen={isShiftModalOpen} onClose={handleCloseModal}>
-				<div className='p-6'>
-					<h2 className='text-2xl font-semibold mb-4'>Set Staff Shift</h2>
+				<div className='p-8 max-w-lg mx-auto text-white rounded-lg shadow-lg'>
+					<h2 className='text-3xl font-semibold text-center mb-6'>Set Staff Shift</h2>
+
 					{/* Shift selection */}
-					<div className='mb-4'>
-						<Label htmlFor='shiftSelect' className='block text-sm font-medium text-gray-700'>
+					<div className='mb-6'>
+						<Label htmlFor='shiftSelect' className='block text-sm font-medium mb-2'>
 							Select Shift:
 						</Label>
 						<select
 							id='shiftSelect'
 							value={selectedShiftId || ''}
 							onChange={(e) => setSelectedShiftId(Number(e.target.value))}
-							className='w-full p-2 border border-gray-300 rounded-lg'
+							className='w-full text-gray-800 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition'
 						>
 							<option value=''>Select Shift</option>
 							{shifts.map((shift) => (
@@ -463,9 +464,10 @@ export default function Stylist() {
 							))}
 						</select>
 					</div>
+
 					{/* Date selection */}
-					<div className='mb-4'>
-						<Label htmlFor='shiftDate' className='block text-sm font-medium text-gray-700'>
+					<div className='mb-6'>
+						<Label htmlFor='shiftDate' className='block text-sm font-medium mb-2'>
 							Select Date:
 						</Label>
 						<Input
@@ -473,11 +475,16 @@ export default function Stylist() {
 							id='shiftDate'
 							value={shiftDate}
 							onChange={(e) => setShiftDate(e.target.value)}
-							className='w-full p-2 border border-gray-300 rounded-lg'
+							min={new Date().toISOString().split('T')[0]}
+							className='w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition'
 						/>
 					</div>
+
 					{/* Set Shift Button */}
-					<Button onClick={handleCreateShift} className='w-full bg-green-600 text-white'>
+					<Button
+						onClick={handleCreateShift}
+						className='w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition'
+					>
 						Set Shift
 					</Button>
 				</div>

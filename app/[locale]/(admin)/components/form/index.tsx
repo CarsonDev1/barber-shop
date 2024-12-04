@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
-import { createService } from '@/app/apis/service/createService';
-import { updateService } from '@/app/apis/service/updateService'; // Import updateService API
+import { createService } from '@/app/api/service/createService';
+import { updateService } from '@/app/api/service/updateService'; // Import updateService API
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
-import { getServiceTypes } from '@/app/apis/service/getServiceType';
+import { getServiceTypes } from '@/app/api/service/getServiceType';
 
 interface EditStylistFormProps {
 	stylist: any;

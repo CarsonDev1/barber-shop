@@ -11,10 +11,10 @@ import { Modal } from '@/app/[locale]/(admin)/components/modal';
 import ServiceImage from '@/public/root/service-img.png';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getServices } from '@/app/apis/service/getServices';
+import { getServices } from '@/app/api/service/getServices';
 import { ServiceResponse } from '@/types/Service.type';
 import Swal from 'sweetalert2';
-import { deleteService } from '@/app/apis/service/deleteService';
+import { deleteService } from '@/app/api/service/deleteService';
 
 export default function Service() {
 	const queryClient = useQueryClient();

@@ -7,7 +7,7 @@ import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import { useQuery } from '@tanstack/react-query';
 import { CustomersResponse } from '@/types/Customer.type';
-import { getStaffs } from '@/app/apis/customer/getStaffs';
+import { getStaffs } from '@/app/api/customer/getStaffs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 

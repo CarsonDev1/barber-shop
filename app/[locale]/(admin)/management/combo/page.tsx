@@ -9,11 +9,11 @@ import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@/component
 import Select, { MultiValue } from 'react-select';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
-import { getServices } from '@/app/apis/service/getServices';
-import { getCombos } from '@/app/apis/combo/getCombo';
-import { createCombo } from '@/app/apis/combo/createCombo';
-import { deleteCombo } from '@/app/apis/combo/deleteCombo';
-import { updateCombo } from '@/app/apis/combo/updateCombo';
+import { getServices } from '@/app/api/service/getServices';
+import { getCombos } from '@/app/api/combo/getCombo';
+import { createCombo } from '@/app/api/combo/createCombo';
+import { deleteCombo } from '@/app/api/combo/deleteCombo';
+import { updateCombo } from '@/app/api/combo/updateCombo';
 
 interface Service {
 	id: number;

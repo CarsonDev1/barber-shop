@@ -11,9 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
-import { createService } from '@/app/apis/service/createService';
+import { createService } from '@/app/api/service/createService';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
-import { getServiceTypes } from '@/app/apis/service/getServiceType';
+import { getServiceTypes } from '@/app/api/service/getServiceType';
 
 interface EditStylistFormProps {
 	stylist: any;

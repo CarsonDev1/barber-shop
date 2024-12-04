@@ -28,7 +28,8 @@
 		".next/types/**/*.ts",
 		"i18n.ts",
 		"i18n.ts",
-		"next-i18next.config.js"
+		"next-i18next.config.js",
+		"app/api/chat/route.tsx"
 	],
 	"exclude": ["node_modules"]
 }

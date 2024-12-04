@@ -8,10 +8,14 @@ import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-rea
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import PageContainer from '@/app/components/page-container';
-import { createStaffShift } from '@/app/apis/staff-shift/createStaffShift'; // Import hàm createStaffShift
-import { getStaffShift } from '@/app/apis/staff-shift/getStaffShift';
+import { createStaffShift } from '@/app/api/staff-shift/createStaffShift'; // Import hàm createStaffShift
+import { getStaffShift } from '@/app/api/staff-shift/getStaffShift';
 import Swal from 'sweetalert2';
-import { getShift } from '@/app/apis/shifft/getShift';
+import { getShift } from '@/app/api/shifft/getShift';
+import { CustomersResponse } from '@/types/Customer.type';
+import { getStaffs } from '@/app/api/customer/getStaffs';
+import { getStaffShiftById } from '@/app/api/staff-shift/getStaffShiftById';
+import { deleteStaffShift } from '@/app/api/staff-shift/deleteStaffShift';
 
 const StaffShift = () => {
 	const queryClient = useQueryClient();
@@ -32,9 +36,18 @@ const StaffShift = () => {
 		data: staffShiftData,
 		isLoading: isLoadingStaffShiftData,
 		error: errorStaffShiftData,
-	} = useQuery<ApiResponseServiceType>({
+	} = useQuery<any>({
 		queryKey: ['dataStaffShift'],
 		queryFn: getStaffShift,
+	});
+
+	const {
+		data: staffData,
+		isLoading: isLoadingStaffs,
+		error: errorStaffs,
+	} = useQuery<CustomersResponse>({
+		queryKey: ['dataStaffs'],
+		queryFn: getStaffs,
 	});
 
 	const staffShift = staffShiftData?.payload || [];
@@ -44,7 +57,7 @@ const StaffShift = () => {
 
 	// Thay thế mutateCreateService bằng mutateCreateStaffShift
 	const { mutate: mutateCreateStaffShift } = useMutation({
-		mutationFn: async (staffShiftData: { staffId: number; shiftId: number; date: string }) => {
+		mutationFn: async (staffShiftData: { staffId: number; shiftId: number; dates: string[] }) => {
 			await createStaffShift(staffShiftData);
 		},
 		onSuccess: () => {
@@ -69,12 +82,21 @@ const StaffShift = () => {
 	const [staffId, setStaffId] = useState(0);
 	const [shiftId, setShiftId] = useState(0);
 	const [date, setDate] = useState('');
+	const [dateError, setDateError] = useState('');
+
+	const currentDate = new Date().toISOString().split('T')[0];
 
 	// Handle form submission for creating a new staff shift
 	const handleCreateStaffShift = (e: React.FormEvent) => {
 		e.preventDefault();
+		if (date <= currentDate) {
+			setDateError('The selected date must be greater than today.');
+			return;
+		}
+		setDateError('');
 		if (staffId && shiftId && date) {
-			const staffShiftData = { staffId, shiftId, date };
+			// Update the data to send dates as an array
+			const staffShiftData = { staffId, shiftId, dates: [date] };
 			mutateCreateStaffShift(staffShiftData);
 			setStaffId(0);
 			setShiftId(0);
@@ -88,6 +110,43 @@ const StaffShift = () => {
 				confirmButtonText: 'OK',
 			});
 		}
+		setDate('');
+	};
+
+	const { mutate: mutateDeleteStaffShift } = useMutation({
+		mutationFn: deleteStaffShift,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataStaffShift'] });
+			Swal.fire({
+				title: 'Success!',
+				text: 'Staff shift deleted successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+		},
+		onError: (error) => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error deleting the staff shift.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	const handleDeleteShift = (id: number) => {
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Yes, delete it!',
+			cancelButtonText: 'Cancel',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				mutateDeleteStaffShift(id);
+			}
+		});
 	};
 
 	const getCurrentPageItems = () => {
@@ -116,35 +175,66 @@ const StaffShift = () => {
 						</DialogHeader>
 						<form onSubmit={handleCreateStaffShift}>
 							<div className='space-y-4'>
-								<Input
-									id='staffId'
-									name='staffId'
-									type='number'
-									placeholder='Staff ID'
-									className='w-full'
-									value={staffId}
-									onChange={(e) => setStaffId(Number(e.target.value))}
-									required
-								/>
-								<Input
-									id='shiftId'
-									name='shiftId'
-									type='number'
-									placeholder='Shift ID'
-									className='w-full'
-									value={shiftId}
-									onChange={(e) => setShiftId(Number(e.target.value))}
-									required
-								/>
-								<Input
-									id='date'
-									name='date'
-									type='date'
-									className='w-full'
-									value={date}
-									onChange={(e) => setDate(e.target.value)}
-									required
-								/>
+								{/* Staff Select Dropdown */}
+								<div>
+									<label htmlFor='staffId' className='block text-sm font-medium text-gray-700'>
+										Staff
+									</label>
+									<select
+										id='staffId'
+										name='staffId'
+										className='w-full mt-2 p-2 border border-gray-300 rounded'
+										value={staffId}
+										onChange={(e) => setStaffId(Number(e.target.value))}
+										required
+									>
+										<option value=''>Select Staff</option>
+										{staffData?.payload?.map((staff) => (
+											<option key={staff.id} value={staff.id}>
+												{staff.name}
+											</option>
+										))}
+									</select>
+								</div>
+
+								{/* Shift Select Dropdown */}
+								<div>
+									<label htmlFor='shiftId' className='block text-sm font-medium text-gray-700'>
+										Shift
+									</label>
+									<select
+										id='shiftId'
+										name='shiftId'
+										className='w-full mt-2 p-2 border border-gray-300 rounded'
+										value={shiftId}
+										onChange={(e) => setShiftId(Number(e.target.value))}
+										required
+									>
+										<option value=''>Select Shift</option>
+										{shifts?.map((shift) => (
+											<option key={shift.id} value={shift.id}>
+												{shift.name} {/* Or any other field to display shift details */}
+											</option>
+										))}
+									</select>
+								</div>
+
+								<div>
+									<label htmlFor='shiftId' className='block text-sm font-medium text-gray-700'>
+										Date
+									</label>
+									{/* Date Input */}
+									<Input
+										id='date'
+										name='date'
+										type='date'
+										className='w-full'
+										value={date}
+										onChange={(e) => setDate(e.target.value)}
+										required
+									/>
+									{dateError && <p className='text-red-500 text-sm mt-2'>{dateError}</p>}
+								</div>
 							</div>
 							<div className='flex justify-end mt-4'>
 								<Button
@@ -175,16 +265,27 @@ const StaffShift = () => {
 							<TableHeader>
 								<TableRow>
 									<TableHead>Staff name</TableHead>
-									<TableHead>Shift Id</TableHead>
+									<TableHead>Start time</TableHead>
+									<TableHead>Start end</TableHead>
 									<TableHead>Date</TableHead>
+									<TableHead>Action</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{getCurrentPageItems().map((shift) => (
+								{getCurrentPageItems().map((shift: any) => (
 									<TableRow key={shift.id}>
-										<TableCell>{shift.name}</TableCell>
-										<TableCell>{shift.shiftId}</TableCell>
+										<TableCell>{shift?.staff?.name}</TableCell>
+										<TableCell>{shift?.startTime}</TableCell>
+										<TableCell>{shift?.endTime}</TableCell>
 										<TableCell>{shift.date}</TableCell>
+										<TableCell>
+											<Button
+												variant='destructive'
+												onClick={() => handleDeleteShift(shift?.staff?.id)}
+											>
+												Delete
+											</Button>
+										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
