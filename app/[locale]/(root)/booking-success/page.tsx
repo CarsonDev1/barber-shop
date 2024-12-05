@@ -18,20 +18,27 @@ export default function BookingSuccess() {
 	const bookingIds = storedResponse ? [JSON.parse(storedResponse).payload?.id] : [];
 	const router = useRouter();
 
+	// Add bankCode, language, and voucherCode parameters
+	const bankCode = '';
+	const language = 'vn';
+	const voucherCode = '';
+
 	const {
 		data: getVnPay,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ['getVnPay', { bookingIds: bookingIds }],
-		queryFn: () => getVNPayUrl(bookingIds),
+		queryKey: ['getVnPay', { bookingIds, bankCode, language, voucherCode }],
+		queryFn: () => getVNPayUrl(bookingIds, bankCode, language, voucherCode),
 		enabled: bookingIds.length > 0,
 	});
 
-	if (getVnPay?.payload) {
-		router.push(getVnPay.payload);
-		localStorage.removeItem('bookingResponse');
-	}
+	useEffect(() => {
+		if (getVnPay?.payload) {
+			router.push(getVnPay.payload);
+			localStorage.removeItem('bookingResponse');
+		}
+	}, [getVnPay, router]);
 
 	useEffect(() => {
 		const { innerWidth: width, innerHeight: height } = window;

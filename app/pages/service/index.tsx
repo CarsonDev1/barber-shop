@@ -256,7 +256,7 @@ export default function Service() {
 													Standard price
 												</div>
 												<div className='text-2xl font-bold'>
-													{service.price.toLocaleString()}K
+													{service.price.toLocaleString()}đ
 												</div>
 											</div>
 										</div>
@@ -366,7 +366,7 @@ export default function Service() {
 										<div className='text-xl flex items-center gap-2'>
 											{t('totalPayment')}
 											<span className='text-yellow-500 text-2xl font-semibold'>
-												{totalPrice.toLocaleString()}K
+												{totalPrice.toLocaleString()}đ
 											</span>
 										</div>
 										{/* list offer */}

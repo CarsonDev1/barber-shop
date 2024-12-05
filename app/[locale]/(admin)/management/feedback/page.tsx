@@ -22,18 +22,26 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getAllReview } from '@/app/api/review/getAllReview';
 
-const reviews = Array(20).fill({
-	customer: 'Van Le',
-	account: 'vanlepro',
-	stylist: 'Do Xinh',
-	rate: '3/5',
-	review: 'Your barber is...',
-	date: '12/06/2024',
-	time: '21:00',
-});
+// const reviews = Array(20).fill({
+// 	customer: 'Van Le',
+// 	account: 'vanlepro',
+// 	stylist: 'Do Xinh',
+// 	rate: '3/5',
+// 	review: 'Your barber is...',
+// 	date: '12/06/2024',
+// 	time: '21:00',
+// });
 
 export default function Feedback() {
+	const { data: allReviewData } = useQuery<any>({
+		queryKey: ['dataReviews'],
+		queryFn: getAllReview,
+	});
+
+	const reviews = allReviewData?.payload || [];
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 10;
 	const totalPages = Math.ceil(reviews.length / itemsPerPage);
@@ -72,7 +80,7 @@ export default function Feedback() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{getCurrentPageItems().map((review, index) => (
+								{getCurrentPageItems().map((review: any, index: any) => (
 									<TableRow key={index} className='border-gray-700 hover:bg-gray-700/50'>
 										<TableCell>
 											<Badge

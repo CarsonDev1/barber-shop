@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreHorizontal, Pencil, Trash2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+	MoreHorizontal,
+	Pencil,
+	Trash2,
+	CheckCircle,
+	ChevronFirst,
+	ChevronLast,
+	ChevronLeft,
+	ChevronRight,
+} from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,8 +21,10 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import PageContainer from '@/app/components/page-container';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBookings } from '@/app/api/booking/getBooking';
+import { CompleteBooking } from '@/app/api/booking/completeBooking';
+import { toast } from 'react-toastify';
 
 export default function Booking() {
 	// Query bookings data
@@ -24,6 +35,21 @@ export default function Booking() {
 	} = useQuery<ApiResponseBooking>({
 		queryKey: ['dataBookings'],
 		queryFn: getBookings,
+	});
+
+	// Mutation for completing booking
+	const queryClient = useQueryClient();
+	const completeBookingMutation = useMutation({
+		mutationFn: CompleteBooking,
+		onSuccess: () => {
+			// Refetch bookings after successful completion
+			queryClient.invalidateQueries({ queryKey: ['dataBookings'] });
+			toast.success('Booking completed successfully.');
+		},
+		onError: (error: any) => {
+			toast.error('Failed to complete booking.');
+			console.error('Error completing booking:', error);
+		},
 	});
 
 	// Extract bookings data
@@ -46,6 +72,11 @@ export default function Booking() {
 	const goToLastPage = () => setCurrentPage(totalPages);
 	const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 	const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+
+	// Handle complete booking action
+	const handleCompleteBooking = (id: number) => {
+		completeBookingMutation.mutate(id);
+	};
 
 	return (
 		<PageContainer>
@@ -136,12 +167,15 @@ export default function Booking() {
 													</Badge>
 												</TableCell>
 												<TableCell>
-													<Badge
-														variant='secondary'
-														className='bg-gray-700 text-gray-200 hover:bg-gray-600'
+													<span
+														className={`px-2 py-1 rounded-full text-xs font-medium ${
+															booking.status === 'COMPLETED'
+																? 'bg-green-500/20 text-green-400'
+																: 'bg-yellow-500/20 text-yellow-400'
+														}`}
 													>
 														{booking.status}
-													</Badge>
+													</span>
 												</TableCell>
 												<TableCell className='text-right'>
 													<DropdownMenu>
@@ -159,6 +193,13 @@ export default function Booking() {
 															<DropdownMenuItem className='text-green-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-800 cursor-pointer'>
 																<Pencil className='mr-2 h-4 w-4' />
 																<span>Edit</span>
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																className='text-blue-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-800 cursor-pointer'
+																onClick={() => handleCompleteBooking(booking.id)}
+															>
+																<CheckCircle className='mr-2 h-4 w-4' />
+																<span>Complete</span>
 															</DropdownMenuItem>
 															<DropdownMenuItem className='text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-800 cursor-pointer'>
 																<Trash2 className='mr-2 h-4 w-4' />

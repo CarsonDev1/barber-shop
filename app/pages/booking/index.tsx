@@ -18,6 +18,8 @@ import { getBookings } from '@/app/api/booking/getBooking';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/context/AuthProvider';
 import { useTranslation } from 'react-i18next';
+import { jwtDecode } from 'jwt-decode';
+import { createAdminBook } from '@/app/api/booking/createAdminBooking';
 
 interface Image {
 	id: number;
@@ -102,7 +104,7 @@ const getCurrentWeek = (date: Date) => {
 	const diff = date.getTime() - startDate.getTime();
 	const oneDay = 1000 * 60 * 60 * 24;
 	const dayOfYear = Math.floor(diff / oneDay);
-	return Math.ceil((dayOfYear + 1) / 7) + 1; // Increment week to get the next week
+	return Math.ceil((dayOfYear + 1) / 7) + 1;
 };
 
 export default function BookingForm() {
@@ -111,10 +113,13 @@ export default function BookingForm() {
 	const [bookingData, setBookingData] = useState<BookingData | null>(null);
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear();
-	const currentWeek = getCurrentWeek(currentDate); // Get next week
+	const currentWeek = getCurrentWeek(currentDate);
 	const router = useRouter();
 	const { isAuthenticated } = useAuth();
 	const { t } = useTranslation('common');
+	const tokenData: any = localStorage.getItem('accessToken');
+	const decoded: any = jwtDecode(tokenData);
+	const userRole = decoded?.role;
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;
 	const {
@@ -230,9 +235,6 @@ export default function BookingForm() {
 			return;
 		}
 
-		// Log the selectedTime for debugging
-		console.log('Selected Time:', selectedTime);
-
 		// Handle both formats "HHhMM" or "HH:MM"
 		let hours: number;
 		let minutes: number;
@@ -294,7 +296,6 @@ export default function BookingForm() {
 
 		// Format `startTime` as "YYYY-MM-DD HH:mm:ss"
 		const startTime = format(selectedDate, 'yyyy-MM-dd HH:mm:ss');
-		console.log('Formatted Start Time:', startTime);
 
 		const staff_id: any = bookingData.selectedStylist?.id;
 		const comboIds = bookingData.selectedCombos.map((combo) => combo.id);
@@ -302,13 +303,22 @@ export default function BookingForm() {
 		const note = 'Customer requested booking';
 
 		try {
-			const response = await createBook({
-				staff_id,
-				note,
-				startTime,
-				serviceIds,
-				comboIds,
-			});
+			const response =
+				userRole === 'ROLE_ADMIN'
+					? await createAdminBook({
+							staff_id,
+							note,
+							startTime,
+							serviceIds,
+							comboIds,
+					  })
+					: await createBook({
+							staff_id,
+							note,
+							startTime,
+							serviceIds,
+							comboIds,
+					  });
 			localStorage.setItem('bookingResponse', JSON.stringify(response));
 
 			localStorage.removeItem('bookingData');

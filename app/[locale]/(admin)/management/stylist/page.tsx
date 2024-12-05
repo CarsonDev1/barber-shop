@@ -145,7 +145,7 @@ export default function Stylist() {
 				password: '',
 				role: member.role as 'ROLE_STAFF' | 'ROLE_USER',
 			});
-			setMode('edit'); // Chuyển chế độ sang 'edit'
+			setMode('edit');
 			setDialogOpen(true);
 		} else {
 			Swal.fire({
@@ -161,7 +161,7 @@ export default function Stylist() {
 		e.preventDefault();
 
 		// Validate name, email, phone, and DOB
-		if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+		if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.dob) {
 			toast.error('All fields are required. Please fill in the missing information.');
 			return;
 		}
@@ -173,17 +173,23 @@ export default function Stylist() {
 			return;
 		}
 
-		// Validate date of birth (must be between 18 and 40 years old)
-		if (formData.dob) {
-			const dob = new Date(formData.dob);
-			const today = new Date();
-			const age = today.getFullYear() - dob.getFullYear();
-			const m = today.getMonth() - dob.getMonth();
+		// Validate date of birth (must be between 18 and 60 years old)
+		const dob = new Date(formData.dob);
+		const today = new Date();
+		const age = today.getFullYear() - dob.getFullYear();
+		const m = today.getMonth() - dob.getMonth();
 
-			if (age < 18 || age > 40 || (age === 40 && m < 0)) {
-				toast.error('Date of birth must make the staff member between 18 and 40 years old.');
-				return;
-			}
+		if (age < 18 || age > 60 || (age === 60 && m < 0)) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Date of birth must make the staff member between 18 and 60 years old.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			}).then(() => {
+				// Close the form/modal when Swal appears
+				setDialogOpen(false);
+			});
+			return;
 		}
 
 		// If all validations pass, proceed with the mutation
@@ -198,6 +204,9 @@ export default function Stylist() {
 		});
 
 		toast.success('Staff member created successfully.');
+
+		// Close the form/modal after creation
+		setDialogOpen(false);
 	};
 
 	const handleSetShiftClick = (member: Customer) => {
@@ -210,54 +219,77 @@ export default function Stylist() {
 		setShiftModalOpen(false);
 	};
 
-	const handleCreateShift = async () => {
-		if (selectedMember && selectedShiftId && shiftDate) {
-			try {
-				const staffShiftData = {
-					staffId: selectedMember.id,
-					shiftId: selectedShiftId,
-					dates: [shiftDate],
-				};
-				await createStaffShift(staffShiftData);
-				Swal.fire({
-					title: 'Success!',
-					text: 'Staff shift has been set successfully.',
-					icon: 'success',
-					confirmButtonText: 'OK',
-				});
-				setShiftModalOpen(false);
-			} catch (error) {
-				Swal.fire({
-					title: 'Error!',
-					text: 'Failed to set staff shift.',
-					icon: 'error',
-					confirmButtonText: 'OK',
-				});
-			}
-		}
-	};
-
 	const handleUpdateStaf = (e: React.FormEvent) => {
 		e.preventDefault();
-		// Check if ID and name are valid
-		if (formData.name.trim() && formData.email.trim() && formData.phone.trim() && editingStaff?.id) {
-			mutateUpdateStaff({ id: editingStaff.id, ...formData });
-			setFormData({
-				name: '',
-				email: '',
-				phone: '',
-				dob: '',
-				password: '',
-				role: 'ROLE_STAFF',
-			});
-		} else {
+
+		// Check if ID, name, email, phone, and dob are valid
+		if (
+			!formData.name.trim() ||
+			!formData.email.trim() ||
+			!formData.phone.trim() ||
+			!formData.dob ||
+			!editingStaff?.id
+		) {
 			Swal.fire({
 				title: 'Warning!',
-				text: 'Staff cannot be empty, or Staff ID is invalid.',
+				text: 'All fields are required, and Staff ID is invalid.',
 				icon: 'warning',
 				confirmButtonText: 'OK',
+			}).then(() => {
+				// Close the form/modal when Swal appears
+				setDialogOpen(false);
 			});
+			return;
 		}
+
+		// Validate phone number (must be exactly 10 digits)
+		const phoneRegex = /^[0-9]{10}$/;
+		if (!phoneRegex.test(formData.phone)) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Phone number must be exactly 10 digits.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			}).then(() => {
+				// Close the form/modal when Swal appears
+				setDialogOpen(false);
+			});
+			return;
+		}
+
+		// Validate date of birth (must be between 18 and 60 years old)
+		const dob = new Date(formData.dob);
+		const today = new Date();
+		const age = today.getFullYear() - dob.getFullYear();
+		const m = today.getMonth() - dob.getMonth();
+
+		if (age < 18 || age > 60 || (age === 60 && m < 0)) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Date of birth must make the staff member between 18 and 60 years old.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			}).then(() => {
+				// Close the form/modal when Swal appears
+				setDialogOpen(false);
+			});
+			return;
+		}
+
+		// If all validations pass, proceed with the mutation
+		mutateUpdateStaff({ id: editingStaff.id, ...formData });
+		setFormData({
+			name: '',
+			email: '',
+			phone: '',
+			dob: '',
+			password: '',
+			role: 'ROLE_STAFF',
+		});
+
+		toast.success('Staff member updated successfully.');
+
+		setDialogOpen(false);
 	};
 
 	// Handle form input changes
@@ -482,7 +514,7 @@ export default function Stylist() {
 
 					{/* Set Shift Button */}
 					<Button
-						onClick={handleCreateShift}
+						onClick={handleCreateStaff}
 						className='w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition'
 					>
 						Set Shift
