@@ -29,7 +29,7 @@ export default function Service() {
 	const [selectedTab, setSelectedTab] = useState<'service' | 'combo'>('service');
 	const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string }[]>([]);
+	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string; minPrice: number }[]>([]);
 	const [visibleCount, setVisibleCount] = useState(4);
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [selectedCombos, setSelectedCombos] = useState<Set<number>>(new Set());
@@ -94,15 +94,32 @@ export default function Service() {
 		setTotalPrice(newTotal);
 	};
 
-	const handleApplyOffers = (offers: { id: number; name: string }[]) => {
+	const handleApplyOffers = (offers: { id: number; name: string; minPrice: number }[]) => {
 		setIsDialogOpen(false);
 		setSelectedOffers(offers);
+
+		let discount = 0;
+
+		// Calculate the discount based on minPrice
+		offers.forEach((offer) => {
+			if (offer.minPrice && totalPrice >= offer.minPrice) {
+				discount += offer.minPrice;
+			}
+		});
+
+		// Apply the discount and update the total price
+		const newTotalPrice = Math.max(0, totalPrice - discount);
+		setTotalPrice(newTotalPrice);
+
 		toast.success('Offers have been saved successfully!', {
 			style: { color: '#4CAF50' },
 			position: 'top-right',
 			action: {
 				label: 'Undo',
-				onClick: () => {},
+				onClick: () => {
+					setTotalPrice(totalPrice);
+					setSelectedOffers([]);
+				},
 			},
 		});
 	};
@@ -135,10 +152,16 @@ export default function Service() {
 					services: combo.services,
 				})) || [];
 
+		const selectedOffersData = selectedOffers.map((offer) => ({
+			id: offer.id,
+			name: offer.name,
+			minPrice: offer.minPrice,
+		}));
 		// Create a detailed object with all selected services, combos, and total payment
 		const bookingData = {
 			selectedServices: selectedServicesData,
 			selectedCombos: selectedCombosData,
+			selectedOffers: selectedOffersData,
 			totalPayment: totalPrice,
 		};
 

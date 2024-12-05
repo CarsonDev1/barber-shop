@@ -7,16 +7,42 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { getVouchers } from '@/app/api/voucher/getVoucher';
 
 interface OffersProps {
-	onApply: (offers: { id: number; name: string }[]) => void; // Cập nhật hàm onApply để truyền dữ liệu
+	onApply: (offers: { id: number; name: string; minPrice: number }[]) => void; // Cập nhật hàm onApply để truyền dữ liệu
+}
+
+interface Voucher {
+	id: number;
+	code: string;
+	maxUses: number;
+	discount: number;
+	maxDiscount: number;
+	startDate: string;
+	endDate: string;
+	minPrice: number;
+	disabled: boolean;
 }
 
 export default function Offers({ onApply }: OffersProps) {
-	const barberOffers = Array.from({ length: 8 }, (_, index) => ({
-		id: index,
-		name: 'Giảm 20% cho tất cả dịch vụ từ Barber',
-	}));
+	// Fetch vouchers data
+	const {
+		data: vouchersData,
+		isLoading: isLoadingVoucher,
+		error: errorVoucher,
+	} = useQuery({
+		queryKey: ['dataVouchers'],
+		queryFn: getVouchers,
+	});
+
+	const barberOffers = vouchersData?.payload || [];
+
+	// const barberOffers = Array.from({ length: 8 }, (_, index) => ({
+	// 	id: index,
+	// 	name: 'Giảm 20% cho tất cả dịch vụ từ Barber',
+	// }));
 
 	const userOffers = Array.from({ length: 6 }, (_, index) => ({
 		id: index,
@@ -52,15 +78,23 @@ export default function Offers({ onApply }: OffersProps) {
 		const allSelectedOffers = [
 			...Array.from(selectedBarberOffers).map((index) => ({
 				id: barberOffers[index].id,
-				name: barberOffers[index].name,
+				name: barberOffers[index].code,
+				minPrice: barberOffers[index].minPrice,
 			})),
 			...Array.from(selectedUserOffers).map((index) => ({
 				id: userOffers[index].id,
 				name: userOffers[index].name,
+				minPrice: barberOffers[index].minPrice,
 			})),
 		];
 
-		localStorage.setItem('selectedOffers', JSON.stringify(allSelectedOffers));
+		const storedBookingData = localStorage.getItem('bookingData');
+		let bookingData = storedBookingData ? JSON.parse(storedBookingData) : {};
+
+		bookingData.selectedOffers = allSelectedOffers;
+
+		localStorage.setItem('bookingData', JSON.stringify(bookingData));
+
 		onApply(allSelectedOffers);
 	};
 
@@ -102,7 +136,7 @@ export default function Offers({ onApply }: OffersProps) {
 									}`}
 									onClick={() => toggleBarberOffer(index)}
 								>
-									{offer.name}
+									{offer.code}
 								</div>
 							))}
 						</div>

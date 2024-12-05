@@ -62,11 +62,24 @@ interface Shift {
 	endTime: string;
 }
 
+interface Voucher {
+	id: number;
+	code: string;
+	maxUses: number;
+	discount: number;
+	maxDiscount: number;
+	startDate: string;
+	endDate: string;
+	minPrice: number;
+	disabled: boolean;
+}
+
 interface BookingData {
 	selectedCombos: Combo[];
 	selectedServices: Service[];
 	totalPayment: number;
 	selectedStylist?: Stylist;
+	selectedOffers: Voucher[];
 }
 
 const generateTimeSlots = (startTime: string, endTime: string, interval: number): string[] => {
@@ -109,8 +122,8 @@ export default function BookingForm() {
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ['dataShiftById', { week: currentWeek, year: currentYear, staff_id }],
-		queryFn: () => getStaffShiftById({ week: currentWeek, year: currentYear, staff_id }),
+		queryKey: ['dataShiftById', { week: 49, year: currentYear, staff_id }],
+		queryFn: () => getStaffShiftById({ week: 49, year: currentYear, staff_id }),
 		enabled: !!staff_id,
 	});
 
@@ -205,19 +218,88 @@ export default function BookingForm() {
 			return;
 		}
 
+		// Ensure `date` is valid
+		const selectedDate = new Date(date);
+		if (isNaN(selectedDate.getTime())) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Invalid date selected.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return;
+		}
+
+		// Log the selectedTime for debugging
+		console.log('Selected Time:', selectedTime);
+
+		// Handle both formats "HHhMM" or "HH:MM"
+		let hours: number;
+		let minutes: number;
+
+		if (selectedTime.includes('h')) {
+			// Handle "HHhMM" format
+			const timeParts = selectedTime.split('h');
+			if (timeParts.length !== 2) {
+				Swal.fire({
+					title: 'Error!',
+					text: 'Invalid time format. Please use the format HHhMM (e.g., 09h30).',
+					icon: 'error',
+					confirmButtonText: 'OK',
+				});
+				return;
+			}
+			[hours, minutes] = timeParts.map((part) => parseInt(part, 10));
+		} else if (selectedTime.includes(':')) {
+			// Handle "HH:MM" format
+			const timeParts = selectedTime.split(':');
+			if (timeParts.length !== 2) {
+				Swal.fire({
+					title: 'Error!',
+					text: 'Invalid time format. Please use the format HH:MM (e.g., 09:30).',
+					icon: 'error',
+					confirmButtonText: 'OK',
+				});
+				return;
+			}
+			[hours, minutes] = timeParts.map((part) => parseInt(part, 10));
+		} else {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Invalid time format. Please use the format HHhMM or HH:MM.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return;
+		}
+
+		if (isNaN(hours) || isNaN(minutes)) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Invalid time selected.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return;
+		}
+
+		// Set the selected time (hours and minutes)
+		selectedDate.setHours(hours);
+		selectedDate.setMinutes(minutes);
+		selectedDate.setSeconds(0);
+		selectedDate.setMilliseconds(0);
+
+		// Log the final date and time for debugging
+		console.log('Final Selected Date and Time:', selectedDate);
+
+		// Format `startTime` as "YYYY-MM-DD HH:mm:ss"
+		const startTime = format(selectedDate, 'yyyy-MM-dd HH:mm:ss');
+		console.log('Formatted Start Time:', startTime);
+
 		const staff_id: any = bookingData.selectedStylist?.id;
 		const comboIds = bookingData.selectedCombos.map((combo) => combo.id);
 		const serviceIds = bookingData.selectedServices.map((service) => service.id);
 		const note = 'Customer requested booking';
-
-		// Parse `selectedTime` into hours and minutes
-		const [hours, minutes] = selectedTime.split('h').map(Number);
-		const startDate = new Date(date);
-		startDate.setHours(hours);
-		startDate.setMinutes(minutes);
-
-		// Format `startTime` as "YYYY-MM-DD HH:mm:ss"
-		const startTime = format(startDate, 'yyyy-MM-dd HH:mm:ss');
 
 		try {
 			const response = await createBook({
@@ -299,6 +381,20 @@ export default function BookingForm() {
 										</div>
 									)}
 
+									{bookingData.selectedOffers.length > 0 && (
+										<div className='space-y-1 mt-2'>
+											<div className='flex justify-between text-white font-semibold border-t border-gray-400 pt-2 mt-2'>
+												<h4 className='text-md text-white font-semibold'>Total Offers:</h4>
+												{bookingData.selectedOffers.map((offer) => (
+													<div key={offer.id} className='flex justify-between text-white'>
+														<span>{offer.code}</span>
+														<span>-{offer.minPrice.toLocaleString()}₫</span>
+													</div>
+												))}
+											</div>
+										</div>
+									)}
+
 									{/* Display total payment */}
 									<div className='flex justify-between text-white font-semibold border-t border-gray-400 pt-2 mt-2'>
 										<span>Total Payment:</span>
@@ -360,25 +456,28 @@ export default function BookingForm() {
 								</PopoverContent>
 							</Popover>
 
-							<div className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
-								{timeSlots.map((time) => {
-									const isUnavailable = isTimeSlotUnavailable(time, date);
-									return (
-										<Button
-											key={time}
-											variant='outline'
-											disabled={isUnavailable}
-											className={`bg-white text-black ${
-												selectedTime === time
-													? 'bg-[#5bb4f0] text-white ring-2 ring-[#F0B35B]'
-													: ''
-											} ${isUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
-											onClick={() => !isUnavailable && setSelectedTime(time)}
-										>
-											{time}
-										</Button>
-									);
-								})}
+							<div>
+								<label className='block text-white'>{t('chooseTime')}</label>
+								<input
+									type='time'
+									className='w-full mt-2 p-2 text-black rounded-md border border-gray-300'
+									disabled={!date}
+									onBlur={(e) => {
+										const selectedTime = e.target.value;
+										// Ensure that the time is available
+										if (isTimeSlotUnavailable(selectedTime, date)) {
+											Swal.fire({
+												title: 'Unavailable Time',
+												text: 'The time you selected is not available. Please choose another time.',
+												icon: 'error',
+												confirmButtonText: 'OK',
+											});
+											e.target.value = '';
+										} else {
+											setSelectedTime(selectedTime);
+										}
+									}}
+								/>
 							</div>
 
 							<Button

@@ -22,7 +22,7 @@ const Income = () => {
 	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingSalary, setEditingSalary] = useState<any | null>(null);
-	const [salaryDetails, setSalaryDetails] = useState<any | null>(null); // For showing details
+	const [salaryDetails, setSalaryDetails] = useState<any | null>(null);
 	const [formData, setFormData] = useState<FormData>({
 		staff_id: 0,
 		rate: 0,
@@ -80,10 +80,41 @@ const Income = () => {
 		},
 	});
 
+	const { mutate: mutateCreateSalary } = useMutation({
+		mutationFn: async (formData: FormData) => {
+			const staffData = { ...formData };
+			await updateSalary(staffData); // Assuming create and update use the same API endpoint
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataSalary'] });
+			Swal.fire({
+				title: 'Created!',
+				text: 'New salary created successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+			setDialogOpen(false);
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error creating the salary.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
 	const handleUpdateSalary = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (formData && editingSalary?.id) {
-			mutateUpdateSalary({ id: editingSalary.id, ...formData });
+		if (formData && formData.staff_id > 0 && formData.rate > 0 && formData.percentage >= 0) {
+			if (editingSalary?.id) {
+				// If editing, update the salary
+				mutateUpdateSalary({ id: editingSalary.id, ...formData });
+			} else {
+				// If creating, submit the formData for new salary creation
+				mutateCreateSalary(formData);
+			}
 			setFormData({
 				staff_id: 0,
 				rate: 0,
@@ -92,7 +123,7 @@ const Income = () => {
 		} else {
 			Swal.fire({
 				title: 'Warning!',
-				text: 'Salary cannot be empty, or Salary ID is invalid.',
+				text: 'Salary data is invalid.',
 				icon: 'warning',
 				confirmButtonText: 'OK',
 			});
@@ -101,16 +132,23 @@ const Income = () => {
 
 	const handleViewDetails = async (id: number) => {
 		try {
-			// Giả sử getSalaryById là một hàm lấy dữ liệu từ API trả về như bạn đã mô tả
+			// Fetch salary details by ID
 			const response = await getSalaryById(id);
 
-			// Kiểm tra xem response có đúng không
 			if (response.status === 200) {
-				const salaryDetails = response.payload; // Dữ liệu chi tiết ở trong trường 'payload'
-				setSalaryDetails(salaryDetails); // Lưu dữ liệu vào state để hiển thị
-				setDialogOpen(true); // Mở dialog
+				const salaryDetails = response.payload;
+				if (salaryDetails) {
+					setSalaryDetails(salaryDetails);
+					setDialogOpen(true);
+				} else {
+					Swal.fire({
+						title: 'Error!',
+						text: 'Salary details not found.',
+						icon: 'error',
+						confirmButtonText: 'OK',
+					});
+				}
 			} else {
-				// Nếu không có dữ liệu hoặc lỗi
 				Swal.fire({
 					title: 'Error!',
 					text: 'Failed to fetch salary details.',
@@ -121,7 +159,7 @@ const Income = () => {
 		} catch (error) {
 			Swal.fire({
 				title: 'Error!',
-				text: 'Failed to fetch salary details.',
+				text: 'An error occurred while fetching salary details.',
 				icon: 'error',
 				confirmButtonText: 'OK',
 			});
@@ -160,7 +198,6 @@ const Income = () => {
 						<DialogHeader>
 							<DialogTitle>{editingSalary ? 'Edit Salary' : 'Salary Details'}</DialogTitle>
 						</DialogHeader>
-						{/* Form or View Salary Details */}
 						{editingSalary ? (
 							<form onSubmit={handleUpdateSalary}>
 								<div className='space-y-4'>
