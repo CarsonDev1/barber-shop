@@ -6,12 +6,39 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { getVNPayUrl } from '@/app/api/payment/getVnpay';
 import { useRouter } from 'next/navigation';
 
 export default function BookingSuccess() {
 	const [confettiActive, setConfettiActive] = useState(true);
 	const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 });
-	const [isBookingCancelled, setIsBookingCancelled] = useState(false);
+
+	const storedResponse = localStorage.getItem('bookingResponse');
+	const bookingIds = storedResponse ? [JSON.parse(storedResponse).payload?.id] : [];
+	const router = useRouter();
+
+	// Add bankCode, language, and voucherCode parameters
+	const bankCode = '';
+	const language = 'vn';
+	const voucherCode = '';
+
+	const {
+		data: getVnPay,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['getVnPay', { bookingIds, bankCode, language, voucherCode }],
+		queryFn: () => getVNPayUrl(bookingIds, bankCode, language, voucherCode),
+		enabled: bookingIds.length > 0,
+	});
+
+	useEffect(() => {
+		if (getVnPay?.payload) {
+			router.push(getVnPay.payload);
+			localStorage.removeItem('bookingResponse');
+		}
+	}, [getVnPay, router]);
 
 	useEffect(() => {
 		const { innerWidth: width, innerHeight: height } = window;
@@ -23,10 +50,9 @@ export default function BookingSuccess() {
 		window.addEventListener('resize', handleResize);
 
 		const timer = setTimeout(() => {
-			setIsBookingCancelled(true);
-		}, 15 * 60 * 1000);
+			setConfettiActive(false);
+		}, 5000);
 
-		// Cleanup
 		return () => {
 			window.removeEventListener('resize', handleResize);
 			clearTimeout(timer);
@@ -69,9 +95,6 @@ export default function BookingSuccess() {
 				<h2 className='mt-6 text-center text-2xl md:text-3xl font-bold text-white'>
 					Booking successful, please wait for confirmation
 				</h2>
-				<p className='mt-4 text-lg text-white'>
-					If you do not arrive within 15 minutes, your booking will be automatically cancelled.
-				</p>
 				<div className='mt-6'>
 					<Link href='/'>
 						<Button className='bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-6 rounded-full text-lg'>
@@ -79,11 +102,6 @@ export default function BookingSuccess() {
 						</Button>
 					</Link>
 				</div>
-				{isBookingCancelled && (
-					<p className='mt-4 text-lg text-red-500'>
-						Your booking has been automatically cancelled due to no arrival.
-					</p>
-				)}
 			</div>
 			<style jsx>{`
 				.checkmark-circle {

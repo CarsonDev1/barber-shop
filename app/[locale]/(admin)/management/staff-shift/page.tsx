@@ -16,6 +16,7 @@ import { CustomersResponse } from '@/types/Customer.type';
 import { getStaffs } from '@/app/api/customer/getStaffs';
 import { getStaffShiftById } from '@/app/api/staff-shift/getStaffShiftById';
 import { deleteStaffShift } from '@/app/api/staff-shift/deleteStaffShift';
+import { getStaffShiftCus } from '@/app/api/staff-shift/getStaffShiftCus';
 
 const StaffShift = () => {
 	const queryClient = useQueryClient();
@@ -80,11 +81,25 @@ const StaffShift = () => {
 	});
 
 	const [staffId, setStaffId] = useState(0);
+	const [week, setWeek] = useState<number | ''>('');
+	const [year, setYear] = useState<number | ''>('');
 	const [shiftId, setShiftId] = useState(0);
 	const [date, setDate] = useState('');
 	const [dateError, setDateError] = useState('');
 
 	const currentDate = new Date().toISOString().split('T')[0];
+
+	const {
+		data: staffShiftCusData,
+		isLoading: isLoadingStaffShiftCusData,
+		error: errorStaffShiftCusData,
+	} = useQuery<any>({
+		queryKey: ['dataStaffShift', staffId, week, year],
+		queryFn: () => getStaffShiftCus({ staff_id: staffId as number, week: week as number, year: year as number }),
+		enabled: Boolean(staffId && week && year),
+	});
+
+	const staffShiftCus = staffShiftCusData?.data || [];
 
 	// Handle form submission for creating a new staff shift
 	const handleCreateStaffShift = (e: React.FormEvent) => {

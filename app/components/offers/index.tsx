@@ -6,12 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { getVouchers } from '@/app/api/voucher/getVoucher';
+import { getCusVouchers } from '@/app/api/voucher/getCusVoucher';
 
 interface OffersProps {
-	onApply: (offers: { id: number; name: string; minPrice: number }[]) => void; // Cập nhật hàm onApply để truyền dữ liệu
+	onApply: (offers: { id: number; name: string; minPrice: number }[]) => void;
 }
 
 interface Voucher {
@@ -34,7 +33,7 @@ export default function Offers({ onApply }: OffersProps) {
 		error: errorVoucher,
 	} = useQuery({
 		queryKey: ['dataVouchers'],
-		queryFn: getVouchers,
+		queryFn: getCusVouchers,
 	});
 
 	const barberOffers = vouchersData?.payload || [];
