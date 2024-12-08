@@ -475,17 +475,7 @@ export default function BookingForm() {
 									onBlur={(e) => {
 										const selectedTime = e.target.value;
 										// Ensure that the time is available
-										if (isTimeSlotUnavailable(selectedTime, date)) {
-											Swal.fire({
-												title: 'Unavailable Time',
-												text: 'The time you selected is not available. Please choose another time.',
-												icon: 'error',
-												confirmButtonText: 'OK',
-											});
-											e.target.value = '';
-										} else {
-											setSelectedTime(selectedTime);
-										}
+										setSelectedTime(selectedTime);
 									}}
 								/>
 							</div>

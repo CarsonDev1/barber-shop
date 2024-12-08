@@ -172,8 +172,10 @@ export default function Header() {
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-										<ImageIcon className='mr-2 h-4 w-4' />
-										<span>{t('imageSaved')}</span>
+										<Link href='/booking-confirm' className='flex items-center gap-1'>
+											<ImageIcon className='mr-2 h-4 w-4' />
+											<span>Booking Confirm</span>
+										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										className='hover:bg-gray-800 cursor-pointer text-red-400'
