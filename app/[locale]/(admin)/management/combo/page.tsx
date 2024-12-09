@@ -14,6 +14,8 @@ import { getCombos } from '@/app/api/combo/getCombo';
 import { createCombo } from '@/app/api/combo/createCombo';
 import { deleteCombo } from '@/app/api/combo/deleteCombo';
 import { updateCombo } from '@/app/api/combo/updateCombo';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
 interface Service {
 	id: number;
@@ -50,6 +52,7 @@ const ComboManagement = () => {
 	const queryClient = useQueryClient();
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [isDetailDialogOpen, setIsDetailDialogOpen] = useState<boolean>(false);
+	const [removeImages, setRemoveImages] = useState<number[]>([]);
 	const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
 	const [comboData, setComboData] = useState({
 		serviceIds: [] as number[],
@@ -90,11 +93,29 @@ const ComboManagement = () => {
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (files && files.length > 0) {
+			const newImages = Array.from(files).map((file) => ({
+				id: Math.random(), // ID tạm thời
+				url: URL.createObjectURL(file), // URL xem trước
+				file, // File gốc
+				isNew: true, // Đánh dấu là hình mới
+			}));
+
 			setComboData((prev) => ({
 				...prev,
-				images: Array.from(files),
+				images: [...prev.images, ...newImages],
 			}));
 		}
+	};
+
+	const handleDeleteImage = (imageId: number) => {
+		// Thêm hình ảnh vào danh sách cần xóa
+		setRemoveImages((prev) => [...prev, imageId]);
+
+		// Loại bỏ hình ảnh khỏi danh sách hiển thị
+		setComboData((prev) => ({
+			...prev,
+			images: prev.images.filter((image: any) => image.id !== imageId),
+		}));
 	};
 
 	const { mutate: mutateDeleteCombo } = useMutation({
@@ -175,18 +196,32 @@ const ComboManagement = () => {
 	const { mutate: mutateUpdateCombo } = useMutation({
 		mutationFn: async () => {
 			const formData = new FormData();
+
+			// Thêm thông tin cơ bản
 			formData.append('id', comboData.id.toString());
 			formData.append('name', comboData.name);
 			formData.append('description', comboData.description);
 			formData.append('price', comboData.price.toString());
 			formData.append('estimateTime', comboData.estimateTime.toString());
-			if (comboData.images[0]) {
-				formData.append('images', comboData.images[0]);
-			}
+
+			// Thêm file hình ảnh mới
+			comboData.images
+				.filter((image: any) => image.isNew) // Lọc hình mới
+				.forEach((image: any) => {
+					formData.append('images', image.file); // Gửi file gốc
+				});
+
+			// Thêm danh sách hình ảnh cần xóa
+			removeImages.forEach((imageId) => {
+				formData.append('remove_images[]', imageId.toString());
+			});
+
+			// Thêm danh sách dịch vụ
 			comboData.serviceIds.forEach((id, index) => {
 				formData.append(`serviceIds[${index}]`, id.toString());
 			});
 
+			// Gửi request lên API
 			await updateCombo(formData);
 		},
 		onSuccess: () => {
@@ -198,6 +233,7 @@ const ComboManagement = () => {
 				confirmButtonText: 'OK',
 			});
 			setIsDialogOpen(false);
+			setRemoveImages([]);
 		},
 		onError: (error) => {
 			console.error('Error updating combo:', error);
@@ -256,6 +292,11 @@ const ComboManagement = () => {
 		setIsDialogOpen(true);
 	};
 
+	const handleDialogClose = () => {
+		setIsDialogOpen(false);
+		setRemoveImages([]);
+	};
+
 	if (isLoadingCombos) return <PageContainer>Loading...</PageContainer>;
 	if (errorCombos) return <PageContainer>Error loading combos data.</PageContainer>;
 
@@ -290,7 +331,13 @@ const ComboManagement = () => {
 							<TableCell>{combo.price.toLocaleString()} VND</TableCell>
 							<TableCell>{combo.estimateTime} min</TableCell>
 							<TableCell>
-								<Image src={combo.images[0].thumbUrl} width={100} height={100} alt='combo image' />
+								<Swiper spaceBetween={10} slidesPerView={1} className='w-[100px] h-[100px]'>
+									{combo.images.map((image) => (
+										<SwiperSlide key={image.id}>
+											<Image src={image.thumbUrl} width={100} height={100} alt='combo image' />
+										</SwiperSlide>
+									))}
+								</Swiper>
 							</TableCell>
 							<TableCell>
 								<Button variant='secondary' size='sm' onClick={() => openDetailDialog(combo)}>
@@ -322,7 +369,7 @@ const ComboManagement = () => {
 			</div>
 
 			{/* Add Combo Dialog */}
-			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+			<Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
 				<DialogOverlay />
 				<DialogContent className='bg-white p-6'>
 					<h3 className='text-xl font-semibold mb-4'>{selectedCombo ? 'Update Combo' : 'Add New Combo'}</h3>
@@ -358,7 +405,43 @@ const ComboManagement = () => {
 						onChange={handleInputChange}
 						className='mb-2 p-2 border'
 					/>
-					<input type='file' accept='image/*' onChange={handleImageChange} className='mb-2 p-2 border' />
+
+					{/* Hiển thị danh sách hình ảnh hiện tại */}
+					<div className='mb-4'>
+						<h4>Current Images</h4>
+						<div className='grid grid-cols-3 gap-4'>
+							{comboData.images.map((image: any) => (
+								<div key={image.id} className='relative'>
+									<Image
+										src={image.url} // Hiển thị hình từ URL xem trước
+										alt='combo image'
+										width={100}
+										height={100}
+										className='border'
+									/>
+									<Button
+										variant='destructive'
+										size='sm'
+										className='absolute top-0 right-0'
+										onClick={() => handleDeleteImage(image.id)}
+									>
+										X
+									</Button>
+								</div>
+							))}
+						</div>
+					</div>
+
+					<label>Add Images</label>
+					<input
+						type='file'
+						accept='image/*'
+						multiple // Cho phép thêm nhiều hình
+						onChange={handleImageChange}
+						className='mb-2 p-2 border'
+					/>
+
+					{/* Chọn dịch vụ */}
 					<div className='mb-4'>
 						<h4>Select Services</h4>
 						<Select
@@ -370,6 +453,7 @@ const ComboManagement = () => {
 						/>
 					</div>
 
+					{/* Nút Submit */}
 					<Button onClick={handleSubmit} className='mt-4 bg-blue-600 hover:bg-blue-700'>
 						Submit
 					</Button>

@@ -1,14 +1,28 @@
+'use client';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BackGroundRoot from '@/public/root/background-root.png';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useQuery } from '@tanstack/react-query';
+import { getCusVouchers } from '@/app/api/voucher/getCusVoucher';
 
 export default function OfferPage() {
-	const offers = Array(8).fill('giảm 20% cho tất cả dịch vụ');
+	// const offers = Array(8).fill('giảm 20% cho tất cả dịch vụ');
+
+	const {
+		data: vouchersData,
+		isLoading: isLoadingVoucher,
+		error: errorVoucher,
+	} = useQuery({
+		queryKey: ['dataVouchers'],
+		queryFn: getCusVouchers,
+	});
+
+	const offers = vouchersData?.payload || [];
 
 	return (
-		<div className='relative sec-com'>
+		<div className='relative sec-com h-dvh'>
 			<Image
 				src={BackGroundRoot}
 				alt='Barber Shop Logo'
@@ -39,9 +53,41 @@ export default function OfferPage() {
 							{offers.map((offer, index) => (
 								<div
 									key={index}
-									className='bg-gray-200 rounded-lg p-4 text-black font-medium hover:bg-gray-300 transition-colors cursor-pointer'
+									className='bg-white rounded-lg shadow-md flex flex-col p-6 text-black font-medium hover:shadow-lg transition-shadow cursor-pointer'
 								>
-									{offer}
+									<div className='flex items-center justify-between mb-4'>
+										<span className='text-xl font-bold'>{offer.code}</span>
+										<span className='bg-green-500 text-white p-2 text-sm rounded-md shadow-lg font-bold'>
+											-{offer.discount}%
+										</span>
+									</div>
+									<div className='flex items-center justify-between mb-4'>
+										<div className='flex items-center text-sm font-semibold gap-1'>
+											<span className='text-gray-600'>{offer.startDate}</span>
+											<span>-</span>
+											<span className='text-gray-600'>{offer.endDate}</span>
+										</div>
+										<span
+											className={`p-2 text-sm rounded-md shadow-lg font-bold ${
+												offer.forRank === 'BRONZE'
+													? 'bg-yellow-400/15 text-yellow-600'
+													: offer.forRank === 'DIAMOND'
+													? 'bg-blue-400/15 text-blue-600'
+													: 'bg-green-400/15 text-green-600'
+											}`}
+										>
+											{offer.forRank}
+										</span>
+									</div>
+									<div className='flex items-center justify-between'>
+										<span className='text-lg font-semibold'>Giảm đến:</span>
+										<span className='text-rose-600 font-bold text-xl'>
+											{new Intl.NumberFormat('vi-VN', {
+												style: 'currency',
+												currency: 'VND',
+											}).format(offer.minPrice)}
+										</span>
+									</div>
 								</div>
 							))}
 						</div>

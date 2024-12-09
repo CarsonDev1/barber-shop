@@ -8,6 +8,7 @@ type VoucherData = {
 	endDate: string;
 	minPrice: number;
 	disabled: boolean;
+	forRank: string;
 };
 
 type ApiResponseVoucher = {

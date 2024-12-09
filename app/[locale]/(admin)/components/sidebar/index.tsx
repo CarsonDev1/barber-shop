@@ -40,6 +40,7 @@ import {
 	LogOut,
 	Ticket,
 	Receipt,
+	LayoutDashboard,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -58,6 +59,7 @@ export interface NavItem {
 }
 
 const navItems: NavItem[] = [
+	{ title: 'DASHBOARD', href: '/management', icon: LayoutDashboard },
 	{ title: 'MANAGEMENT STYLIST', href: '/management/stylist', icon: Scissors },
 	{ title: 'MANAGEMENT STAFF SHIFT', href: '/management/staff-shift', icon: Clock4 },
 	{ title: 'MANAGEMENT SHIFT', href: '/management/shift', icon: ChevronsUpDown },

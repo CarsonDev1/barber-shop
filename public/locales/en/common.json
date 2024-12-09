@@ -128,5 +128,8 @@
 	"advance": "Advance: 2000k",
 	"tax": "Tax: 10%",
 	"numberOfTurns": "Number of turns: 100 turns",
-	"stylist": "Stylist"
+	"stylist": "Stylist",
+	"introduceAbout": "Giới thiệu",
+	"introductDes": "Với sự mệnh tôn vinh vẻ đẹp và sự tự tin của phái mạnh",
+	"aboutIntro01": "Barber mang đến trải nghiệm cắt tóc đẳng cấp, kết hợp giữa kỹ thuật tinh tế, không gian hiện đại và dịch vụ chăm sóc tận tâm."
 }

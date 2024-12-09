@@ -65,12 +65,21 @@ export default function Feedback() {
 										</Badge>
 									</TableCell>
 									<TableCell>
-										<Badge
-											variant='secondary'
-											className='bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center gap-1 w-fit'
-										>
-											{review.staffRating}
-										</Badge>
+										<div className='flex items-center'>
+											{Array.from({ length: 5 }, (_, index) => (
+												<svg
+													key={index}
+													className={`size-4 ${
+														index < review.staffRating ? 'text-yellow-500' : 'text-gray-400'
+													}`}
+													fill='currentColor'
+													viewBox='0 0 20 20'
+													xmlns='http://www.w3.org/2000/svg'
+												>
+													<path d='M10 15l-5.878 3.09 1.121-6.535L0 6.545l6.545-.955L10 0l2.455 5.59L20 6.545l-5.243 4.005 1.121 6.535L10 15z' />
+												</svg>
+											))}
+										</div>
 									</TableCell>
 									<TableCell>
 										<Badge

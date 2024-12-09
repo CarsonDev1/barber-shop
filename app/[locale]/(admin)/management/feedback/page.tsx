@@ -69,19 +69,16 @@ export default function Feedback() {
 							<TableHeader>
 								<TableRow className='hover:bg-gray-800/50 border-gray-700'>
 									<TableHead className='text-gray-200'>Id</TableHead>
-									<TableHead className='text-gray-200'>Customer</TableHead>
-									<TableHead className='text-gray-200'>Account</TableHead>
-									<TableHead className='text-gray-200'>Stylist</TableHead>
-									<TableHead className='text-gray-200'>Rate</TableHead>
+									<TableHead className='text-gray-200'>Staff Rating</TableHead>
+									<TableHead className='text-gray-200'>Staff Comment</TableHead>
 									<TableHead className='text-gray-200'>Review</TableHead>
 									<TableHead className='text-gray-200'>Date</TableHead>
-									<TableHead className='text-gray-200'>Time</TableHead>
-									<TableHead className='text-gray-200 text-right'>Action</TableHead>
+									{/* <TableHead className='text-gray-200 text-right'>Action</TableHead> */}
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{getCurrentPageItems().map((review: any, index: any) => (
-									<TableRow key={index} className='border-gray-700 hover:bg-gray-700/50'>
+									<TableRow key={review.id} className='border-gray-700 hover:bg-gray-700/50'>
 										<TableCell>
 											<Badge
 												variant='secondary'
@@ -91,63 +88,52 @@ export default function Feedback() {
 											</Badge>
 										</TableCell>
 										<TableCell>
-											<Badge
-												variant='secondary'
-												className='bg-gray-700 text-gray-200 hover:bg-gray-600'
-											>
-												{review.customer}
-											</Badge>
+											<div className='flex items-center'>
+												{Array.from({ length: 5 }, (_, index) => (
+													<svg
+														key={index}
+														className={`size-4 ${
+															index < review.staffRating
+																? 'text-yellow-500'
+																: 'text-gray-400'
+														}`}
+														fill='currentColor'
+														viewBox='0 0 20 20'
+														xmlns='http://www.w3.org/2000/svg'
+													>
+														<path d='M10 15l-5.878 3.09 1.121-6.535L0 6.545l6.545-.955L10 0l2.455 5.59L20 6.545l-5.243 4.005 1.121 6.535L10 15z' />
+													</svg>
+												))}
+											</div>
 										</TableCell>
 										<TableCell>
 											<Badge
 												variant='secondary'
 												className='bg-gray-700 text-gray-200 hover:bg-gray-600'
 											>
-												{review.account}
+												{review.staffComment}
 											</Badge>
+										</TableCell>
+										<TableCell>
+											{review.reviewDetails.map((detail: any) => (
+												<Badge
+													key={detail.id}
+													variant='secondary'
+													className='bg-gray-700 text-gray-200 hover:bg-gray-600 block mb-1'
+												>
+													{detail.type}: {detail.comment}
+												</Badge>
+											))}
 										</TableCell>
 										<TableCell>
 											<Badge
 												variant='secondary'
 												className='bg-gray-700 text-gray-200 hover:bg-gray-600'
 											>
-												{review.stylist}
+												{new Date(review.createdAt).toLocaleDateString()}
 											</Badge>
 										</TableCell>
-										<TableCell>
-											<Badge
-												variant='secondary'
-												className='bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center gap-1 w-fit'
-											>
-												{review.rate}
-												<Star className='h-3 w-3 fill-yellow-500 text-yellow-500' />
-											</Badge>
-										</TableCell>
-										<TableCell>
-											<Badge
-												variant='secondary'
-												className='bg-gray-700 text-gray-200 hover:bg-gray-600'
-											>
-												{review.review}
-											</Badge>
-										</TableCell>
-										<TableCell>
-											<Badge
-												variant='secondary'
-												className='bg-gray-700 text-gray-200 hover:bg-gray-600'
-											>
-												{review.date}
-											</Badge>
-										</TableCell>
-										<TableCell>
-											<Badge
-												variant='secondary'
-												className='bg-gray-700 text-gray-200 hover:bg-gray-600'
-											>
-												{review.time}
-											</Badge>
-										</TableCell>
-										<TableCell className='text-right'>
+										{/* <TableCell className='text-right'>
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
 													<Button variant='ghost' size='icon' className='hover:bg-gray-700'>
@@ -166,7 +152,7 @@ export default function Feedback() {
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
-										</TableCell>
+										</TableCell> */}
 									</TableRow>
 								))}
 							</TableBody>
