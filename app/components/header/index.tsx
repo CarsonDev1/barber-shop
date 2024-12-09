@@ -8,7 +8,20 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { Menu, UserRound, X, Flag, Scissors, Gift, Edit, Calendar, ImageIcon, LogOut, Bell } from 'lucide-react';
+import {
+	Menu,
+	UserRound,
+	X,
+	Flag,
+	Scissors,
+	Gift,
+	Edit,
+	Calendar,
+	ImageIcon,
+	LogOut,
+	Bell,
+	Receipt,
+} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
@@ -214,7 +227,7 @@ export default function Header() {
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-										<Link href='/booking-calender' className='flex items-center gap-1'>
+										<Link href='/bill' className='flex items-center gap-1'>
 											<Scissors className='mr-2 h-4 w-4' />
 											<span>{t('historyHaircut')}</span>
 										</Link>

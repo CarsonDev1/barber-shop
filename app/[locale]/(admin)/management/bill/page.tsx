@@ -2,13 +2,9 @@
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from '@tanstack/react-query';
-import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { Button } from '@/components/ui/button';
 import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
 import PageContainer from '@/app/components/page-container';
-import { CustomersResponse } from '@/types/Customer.type';
-import { getStaffs } from '@/app/api/customer/getStaffs';
-import { getStaffShift } from '@/app/api/staff-shift/getStaffShift';
 import { getPayments } from '@/app/api/payment/getPayment';
 import { ApiResponsePayment } from '@/types/Payment.type';
 

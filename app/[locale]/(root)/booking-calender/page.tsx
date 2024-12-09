@@ -131,7 +131,7 @@ export default function BookingCalender() {
 	const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
 
 	return (
-		<div className='bg-gray-900 pt-5 md:pt-10 lg:pt-20'>
+		<div className='bg-gray-900 h-dvh pt-5 md:pt-10 lg:pt-20'>
 			<div className='sec-com'>
 				<div className='container-lg mx-auto space-y-6'>
 					<h1 className='text-2xl font-bold text-center text-white mb-8'>
