@@ -8,7 +8,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { Menu, UserRound, X, Flag, Scissors, Gift, Edit, Calendar, ImageIcon, LogOut } from 'lucide-react';
+import { Menu, UserRound, X, Flag, Scissors, Gift, Edit, Calendar, ImageIcon, LogOut, Bell } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
@@ -21,11 +21,13 @@ import '@/i18n';
 import { getLogOut } from '@/app/api/getLogout';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getNotification } from '@/app/api/notification/getNotification';
 
 export default function Header() {
 	const { t, i18n } = useTranslation('common');
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
+	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
 
 	const {
@@ -36,6 +38,15 @@ export default function Header() {
 		queryKey: ['dataProfile'],
 		queryFn: getAccount,
 	});
+
+	const { data: dataNotification } = useQuery({
+		queryKey: ['dataNotification'],
+		queryFn: getNotification,
+	});
+
+	const Notification = dataNotification?.payload?.content;
+
+	const unreadNotifications = Notification?.filter((notif: any) => !notif.seen) || [];
 
 	const handleLogout = async () => {
 		const accessToken = localStorage.getItem('accessToken');
@@ -132,6 +143,61 @@ export default function Header() {
 							</DropdownMenuContent>
 						</DropdownMenu>
 
+						{/* Bell Icon with Notification Count */}
+						<Button
+							variant='ghost'
+							onClick={() => setNotificationsOpen(true)}
+							className='relative flex items-center gap-2'
+						>
+							<Bell className='w-5 h-5' />
+							{unreadNotifications.length > 0 && (
+								<span className='absolute top-0 right-0 text-xs text-red-500 bg-white rounded-full px-1'>
+									{unreadNotifications.length}
+								</span>
+							)}
+						</Button>
+
+						{/* Notifications Dropdown */}
+						<Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+							<SheetContent
+								side='right'
+								className='w-[300px] sm:w-[400px] bg-gray-900 p-4 border-none shadow-lg rounded-lg'
+							>
+								<SheetClose className='absolute right-4 top-4 rounded-full bg-gray-800 p-2 opacity-70 hover:opacity-100 transition-opacity focus:outline-none'>
+									<X className='h-4 w-4 text-white' />
+									<span className='sr-only'>Close</span>
+								</SheetClose>
+								<h2 className='text-lg font-semibold text-white mb-4'>Notifications</h2>
+
+								{Notification && Notification.length > 0 ? (
+									<div className='flex flex-col gap-3 max-h-full overflow-y-auto'>
+										{Notification.map((notif: any) => (
+											<Link key={notif.id} href='#'>
+												<div className='flex gap-3 bg-gray-800 p-3 rounded-md hover:bg-gray-700 transition'>
+													<div className='flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 text-white'>
+														<Bell className='w-6 h-6' />
+													</div>
+													<div>
+														<h3 className='text-sm font-medium text-white'>
+															{notif.title}
+														</h3>
+														<p className='text-xs text-gray-400'>{notif.message}</p>
+														<span className='text-xs text-gray-500'>
+															{new Date(notif.timestamp).toLocaleString()}
+														</span>
+													</div>
+												</div>
+											</Link>
+										))}
+									</div>
+								) : (
+									<div className='flex items-center justify-center h-[200px]'>
+										<p className='text-gray-400 text-sm'>No new notifications</p>
+									</div>
+								)}
+							</SheetContent>
+						</Sheet>
+
 						{dataProfile ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
@@ -172,8 +238,10 @@ export default function Header() {
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
-										<ImageIcon className='mr-2 h-4 w-4' />
-										<span>{t('imageSaved')}</span>
+										<Link href='/booking-confirm' className='flex items-center gap-1'>
+											<ImageIcon className='mr-2 h-4 w-4' />
+											<span>Booking Confirm</span>
+										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										className='hover:bg-gray-800 cursor-pointer text-red-400'

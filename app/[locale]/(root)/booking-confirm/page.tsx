@@ -10,15 +10,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getVNPayUrl } from '@/app/api/payment/getVnpay';
 import { useRouter } from 'next/navigation';
 
-export default function BookingSuccess() {
-	const [confettiActive, setConfettiActive] = useState(true);
-	const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 });
-
+export default function BookingConfirm() {
 	const storedResponse = localStorage.getItem('bookingResponse');
 	const bookingIds = storedResponse ? [JSON.parse(storedResponse).payload?.id] : [];
 	const router = useRouter();
 
-	// Add bankCode, language, and voucherCode parameters
 	const bankCode = '';
 	const language = 'vn';
 	const voucherCode = '';
@@ -40,25 +36,6 @@ export default function BookingSuccess() {
 		}
 	}, [getVnPay, router]);
 
-	useEffect(() => {
-		const { innerWidth: width, innerHeight: height } = window;
-		setWindowDimension({ width, height });
-
-		const handleResize = () => {
-			setWindowDimension({ width: window.innerWidth, height: window.innerHeight });
-		};
-		window.addEventListener('resize', handleResize);
-
-		const timer = setTimeout(() => {
-			setConfettiActive(false);
-		}, 5000);
-
-		return () => {
-			window.removeEventListener('resize', handleResize);
-			clearTimeout(timer);
-		};
-	}, []);
-
 	return (
 		<div className='min-h-screen bg-black bg-opacity-80 flex items-center justify-center p-4 overflow-hidden relative'>
 			<Image
@@ -68,41 +45,47 @@ export default function BookingSuccess() {
 				height={1200}
 				className='absolute inset-0 w-full object-cover h-screen'
 			/>
-			{confettiActive && (
-				<Confetti
-					width={windowDimension.width}
-					height={windowDimension.height}
-					recycle={false}
-					numberOfPieces={200}
-					className='overflow-hidden'
-				/>
+			{bookingIds.length === 0 ? (
+				<div className='text-center text-white relative z-30'>
+					<h2 className='text-2xl md:text-3xl font-bold'>You currently have no bookings to confirm.</h2>
+					<div className='mt-6'>
+						<Link href='/'>
+							<Button className='bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-6 rounded-full text-lg'>
+								Go Back
+							</Button>
+						</Link>
+					</div>
+				</div>
+			) : (
+				<>
+					<div className='max-w-md w-full space-y-8 text-center relative z-20'>
+						<div className='inline-block'>
+							<svg
+								className='w-24 h-24 md:w-32 md:h-32 text-green-500'
+								viewBox='0 0 24 24'
+								fill='none'
+								stroke='currentColor'
+								strokeWidth='2'
+								strokeLinecap='round'
+								strokeLinejoin='round'
+							>
+								<path className='checkmark-circle' d='M22 11.08V12a10 10 0 1 1-5.93-9.14' />
+								<path className='checkmark-check' d='M22 4L12 14.01l-3-3' />
+							</svg>
+						</div>
+						<h2 className='mt-6 text-center text-2xl md:text-3xl font-bold text-white'>
+							Booking successful, please wait for confirmation
+						</h2>
+						<div className='mt-6'>
+							<Link href='/'>
+								<Button className='bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-6 rounded-full text-lg'>
+									Done
+								</Button>
+							</Link>
+						</div>
+					</div>
+				</>
 			)}
-			<div className='max-w-md w-full space-y-8 text-center relative z-20'>
-				<div className='inline-block'>
-					<svg
-						className='w-24 h-24 md:w-32 md:h-32 text-green-500'
-						viewBox='0 0 24 24'
-						fill='none'
-						stroke='currentColor'
-						strokeWidth='2'
-						strokeLinecap='round'
-						strokeLinejoin='round'
-					>
-						<path className='checkmark-circle' d='M22 11.08V12a10 10 0 1 1-5.93-9.14' />
-						<path className='checkmark-check' d='M22 4L12 14.01l-3-3' />
-					</svg>
-				</div>
-				<h2 className='mt-6 text-center text-2xl md:text-3xl font-bold text-white'>
-					Booking successful, please wait for confirmation
-				</h2>
-				<div className='mt-6'>
-					<Link href='/'>
-						<Button className='bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-6 rounded-full text-lg'>
-							Done
-						</Button>
-					</Link>
-				</div>
-			</div>
 			<style jsx>{`
 				.checkmark-circle {
 					stroke-dasharray: 166;

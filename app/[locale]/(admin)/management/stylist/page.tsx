@@ -413,16 +413,6 @@ export default function Stylist() {
 								<p className='text-sm text-gray-600'>{member.phone}</p>
 								<p className='text-sm text-gray-600'>{member.verified}</p>
 							</div>
-							<div className='px-2 mb-2'>
-								<Button
-									variant='outline'
-									size='sm'
-									className='text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-									onClick={() => handleSetShiftClick(member)}
-								>
-									Set Staff Shift
-								</Button>
-							</div>
 						</CardContent>
 						<CardFooter className='bg-gray-50 border-t flex justify-between p-2'>
 							<Button
