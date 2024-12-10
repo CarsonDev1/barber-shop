@@ -327,7 +327,7 @@ const ComboManagement = () => {
 					{paginatedCombos.map((combo) => (
 						<TableRow key={combo.id}>
 							<TableCell>{combo.name}</TableCell>
-							<TableCell>{combo.description}</TableCell>
+							<TableCell className='w-40 line-clamp-2 leading-8'>{combo.description}</TableCell>
 							<TableCell>{combo.price.toLocaleString()} VND</TableCell>
 							<TableCell>{combo.estimateTime} min</TableCell>
 							<TableCell>
@@ -373,6 +373,7 @@ const ComboManagement = () => {
 				<DialogOverlay />
 				<DialogContent className='bg-white p-6'>
 					<h3 className='text-xl font-semibold mb-4'>{selectedCombo ? 'Update Combo' : 'Add New Combo'}</h3>
+					<label>Name</label>
 					<input
 						name='name'
 						placeholder='Name'
@@ -380,6 +381,7 @@ const ComboManagement = () => {
 						onChange={handleInputChange}
 						className='mb-2 p-2 border'
 					/>
+					<label>Description</label>
 					<textarea
 						name='description'
 						placeholder='Description'
@@ -406,7 +408,7 @@ const ComboManagement = () => {
 						className='mb-2 p-2 border'
 					/>
 
-					{/* Hiển thị danh sách hình ảnh hiện tại */}
+					{/* Hiển thị danh sách hình ảnh hiện tại
 					<div className='mb-4'>
 						<h4>Current Images</h4>
 						<div className='grid grid-cols-3 gap-4'>
@@ -430,16 +432,16 @@ const ComboManagement = () => {
 								</div>
 							))}
 						</div>
-					</div>
+					</div> */}
 
-					<label>Add Images</label>
+					{/* <label>Add Images</label>
 					<input
 						type='file'
 						accept='image/*'
 						multiple // Cho phép thêm nhiều hình
 						onChange={handleImageChange}
 						className='mb-2 p-2 border'
-					/>
+					/> */}
 
 					{/* Chọn dịch vụ */}
 					<div className='mb-4'>
