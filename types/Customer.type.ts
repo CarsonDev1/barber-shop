@@ -20,6 +20,9 @@ export interface Customer {
 	role: string;
 	createdAt: string;
 	updatedAt: string;
+	description: string;
+	rating: any;
+	bookingCount: any;
 }
 
 export interface CustomersResponse {

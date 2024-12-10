@@ -17,10 +17,11 @@ import {
 	Gift,
 	Edit,
 	Calendar,
-	ImageIcon,
+	CalendarCheck,
 	LogOut,
 	Bell,
 	Receipt,
+	SquareKanban,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -226,6 +227,14 @@ export default function Header() {
 									</div>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
+									{dataProfile?.role === 'ROLE_ADMIN' && (
+										<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+											<Link href='/management' className='flex items-center gap-1'>
+												<SquareKanban className='mr-2 h-4 w-4' />
+												<span>{t('management')}</span>
+											</Link>
+										</DropdownMenuItem>
+									)}
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/bill' className='flex items-center gap-1'>
 											<Scissors className='mr-2 h-4 w-4' />
@@ -252,8 +261,8 @@ export default function Header() {
 									</DropdownMenuItem>
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/booking-confirm' className='flex items-center gap-1'>
-											<ImageIcon className='mr-2 h-4 w-4' />
-											<span>Booking Confirm</span>
+											<CalendarCheck className='mr-2 h-4 w-4' />
+											<span>{t('bookingConfirm')}</span>
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem

@@ -1,5 +1,5 @@
 import api from '@/utils/api';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 
 interface BookingRequest {
   staff_id: number;
@@ -20,7 +20,10 @@ export const createAdminBook = async (bookingData: BookingRequest): Promise<Book
     const response: AxiosResponse<BookingResponse> = await api.post('/booking/admin-book', bookingData);
     return response.data;
   } catch (error: any) {
-    console.error("Error admin booking appointment:", error);
-    throw new Error(error.response?.data?.message || "Unable to admin book appointment");
+    if (error instanceof AxiosError && error.response) {
+      throw new Error(error.response.data.payload?.vi || error.response.data.message || "Unknown error occurred");
+    } else {
+      throw new Error("An unexpected error occurred");
+    }
   }
 };
