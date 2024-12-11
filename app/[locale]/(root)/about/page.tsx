@@ -1,3 +1,4 @@
+'use client';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users2, Heart, Target, MessageSquare, School, Star, Goal } from 'lucide-react';

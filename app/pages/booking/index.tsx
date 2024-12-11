@@ -123,8 +123,8 @@ export default function BookingForm() {
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;
 	const { data: staffShiftByIdData, isLoading } = useQuery({
-		queryKey: ['dataShiftById', { week: 49, year: currentYear, staff_id }],
-		queryFn: () => getStaffShiftById({ week: 49, year: currentYear, staff_id }),
+		queryKey: ['dataShiftById', { week: 50, year: currentYear, staff_id }],
+		queryFn: () => getStaffShiftById({ week: 50, year: currentYear, staff_id }),
 		enabled: !!staff_id,
 	});
 

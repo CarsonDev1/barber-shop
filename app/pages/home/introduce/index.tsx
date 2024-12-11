@@ -22,14 +22,8 @@ export default function Introduce() {
 					{/* Content */}
 					<div className='space-y-6 w-full md:w-1/2'>
 						<h2 className='text-4xl md:text-5xl font-bold text-white'>{t('introduce')}</h2>
-						<p className='text-gray-300 text-lg leading-relaxed'>
-							Barber is the ideal destination for those who love youthfulness and dynamism. With a modern
-							space and a team of talented hairdressers, we are committed to bringing you the most
-							fashionable hairstyles, in line with the trend. From haircuts, dyeing, curling, to
-							specialized hair care services, Barber meets all customer needs. In addition, there is also
-							integrated A.I. to choose the right hairstyle for customers.
-						</p>
-						<div className='text-[#F5A524] text-lg font-medium'>Opening hours from 8:00 to 22:00</div>
+						<p className='text-gray-300 text-lg leading-relaxed'>{t('introduceHome')}</p>
+						<div className='text-[#F5A524] text-lg font-medium'>{t('introduceTime')}</div>
 					</div>
 				</div>
 			</div>

@@ -70,10 +70,10 @@ const StaffShift = () => {
 				confirmButtonText: 'OK',
 			});
 		},
-		onError: (error) => {
+		onError: (error: any) => {
 			Swal.fire({
 				title: 'Error!',
-				text: 'There was an error creating the staff shift.',
+				text: error,
 				icon: 'error',
 				confirmButtonText: 'OK',
 			});

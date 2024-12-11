@@ -37,7 +37,7 @@ type Booking = {
 	date: string;
 	status: string;
 	bookingDetails: Array<{
-		bookingDetailId: number;
+		id: number;
 		service: { name: string; price: number };
 	}>;
 	startTime: string;
@@ -78,9 +78,9 @@ export default function BookingCalender() {
 			staffComment,
 			staffRating,
 			reviewDetails: selectedBooking.bookingDetails.map((detail) => ({
-				comment: reviewDetails[detail.bookingDetailId]?.comment || '',
-				rating: reviewDetails[detail.bookingDetailId]?.rating || 0,
-				bookingDetailId: detail.bookingDetailId,
+				comment: reviewDetails[detail.id]?.comment || '',
+				rating: reviewDetails[detail.id]?.rating || 0,
+				bookingDetailId: detail.id || undefined,
 			})),
 		};
 
@@ -227,7 +227,7 @@ export default function BookingCalender() {
 																	).toLocaleDateString('vi-VN'),
 																	bookingDetails: booking.bookingDetails.map(
 																		(detail) => ({
-																			bookingDetailId: detail.bookingDetailId,
+																			id: detail.id,
 																			service: {
 																				name: detail.service.name,
 																				price: detail.service.price,
@@ -308,15 +308,15 @@ export default function BookingCalender() {
 							/>
 						</Label>
 						{selectedBooking?.bookingDetails?.map((detail) => (
-							<div key={detail.bookingDetailId}>
+							<div key={detail.id}>
 								<Label>Review for Service</Label>
 								<Input
-									value={reviewDetails[detail.bookingDetailId]?.comment || ''}
+									value={reviewDetails[detail.id]?.comment || ''}
 									onChange={(e) =>
 										setReviewDetails((prev) => ({
 											...prev,
-											[detail.bookingDetailId]: {
-												...prev[detail.bookingDetailId],
+											[detail.id]: {
+												...prev[detail.id],
 												comment: e.target.value,
 											},
 										}))
@@ -326,12 +326,12 @@ export default function BookingCalender() {
 								<label>Service Rating</label>
 								<Input
 									type='number'
-									value={reviewDetails[detail.bookingDetailId]?.rating || 0}
+									value={reviewDetails[detail.id]?.rating || 0}
 									onChange={(e) =>
 										setReviewDetails((prev) => ({
 											...prev,
-											[detail.bookingDetailId]: {
-												...prev[detail.bookingDetailId],
+											[detail.id]: {
+												...prev[detail.id],
 												rating: Number(e.target.value),
 											},
 										}))

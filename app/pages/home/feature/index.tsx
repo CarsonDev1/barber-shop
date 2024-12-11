@@ -27,9 +27,7 @@ export default function Feature() {
 			<div className='container-lg'>
 				<div className='text-center max-w-2xl mx-auto mb-12'>
 					<h2 className='text-3xl md:text-4xl font-bold mb-4'>{t('featuredService')}</h2>
-					<p className='text-gray-600'>
-						Our outstanding services will satisfy everyone and these are the most used services at Barbaer.
-					</p>
+					<p className='text-gray-600'>{t('serviceDes')}</p>
 				</div>
 
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
@@ -45,7 +43,7 @@ export default function Feature() {
 									/>
 								</div>
 								<div className='p-4 flex justify-between items-center'>
-									<h3 className='font-semibold text-lg'>{service.name}</h3>
+									<h3 className='font-semibold text-lg line-clamp-1 w-40'>{service.name}</h3>
 									<span className='bg-black text-white px-3 py-1 rounded-full text-sm'>
 										{service.price.toLocaleString()} VNĐ
 									</span>

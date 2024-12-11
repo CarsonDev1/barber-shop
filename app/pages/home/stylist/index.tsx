@@ -1,8 +1,5 @@
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
-import StyleList01 from '@/public/home/stylelist-01.png';
-import StyleList02 from '@/public/home/stylelist-02.png';
-import StyleList03 from '@/public/home/stylelist-03.png';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { CustomersResponse } from '@/types/Customer.type';

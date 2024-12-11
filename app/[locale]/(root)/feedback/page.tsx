@@ -50,7 +50,6 @@ export default function Feedback() {
 								<TableHead className='text-gray-200'>Staff Comment</TableHead>
 								<TableHead className='text-gray-200'>Review</TableHead>
 								<TableHead className='text-gray-200'>Date</TableHead>
-								<TableHead className='text-gray-200 text-right'>Action</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -107,26 +106,6 @@ export default function Feedback() {
 										>
 											{new Date(review.createdAt).toLocaleDateString()}
 										</Badge>
-									</TableCell>
-									<TableCell className='text-right'>
-										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
-												<Button variant='ghost' size='icon' className='hover:bg-gray-700'>
-													<MoreHorizontal className='h-4 w-4' />
-													<span className='sr-only'>Open menu</span>
-												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align='end' className='w-[160px]'>
-												<DropdownMenuItem className='text-blue-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-800 cursor-pointer'>
-													<Pencil className='mr-2 h-4 w-4' />
-													<span>Edit</span>
-												</DropdownMenuItem>
-												<DropdownMenuItem className='text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-800 cursor-pointer'>
-													<Trash2 className='mr-2 h-4 w-4' />
-													<span>Delete</span>
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
 									</TableCell>
 								</TableRow>
 							))}
