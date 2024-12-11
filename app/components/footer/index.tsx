@@ -43,11 +43,7 @@ function Footer() {
 				{/* Opening Hours */}
 				<div>
 					<h3 className='text-lg font-semibold mb-4'>{t('Opening Hours')}</h3>
-					<p className='text-gray-300 leading-relaxed'>
-						{t(
-							'From 8:00 - 22:00 all days of the week (except holidays and Tet days). Please arrive 15 minutes before the scheduled time.'
-						)}
-					</p>
+					<p className='text-gray-300 leading-relaxed'>{t('aboutContact09')}</p>
 				</div>
 
 				{/* Social Links */}
@@ -71,15 +67,15 @@ function Footer() {
 
 				{/* Contact Info */}
 				<div>
-					<h3 className='text-lg font-semibold mb-4'>{t('COMMUNICATE')}</h3>
+					<h3 className='text-lg font-semibold mb-4'>{t('aboutContact11')}</h3>
 					<div className='space-y-4'>
 						<div className='flex items-center gap-2'>
 							<Mail className='text-red-400' />
-							<span>{t('Mail')}: sinhlumia12@gmail.com</span>
+							<span>{t('aboutContact12')}: sinhlumia12@gmail.com</span>
 						</div>
 						<div className='flex items-center gap-2'>
 							<PhoneCall className='text-blue-400' />
-							<span>{t('Phone')}: 0398485185</span>
+							<span>{t('aboutContact13')}: 0398485185</span>
 						</div>
 					</div>
 				</div>
