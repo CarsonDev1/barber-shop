@@ -15,6 +15,8 @@ import { getServices } from '@/app/api/service/getServices';
 import { ServiceResponse } from '@/types/Service.type';
 import Swal from 'sweetalert2';
 import { deleteService } from '@/app/api/service/deleteService';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
 export default function Service() {
 	const queryClient = useQueryClient();
@@ -116,7 +118,19 @@ export default function Service() {
 					>
 						<CardContent className='p-0'>
 							<div className='relative h-48'>
-								<Image src={service.images[0].url} alt={service.name} fill className='object-cover' />
+								<Swiper spaceBetween={10} slidesPerView={1} className='w-full h-48'>
+									{service.images.map((image) => (
+										<SwiperSlide key={image.id}>
+											<Image
+												src={image.thumbUrl}
+												width={500}
+												height={200}
+												alt='service image'
+												className='object-contain'
+											/>
+										</SwiperSlide>
+									))}
+								</Swiper>
 								<div className='absolute top-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold rounded flex items-center'>
 									<Clock className='mr-1 w-4 h-4' /> <span>{service.estimateTime} minutes</span>
 								</div>

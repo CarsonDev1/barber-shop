@@ -1,9 +1,7 @@
-'use client';
-
 import { SetStateAction, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +23,7 @@ interface EditStylistFormProps {
 export default function EditStylistForm({ stylist, mode, onClose }: EditStylistFormProps) {
 	const queryClient = useQueryClient();
 	const [serviceTypeId, setServiceTypeId] = useState<string>(stylist?.serviceTypeId || '');
+	const [imagesForRemoval, setImagesForRemoval] = useState<string[]>([]); // Track images to remove
 
 	// Mutation for creating a new service
 	const { mutate: mutateCreateService } = useMutation({
@@ -91,24 +90,38 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 		e.preventDefault();
 
 		const formData = new FormData();
-		formData.append('serviceTypeId', serviceTypeId);
+
+		// Ensure serviceTypeId is selected
+		if (!serviceTypeId) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'Please select a valid service type.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return; // Don't submit the form if no service type is selected
+		}
+
+		formData.append('serviceTypeId', serviceTypeId); // Ensure valid serviceTypeId
 		formData.append('name', (e.target as any).name.value);
 		formData.append('description', (e.target as any).description.value);
 		formData.append('price', (e.target as any).price.value);
 		formData.append('estimateTime', (e.target as any).estimateTime.value);
 
-		// Check if images are selected, then append them to FormData
+		// Handle new images
 		const images = (e.target as HTMLFormElement).images.files;
 		if (images.length > 0) {
 			Array.from(images).forEach((file) => {
 				if (file instanceof File) {
-					formData.append('images', file);
+					formData.append('new_images', file);
 				}
 			});
-		} else if (mode === 'edit' && stylist?.images) {
-			// Optionally, you can also add the existing images if you want to keep them for editing.
-			stylist.images.forEach((image: any) => {
-				formData.append('images', image.url); // Ensure this is the correct field
+		}
+
+		// Handle removing images
+		if (imagesForRemoval.length > 0) {
+			imagesForRemoval.forEach((imageUrl) => {
+				formData.append('remove_images', imageUrl); // Append each image URL separately
 			});
 		}
 
@@ -121,6 +134,10 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 		}
 	};
 
+	const handleImageRemove = (imageUrl: string) => {
+		setImagesForRemoval((prev) => [...prev, imageUrl]);
+	};
+
 	return (
 		<form onSubmit={handleFormSubmit} className='relative overflow-y-auto w-full'>
 			<Card className='mx-auto w-full max-w-lg sm:max-w-2xl lg:max-w-4xl bg-gray-900 text-white relative z-10 px-4 py-2 sm:p-3 border-none'>
@@ -131,6 +148,23 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 
 					<div className='flex flex-col gap-3'>
 						{/* Profile Picture Section */}
+						<div className='space-y-2'>
+							{mode === 'edit' && stylist?.images?.length > 0 && (
+								<div className='flex flex-wrap gap-4'>
+									{stylist.images.map((image: any) => (
+										<div key={image.url} className='relative'>
+											<Image src={image.url} alt={stylist.name} width={100} height={100} />
+											<Button
+												className='absolute top-0 right-0 bg-red-500 text-white'
+												onClick={() => handleImageRemove(image.url)}
+											>
+												Remove
+											</Button>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
 
 						{/* Form Section */}
 						<div className='grid gap-3'>
@@ -154,7 +188,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								</Select>
 							</div>
 
-							{/* Name */}
+							{/* Other fields (name, description, price, estimate time, images) */}
 							<div className='space-y-2'>
 								<Label htmlFor='name'>Name</Label>
 								<Input
@@ -164,7 +198,6 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
-							{/* Description */}
 							<div className='space-y-2'>
 								<Label htmlFor='description'>Description</Label>
 								<Textarea
@@ -174,7 +207,6 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
-							{/* Price */}
 							<div className='space-y-2'>
 								<Label htmlFor='price'>Price</Label>
 								<Input
@@ -185,7 +217,6 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
-							{/* Estimated Time */}
 							<div className='space-y-2'>
 								<Label htmlFor='estimateTime'>Estimated Time</Label>
 								<Input
@@ -196,31 +227,22 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 								/>
 							</div>
 
-							{/* Images */}
 							<div className='space-y-2'>
 								<Label htmlFor='images'>Images</Label>
 								<Input id='images' type='file' multiple className='bg-gray-700/50 border-gray-600' />
 							</div>
 						</div>
-
-						{/* Buttons */}
-						<div className='flex flex-col gap-4 pt-4 sm:flex-row sm:justify-end'>
-							<Button
-								type='submit'
-								className='bg-orange-500 hover:bg-orange-600 text-black font-semibold'
-							>
-								{mode === 'edit' ? 'UPDATE' : 'ADD'}
-							</Button>
-							<Button
-								variant='outline'
-								className='border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
-								onClick={onClose}
-							>
-								CANCEL
-							</Button>
-						</div>
 					</div>
 				</CardContent>
+
+				<div className='space-x-3'>
+					<Button type='submit' variant='outline'>
+						{mode === 'edit' ? 'Update Service' : 'Create Service'}
+					</Button>
+					<Button variant='ghost' onClick={onClose}>
+						Cancel
+					</Button>
+				</div>
 			</Card>
 		</form>
 	);

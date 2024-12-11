@@ -37,10 +37,11 @@ export default function Chats() {
 			const response = await createAI(AIData); // Send data to the server
 
 			// Assuming the response looks like: { status: string, message: string, payload: object }
-			const message = response?.payload || 'No message returned'; // Extract the message field
+			const parsedPayload = JSON.parse(response?.payload || '[]'); // Safely parse the JSON string
+			const firstDescription = parsedPayload[0]?.description || 'No description available'; // Get the description of the first object
 			setMessages((prevMessages) => [
 				...prevMessages,
-				{ text: message, sender: 'ai' }, // Use the message field to display the AI's response
+				{ text: firstDescription, sender: 'ai' }, // Use the message field to display the AI's response
 			]);
 			setFormData({ gender: 'male', characteristics: '', language: 'vi' }); // Reset form data
 		} catch (error) {
@@ -122,6 +123,37 @@ export default function Chats() {
 									required
 								/>
 							</div>
+
+							<div>
+								<label className='block mb-2' htmlFor='language'>
+									Language:
+								</label>
+								<select
+									id='language'
+									value={formData.language}
+									onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+									className='w-full p-2 border border-gray-300 rounded mb-4'
+								>
+									<option value='vi'>Vietnamese</option>
+									<option value='ko'>Korean</option>
+								</select>
+							</div>
+
+							<div>
+								<label className='block mb-2' htmlFor='gender'>
+									Gender:
+								</label>
+								<select
+									id='gender'
+									value={formData.gender}
+									onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+									className='w-full p-2 border border-gray-300 rounded mb-4'
+								>
+									<option value='male'>Male</option>
+									<option value='female'>Female</option>
+								</select>
+							</div>
+
 							<button type='submit' className='w-full bg-blue-500 text-white p-2 rounded'>
 								Submit
 							</button>
