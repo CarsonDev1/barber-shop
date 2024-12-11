@@ -58,11 +58,40 @@ export default function Stylist() {
 							className='group white backdrop-blur-sm border-gray-800 hover:border-orange-500 transition-colors'
 						>
 							<CardContent className='p-2'>
-								<div className='relative h-48'>
-									<Image src={stylist.avatar.thumbUrl} alt='avatar' fill className='object-contain' />
-									<span className='absolute top-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold rounded'>
+								<div className='relative'>
+									<span className='absolute z-10 top-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold rounded'>
 										{stylist.role}
 									</span>
+									<div className='flex flex-col text-center gap-2'>
+										<div className='h-48 relative z-0'>
+											<Image
+												src={stylist.avatar.thumbUrl}
+												alt='avatar'
+												className='object-contain'
+												fill
+											/>
+										</div>
+										<span>{stylist.name}</span>
+										<div className='flex items-center justify-between'>
+											<span>
+												{Array.from({ length: 5 }, (_, index) => (
+													<span
+														key={index}
+														className={
+															index < stylist.rating ? 'text-yellow-500' : 'text-gray-400'
+														}
+													>
+														★
+													</span>
+												))}
+											</span>
+											<div className='flex items-center gap-2 text-sm'>
+												<span>Booking Count: </span>
+												<span>{stylist.bookingCount}</span>
+											</div>
+										</div>
+										<span>{stylist.description}</span>
+									</div>
 								</div>
 							</CardContent>
 						</Card>

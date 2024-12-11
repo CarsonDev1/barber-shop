@@ -23,7 +23,7 @@ import PageContainer from '@/app/components/page-container';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBookings } from '@/app/api/booking/getBooking';
 import { CompleteBooking } from '@/app/api/booking/completeBooking';
-import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 export default function Booking() {
 	// Query bookings data
@@ -42,10 +42,18 @@ export default function Booking() {
 		mutationFn: CompleteBooking,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['dataBookings'] });
-			toast.success('Booking completed successfully.');
+			Swal.fire({
+				icon: 'success',
+				title: 'Success',
+				text: 'Booking completed successfully.',
+			});
 		},
 		onError: (error: any) => {
-			toast.error('Failed to complete booking.');
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: error,
+			});
 			console.error('Error completing booking:', error);
 		},
 	});
@@ -176,10 +184,6 @@ export default function Booking() {
 															</Button>
 														</DropdownMenuTrigger>
 														<DropdownMenuContent align='end' className='w-[160px]'>
-															<DropdownMenuItem className='text-green-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-800 cursor-pointer'>
-																<Pencil className='mr-2 h-4 w-4' />
-																<span>Edit</span>
-															</DropdownMenuItem>
 															<DropdownMenuItem
 																className='text-blue-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-800 cursor-pointer'
 																onClick={() => handleCompleteBooking(booking.id)}

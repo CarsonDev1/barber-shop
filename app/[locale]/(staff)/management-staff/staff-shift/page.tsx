@@ -16,21 +16,23 @@ import { CustomersResponse } from '@/types/Customer.type';
 import { getStaffs } from '@/app/api/customer/getStaffs';
 import { getStaffShiftById } from '@/app/api/staff-shift/getStaffShiftById';
 import { deleteStaffShift } from '@/app/api/staff-shift/deleteStaffShift';
+import { getStaffShiftCus } from '@/app/api/staff-shift/getStaffShiftCus';
+import { getAccount } from '@/app/api/getProfile';
 
 const StaffShift = () => {
 	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const {
-		data: ShiftData,
-		isLoading: isLoadingShiftData,
-		error: errorShiftData,
-	} = useQuery<ApiResponseServiceType>({
-		queryKey: ['dataShift'],
-		queryFn: getShift,
+		data: dataProfile,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['dataProfile'],
+		queryFn: getAccount,
 	});
 
-	const shifts = ShiftData?.payload || [];
+	const staffId = dataProfile?.id;
 
 	const {
 		data: staffShiftData,
@@ -79,10 +81,22 @@ const StaffShift = () => {
 		},
 	});
 
-	const [staffId, setStaffId] = useState(0);
-	const [shiftId, setShiftId] = useState(0);
+	const [week, setWeek] = useState<number | ''>('');
+	const [year, setYear] = useState<number | ''>('');
 	const [date, setDate] = useState('');
 	const [dateError, setDateError] = useState('');
+
+	const {
+		data: staffShiftCusData,
+		isLoading: isLoadingStaffShiftCusData,
+		error: errorStaffShiftCusData,
+	} = useQuery<any>({
+		queryKey: ['dataStaffShift', staffId, week, year],
+		queryFn: () => getStaffShiftCus({ staff_id: staffId as number, week: 49 as number, year: year as number }),
+		enabled: Boolean(staffId && week && year),
+	});
+
+	const shifts = staffShiftCusData?.payload || [];
 
 	const currentDate = new Date().toISOString().split('T')[0];
 
@@ -94,12 +108,9 @@ const StaffShift = () => {
 			return;
 		}
 		setDateError('');
-		if (staffId && shiftId && date) {
+		if (staffId && date) {
 			// Update the data to send dates as an array
-			const staffShiftData = { staffId, shiftId, dates: [date] };
-			mutateCreateStaffShift(staffShiftData);
-			setStaffId(0);
-			setShiftId(0);
+			const staffShiftData = { staffId, dates: [date] };
 			setDate('');
 			setDialogOpen(false); // Close dialog on success
 		} else {
@@ -185,7 +196,6 @@ const StaffShift = () => {
 										name='staffId'
 										className='w-full mt-2 p-2 border border-gray-300 rounded'
 										value={staffId}
-										onChange={(e) => setStaffId(Number(e.target.value))}
 										required
 									>
 										<option value=''>Select Staff</option>
@@ -206,12 +216,10 @@ const StaffShift = () => {
 										id='shiftId'
 										name='shiftId'
 										className='w-full mt-2 p-2 border border-gray-300 rounded'
-										value={shiftId}
-										onChange={(e) => setShiftId(Number(e.target.value))}
 										required
 									>
 										<option value=''>Select Shift</option>
-										{shifts?.map((shift) => (
+										{shifts?.map((shift: any) => (
 											<option key={shift.id} value={shift.id}>
 												{shift.name} {/* Or any other field to display shift details */}
 											</option>

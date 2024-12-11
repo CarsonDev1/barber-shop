@@ -212,35 +212,6 @@ export default function BookingCalender() {
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align='end' className='w-32'>
 													<DropdownMenuItem
-														onClick={() =>
-															handleEditClick({
-																...booking,
-																name: booking.staff.name,
-																phone: booking.staff.phone,
-																service: booking.bookingDetails
-																	.map((detail) => detail.service.name)
-																	.join(', '),
-																stylist: booking.staff.name,
-																date: new Date(booking.startTime).toLocaleDateString(
-																	'vi-VN'
-																),
-																bookingDetails: booking.bookingDetails.map(
-																	(detail) => ({
-																		bookingDetailId: detail.bookingDetailId,
-																		service: {
-																			name: detail.service.name,
-																			price: detail.service.price,
-																		},
-																	})
-																),
-															})
-														}
-														className='text-green-600 hover:text-green-700'
-													>
-														<Pencil className='w-4 h-4 mr-2' />
-														Edit
-													</DropdownMenuItem>
-													<DropdownMenuItem
 														onClick={() => {
 															if (booking.status === 'COMPLETED') {
 																setSelectedBooking({
@@ -277,10 +248,6 @@ export default function BookingCalender() {
 													>
 														<Star className='w-4 h-4 mr-2' />
 														Review
-													</DropdownMenuItem>
-													<DropdownMenuItem className='text-red-600 hover:text-red-700'>
-														<Trash2 className='w-4 h-4 mr-2' />
-														Delete
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
@@ -356,6 +323,7 @@ export default function BookingCalender() {
 									}
 									placeholder='Enter your review'
 								/>
+								<label>Service Rating</label>
 								<Input
 									type='number'
 									value={reviewDetails[detail.bookingDetailId]?.rating || 0}

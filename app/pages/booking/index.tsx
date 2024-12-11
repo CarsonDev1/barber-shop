@@ -122,18 +122,13 @@ export default function BookingForm() {
 	const userRole = decoded?.role;
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;
-	const {
-		data: staffShiftByIdData,
-		isLoading,
-		error,
-	} = useQuery({
+	const { data: staffShiftByIdData, isLoading } = useQuery({
 		queryKey: ['dataShiftById', { week: 49, year: currentYear, staff_id }],
 		queryFn: () => getStaffShiftById({ week: 49, year: currentYear, staff_id }),
 		enabled: !!staff_id,
 	});
 
 	const dataStaffShift = staffShiftByIdData?.payload ?? [];
-	console.log('dataStaffShift', dataStaffShift);
 
 	const {
 		data: bookingDatas,
@@ -291,9 +286,6 @@ export default function BookingForm() {
 		selectedDate.setSeconds(0);
 		selectedDate.setMilliseconds(0);
 
-		// Log the final date and time for debugging
-		console.log('Final Selected Date and Time:', selectedDate);
-
 		// Format `startTime` as "YYYY-MM-DD HH:mm:ss"
 		const startTime = format(selectedDate, 'yyyy-MM-dd HH:mm:ss');
 
@@ -320,14 +312,13 @@ export default function BookingForm() {
 							comboIds,
 					  });
 			localStorage.setItem('bookingResponse', JSON.stringify(response));
-
 			localStorage.removeItem('bookingData');
 			setBookingData(null);
 			router.push('/booking-success');
-		} catch (error) {
+		} catch (error: any) {
 			Swal.fire({
-				title: 'Error!',
-				text: 'The time you selected may have already been booked, please choose another time.',
+				title: 'Lỗi!',
+				text: error,
 				icon: 'error',
 				confirmButtonText: 'OK',
 			});

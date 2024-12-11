@@ -97,13 +97,18 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 		formData.append('price', (e.target as any).price.value);
 		formData.append('estimateTime', (e.target as any).estimateTime.value);
 
-		// Append files to FormData
+		// Check if images are selected, then append them to FormData
 		const images = (e.target as HTMLFormElement).images.files;
-		if (images) {
+		if (images.length > 0) {
 			Array.from(images).forEach((file) => {
 				if (file instanceof File) {
 					formData.append('images', file);
 				}
+			});
+		} else if (mode === 'edit' && stylist?.images) {
+			// Optionally, you can also add the existing images if you want to keep them for editing.
+			stylist.images.forEach((image: any) => {
+				formData.append('images', image.url); // Ensure this is the correct field
 			});
 		}
 

@@ -296,9 +296,6 @@ const Income = () => {
 								<Button onClick={() => handleEditClick(salary)} variant='outline'>
 									Edit
 								</Button>
-								<Button onClick={() => handleViewDetails(salary.id)} variant='outline' className='ml-2'>
-									View Details
-								</Button>
 							</TableCell>
 						</TableRow>
 					))}
