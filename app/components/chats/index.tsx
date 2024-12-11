@@ -84,7 +84,7 @@ export default function Chats() {
 			{isChatOpen && (
 				<div
 					ref={chatBoxRef}
-					className='w-80 p-4 bg-white shadow-lg rounded-lg transform transition-transform ease-in-out duration-500 absolute bottom-20 right-0'
+					className='w-96 p-4 bg-white shadow-lg rounded-lg transform transition-transform ease-in-out duration-500 absolute bottom-20 right-0'
 				>
 					{/* Chat History */}
 					<div className='overflow-y-auto max-h-60 mb-4'>
