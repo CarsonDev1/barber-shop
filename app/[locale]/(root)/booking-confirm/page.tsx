@@ -12,12 +12,15 @@ import { useRouter } from 'next/navigation';
 
 export default function BookingConfirm() {
 	const storedResponse = localStorage.getItem('bookingResponse');
+	const voucherResponse: any = localStorage.getItem('voucherData');
 	const bookingIds = storedResponse ? [JSON.parse(storedResponse).payload?.id] : [];
+	const voucherCode: any = voucherResponse ? JSON.parse(voucherResponse).selectedOffers?.[0]?.name : undefined;
+
 	const router = useRouter();
 
 	const bankCode = '';
 	const language = 'vn';
-	const voucherCode = '';
+	// const voucherCode = '';
 
 	const {
 		data: getVnPay,

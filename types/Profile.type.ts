@@ -20,4 +20,5 @@ export type UserProfile = {
   role: string;
   createdAt: string;
   updatedAt: string;
+  rank: string;
 };

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
 	MoreHorizontal,
 	Pencil,
-	Trash2,
 	CheckCircle,
 	ChevronFirst,
 	ChevronLast,
@@ -102,7 +101,7 @@ export default function Booking() {
 											<TableHead className='text-gray-200'>Start Time</TableHead>
 											<TableHead className='text-gray-200'>End Time</TableHead>
 											<TableHead className='text-gray-200'>Status</TableHead>
-											<TableHead className='text-gray-200 text-right'>Action</TableHead>
+											{/* <TableHead className='text-gray-200 text-right'>Action</TableHead> */}
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -177,7 +176,7 @@ export default function Booking() {
 														{booking.status}
 													</span>
 												</TableCell>
-												<TableCell className='text-right'>
+												{/* <TableCell className='text-right'>
 													<DropdownMenu>
 														<DropdownMenuTrigger asChild>
 															<Button
@@ -201,13 +200,9 @@ export default function Booking() {
 																<CheckCircle className='mr-2 h-4 w-4' />
 																<span>Complete</span>
 															</DropdownMenuItem>
-															<DropdownMenuItem className='text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-800 cursor-pointer'>
-																<Trash2 className='mr-2 h-4 w-4' />
-																<span>Delete</span>
-															</DropdownMenuItem>
 														</DropdownMenuContent>
 													</DropdownMenu>
-												</TableCell>
+												</TableCell> */}
 											</TableRow>
 										))}
 									</TableBody>

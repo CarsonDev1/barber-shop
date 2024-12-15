@@ -224,6 +224,21 @@ export default function Header() {
 											<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
 										</Avatar>
 										<span className='text-xs'>{dataProfile.name}</span>
+										{dataProfile?.rank ? (
+											<span
+												className={`px-2 py-1 bg-slate-200 rounded-md ${
+													dataProfile?.rank === 'BRONZE'
+														? 'bg-yellow-400/15 text-yellow-600'
+														: dataProfile.rank === 'DIAMOND'
+														? 'bg-blue-400/15 text-blue-600'
+														: 'bg-green-400/15 text-green-600'
+												}`}
+											>
+												{dataProfile?.rank}
+											</span>
+										) : (
+											<span className='text-xs'>Not rank</span>
+										)}
 									</div>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className='w-56 bg-black text-white border border-gray-800'>
@@ -235,12 +250,12 @@ export default function Header() {
 											</Link>
 										</DropdownMenuItem>
 									)}
-									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
+									{/* <DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/bill' className='flex items-center gap-1'>
 											<Scissors className='mr-2 h-4 w-4' />
 											<span>{t('historyHaircut')}</span>
 										</Link>
-									</DropdownMenuItem>
+									</DropdownMenuItem> */}
 									<DropdownMenuItem className='hover:bg-gray-800 cursor-pointer'>
 										<Link href='/offer' className='flex items-center gap-1'>
 											<Gift className='mr-2 h-4 w-4' />

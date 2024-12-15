@@ -117,8 +117,17 @@ export default function BookingForm() {
 	const router = useRouter();
 	const { isAuthenticated } = useAuth();
 	const { t } = useTranslation('common');
-	const tokenData: any = localStorage.getItem('accessToken');
-	const decoded: any = jwtDecode(tokenData);
+	const tokenData: any = localStorage?.getItem('accessToken');
+
+	let decoded: any = null;
+	if (typeof tokenData === 'string' && tokenData.trim()) {
+		try {
+			decoded = jwtDecode(tokenData);
+		} catch (error) {
+			console.error('Error decoding token:', error);
+		}
+	}
+
 	const userRole = decoded?.role;
 
 	const staff_id = bookingData?.selectedStylist?.id || 0;

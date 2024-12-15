@@ -93,16 +93,9 @@ const ComboManagement = () => {
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (files && files.length > 0) {
-			const newImages = Array.from(files).map((file) => ({
-				id: Math.random(), // ID tạm thời
-				url: URL.createObjectURL(file), // URL xem trước
-				file, // File gốc
-				isNew: true, // Đánh dấu là hình mới
-			}));
-
 			setComboData((prev) => ({
 				...prev,
-				images: [...prev.images, ...newImages],
+				images: Array.from(files),
 			}));
 		}
 	};
@@ -294,7 +287,17 @@ const ComboManagement = () => {
 
 	const handleDialogClose = () => {
 		setIsDialogOpen(false);
-		setRemoveImages([]);
+		setRemoveImages([]); // Reset the removed images list
+		setComboData({
+			serviceIds: [],
+			name: '',
+			description: '',
+			price: 0,
+			estimateTime: 0,
+			images: [],
+			id: '',
+		}); // Reset the combo data
+		setSelectedCombo(null);
 	};
 
 	if (isLoadingCombos) return <PageContainer>Loading...</PageContainer>;
@@ -408,6 +411,8 @@ const ComboManagement = () => {
 						className='mb-2 p-2 border'
 					/>
 
+					<input type='file' accept='image/*' onChange={handleImageChange} className='mb-2 p-2 border' />
+
 					{/* Hiển thị danh sách hình ảnh hiện tại
 					<div className='mb-4'>
 						<h4>Current Images</h4>
@@ -433,15 +438,6 @@ const ComboManagement = () => {
 							))}
 						</div>
 					</div> */}
-
-					{/* <label>Add Images</label>
-					<input
-						type='file'
-						accept='image/*'
-						multiple // Cho phép thêm nhiều hình
-						onChange={handleImageChange}
-						className='mb-2 p-2 border'
-					/> */}
 
 					{/* Chọn dịch vụ */}
 					<div className='mb-4'>

@@ -1,5 +1,5 @@
 import api from '@/utils/api';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface StaffRequest {
 	name: string;
@@ -21,7 +21,10 @@ export const createStaff = async (staffData: StaffRequest): Promise<StaffRespons
 		const response: AxiosResponse<StaffResponse> = await api.post('/users', staffData);
 		return response.data;
 	} catch (error: any) {
-		console.error('Error creating staff:', error);
-		throw new Error(error.response?.data?.message || 'Unable to create staff');
+		if (error instanceof AxiosError && error.response) {
+			throw new Error(error.response.data.payload?.vi || error.response.data.message || "Unknown error occurred");
+		} else {
+			throw new Error("An unexpected error occurred");
+		}
 	}
 };

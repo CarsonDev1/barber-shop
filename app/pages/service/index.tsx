@@ -165,8 +165,13 @@ export default function Service() {
 			totalPayment: totalPrice,
 		};
 
+		const voucherData = {
+			selectedOffers: selectedOffersData,
+		};
+
 		// Save the entire bookingData object in localStorage
 		localStorage.setItem('bookingData', JSON.stringify(bookingData));
+		localStorage.setItem('voucherData', JSON.stringify(voucherData));
 
 		// Redirect to booking page
 		router.push('/book');
@@ -383,7 +388,7 @@ export default function Service() {
 										size='lg'
 										className='bg-blue-600 hover:bg-blue-700 text-white'
 										onClick={handleFinished}
-										disabled={selectedServices.size === 0}
+										disabled={selectedServices.size === 0 && selectedCombos.size === 0}
 									>
 										Finished
 									</Button>

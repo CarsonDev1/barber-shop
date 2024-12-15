@@ -162,7 +162,6 @@ const StaffShift = () => {
 									<TableHead>Start time</TableHead>
 									<TableHead>Start end</TableHead>
 									<TableHead>Date</TableHead>
-									<TableHead>Action</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -170,7 +169,7 @@ const StaffShift = () => {
 									<TableRow key={shift.id}>
 										<TableCell>{shift?.startTime}</TableCell>
 										<TableCell>{shift?.endTime}</TableCell>
-										<TableCell>{shift.date}</TableCell>
+										<TableCell> {new Date(shift.date).toLocaleDateString('en-GB')}</TableCell>
 									</TableRow>
 								))}
 							</TableBody>

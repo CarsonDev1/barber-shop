@@ -67,10 +67,10 @@ export default function Stylist() {
 			});
 			setDialogOpen(false);
 		},
-		onError: () => {
+		onError: (error: any) => {
 			Swal.fire({
 				title: 'Error!',
-				text: 'There was an error creating the staff member.',
+				text: error,
 				icon: 'error',
 				confirmButtonText: 'OK',
 			});
@@ -95,10 +95,10 @@ export default function Stylist() {
 			setEditingStaff(null);
 			setDialogOpen(false);
 		},
-		onError: () => {
+		onError: (error: any) => {
 			Swal.fire({
 				title: 'Error!',
-				text: 'There was an error updating the staff member.',
+				text: error,
 				icon: 'error',
 				confirmButtonText: 'OK',
 			});
@@ -157,10 +157,24 @@ export default function Stylist() {
 		}
 	};
 
+	const handleAddMemberClick = () => {
+		setDialogOpen(true);
+		setMode('add');
+		setEditingStaff(null);
+		setFormData({
+			name: '',
+			email: '',
+			phone: '',
+			dob: '',
+			password: '',
+			role: 'ROLE_STAFF',
+		});
+	};
+
 	const handleCreateStaff = (e: React.FormEvent) => {
 		e.preventDefault();
 
-		// Validate name, email, phone, and DOB
+		// Validate name, email, phone, DOB
 		if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.dob) {
 			toast.error('All fields are required. Please fill in the missing information.');
 			return;
@@ -173,7 +187,16 @@ export default function Stylist() {
 			return;
 		}
 
-		// Validate date of birth (must be between 18 and 60 years old)
+		// Validate password strength
+		const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
+		if (!passwordRegex.test(formData.password)) {
+			toast.error(
+				'Password must be at least 8 characters long and include one uppercase letter and one special character.'
+			);
+			return;
+		}
+
+		// Validate date of birth (between 18 and 60 years old)
 		const dob = new Date(formData.dob);
 		const today = new Date();
 		const age = today.getFullYear() - dob.getFullYear();
@@ -185,14 +208,11 @@ export default function Stylist() {
 				text: 'Date of birth must make the staff member between 18 and 60 years old.',
 				icon: 'error',
 				confirmButtonText: 'OK',
-			}).then(() => {
-				// Close the form/modal when Swal appears
-				setDialogOpen(false);
 			});
 			return;
 		}
 
-		// If all validations pass, proceed with the mutation
+		// If all validations pass
 		mutateCreateStaff(formData);
 		setFormData({
 			name: '',
@@ -202,10 +222,6 @@ export default function Stylist() {
 			password: '',
 			role: 'ROLE_STAFF',
 		});
-
-		toast.success('Staff member created successfully.');
-
-		// Close the form/modal after creation
 		setDialogOpen(false);
 	};
 
@@ -222,42 +238,31 @@ export default function Stylist() {
 	const handleUpdateStaf = (e: React.FormEvent) => {
 		e.preventDefault();
 
-		// Check if ID, name, email, phone, and dob are valid
-		if (
-			!formData.name.trim() ||
-			!formData.email.trim() ||
-			!formData.phone.trim() ||
-			!formData.dob ||
-			!editingStaff?.id
-		) {
-			Swal.fire({
-				title: 'Warning!',
-				text: 'All fields are required, and Staff ID is invalid.',
-				icon: 'warning',
-				confirmButtonText: 'OK',
-			}).then(() => {
-				// Close the form/modal when Swal appears
-				setDialogOpen(false);
-			});
+		// Validate name, email, phone, and DOB
+		if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.dob) {
+			toast.error('All fields are required.');
 			return;
 		}
 
-		// Validate phone number (must be exactly 10 digits)
+		// Validate phone number (10 digits)
 		const phoneRegex = /^[0-9]{10}$/;
 		if (!phoneRegex.test(formData.phone)) {
-			Swal.fire({
-				title: 'Error!',
-				text: 'Phone number must be exactly 10 digits.',
-				icon: 'error',
-				confirmButtonText: 'OK',
-			}).then(() => {
-				// Close the form/modal when Swal appears
-				setDialogOpen(false);
-			});
+			toast.error('Phone number must be exactly 10 digits.');
 			return;
 		}
 
-		// Validate date of birth (must be between 18 and 60 years old)
+		// Validate password strength (optional for updates if the password is provided)
+		if (formData.password) {
+			const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
+			if (!passwordRegex.test(formData.password)) {
+				toast.error(
+					'Password must be at least 8 characters long and include one uppercase letter and one special character.'
+				);
+				return;
+			}
+		}
+
+		// Validate date of birth (18-60 years)
 		const dob = new Date(formData.dob);
 		const today = new Date();
 		const age = today.getFullYear() - dob.getFullYear();
@@ -269,14 +274,11 @@ export default function Stylist() {
 				text: 'Date of birth must make the staff member between 18 and 60 years old.',
 				icon: 'error',
 				confirmButtonText: 'OK',
-			}).then(() => {
-				// Close the form/modal when Swal appears
-				setDialogOpen(false);
 			});
 			return;
 		}
 
-		// If all validations pass, proceed with the mutation
+		// If validations pass
 		mutateUpdateStaff({ id: editingStaff.id, ...formData });
 		setFormData({
 			name: '',
@@ -288,7 +290,6 @@ export default function Stylist() {
 		});
 
 		toast.success('Staff member updated successfully.');
-
 		setDialogOpen(false);
 	};
 
@@ -308,7 +309,7 @@ export default function Stylist() {
 					<Button
 						className='fixed top-8 right-8 rounded-full shadow-lg border'
 						size='lg'
-						onClick={() => setDialogOpen(true)}
+						onClick={handleAddMemberClick}
 					>
 						<Plus className='w-6 h-6 mr-2' />
 						ADD MEMBER
@@ -412,6 +413,16 @@ export default function Stylist() {
 								<h3 className='font-bold text-lg mb-1'>{member.name}</h3>
 								<p className='text-sm text-gray-600'>{member.phone}</p>
 								<p className='text-sm text-gray-600'>{member.verified}</p>
+								<span>
+									{Array.from({ length: 5 }, (_, index) => (
+										<span
+											key={index}
+											className={index < member.rating ? 'text-yellow-500' : 'text-gray-400'}
+										>
+											★
+										</span>
+									))}
+								</span>
 							</div>
 						</CardContent>
 						<CardFooter className='bg-gray-50 border-t flex justify-between p-2'>
@@ -425,14 +436,14 @@ export default function Stylist() {
 								Edit
 							</Button>
 
-							<Button
+							{/* <Button
 								variant='outline'
 								size='sm'
 								className='text-red-600 hover:text-red-700 hover:bg-red-50'
 							>
 								<Trash2 className='w-4 h-4 mr-2' />
 								Delete
-							</Button>
+							</Button> */}
 						</CardFooter>
 					</Card>
 				))}
