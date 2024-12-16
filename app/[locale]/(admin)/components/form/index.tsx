@@ -23,8 +23,7 @@ interface EditStylistFormProps {
 export default function EditStylistForm({ stylist, mode, onClose }: EditStylistFormProps) {
 	const queryClient = useQueryClient();
 	const [serviceTypeId, setServiceTypeId] = useState<string>(stylist?.serviceTypeId || '');
-	const [imagesForRemoval, setImagesForRemoval] = useState<string[]>([]);
-
+	const [removeImageId, setRemoveImageId] = useState<number | null>(null);
 	// Mutation for creating a new service
 	const { mutate: mutateCreateService } = useMutation({
 		mutationFn: async (serviceData: FormData) => {
@@ -118,8 +117,8 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 			});
 		}
 
-		if (imagesForRemoval.length > 0) {
-			formData.append('remove_images', JSON.stringify(imagesForRemoval));
+		if (removeImageId !== null) {
+			formData.append('remove_images', String(removeImageId));
 		}
 
 		// Trigger mutation based on the mode (add or edit)
@@ -131,8 +130,8 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 		}
 	};
 
-	const handleImageRemove = (imageUrl: string) => {
-		setImagesForRemoval((prev) => [...prev, imageUrl]);
+	const handleImageRemove = (imageId: number) => {
+		setRemoveImageId(imageId);
 	};
 
 	return (
@@ -149,13 +148,13 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 							{mode === 'edit' && stylist?.images?.length > 0 && (
 								<div className='flex flex-wrap gap-4'>
 									{stylist?.images
-										?.filter((image: any) => !imagesForRemoval.includes(image.url))
+										?.filter((image: any) => image.id !== removeImageId)
 										?.map((image: any) => (
-											<div key={image.url} className='relative'>
+											<div key={image.id} className='relative'>
 												<Image src={image.url} alt={stylist.name} width={100} height={100} />
 												<Button
 													className='absolute top-0 right-0 bg-red-500 text-white'
-													onClick={() => handleImageRemove(image.url)}
+													onClick={() => handleImageRemove(image.id)}
 												>
 													Remove
 												</Button>

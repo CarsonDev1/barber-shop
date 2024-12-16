@@ -52,7 +52,7 @@ const ComboManagement = () => {
 	const queryClient = useQueryClient();
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [isDetailDialogOpen, setIsDetailDialogOpen] = useState<boolean>(false);
-	const [removeImages, setRemoveImages] = useState<number[]>([]);
+	const [removeImages, setRemoveImages] = useState<number | null>(null);
 	const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
 	const [comboData, setComboData] = useState({
 		serviceIds: [] as number[],
@@ -101,10 +101,8 @@ const ComboManagement = () => {
 	};
 
 	const handleDeleteImage = (imageId: number) => {
-		// Thêm hình ảnh vào danh sách cần xóa
-		setRemoveImages((prev) => [...prev, imageId]);
+		setRemoveImages(imageId);
 
-		// Loại bỏ hình ảnh khỏi danh sách hiển thị
 		setComboData((prev) => ({
 			...prev,
 			images: prev.images.filter((image: any) => image.id !== imageId),
@@ -205,9 +203,7 @@ const ComboManagement = () => {
 				});
 
 			// Thêm danh sách hình ảnh cần xóa
-			removeImages.forEach((imageId) => {
-				formData.append('remove_images[]', imageId.toString());
-			});
+			removeImages && formData.append('remove_images', removeImages.toString());
 
 			// Thêm danh sách dịch vụ
 			comboData.serviceIds.forEach((id, index) => {
@@ -226,7 +222,7 @@ const ComboManagement = () => {
 				confirmButtonText: 'OK',
 			});
 			setIsDialogOpen(false);
-			setRemoveImages([]);
+			setRemoveImages(null);
 		},
 		onError: (error) => {
 			console.error('Error updating combo:', error);
@@ -287,7 +283,7 @@ const ComboManagement = () => {
 
 	const handleDialogClose = () => {
 		setIsDialogOpen(false);
-		setRemoveImages([]); // Reset the removed images list
+		setRemoveImages(null); // Reset the removed images list
 		setComboData({
 			serviceIds: [],
 			name: '',
