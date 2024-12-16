@@ -74,7 +74,7 @@ export default function Chats() {
 			{/* AI Chat Button */}
 			<button
 				className='relative rounded-full shadow-lg hover:shadow-xl transition-all group'
-				onClick={() => setChatOpen((prev) => !prev)} // Toggle chat on button click
+				onClick={() => setChatOpen((prev) => !prev)}
 			>
 				<span className='absolute top-1/2 left-1/2 w-[120%] h-[120%] bg-[#2196f3]/50 rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-ripple'></span>
 				<Image src={AI} alt='btn-chat' className='w-14 h-14 animate-shake' />

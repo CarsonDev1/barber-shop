@@ -10,7 +10,7 @@ import { Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { createService } from '@/app/api/service/createService';
-import { updateService } from '@/app/api/service/updateService'; // Import updateService API
+import { updateService } from '@/app/api/service/updateService';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import { getServiceTypes } from '@/app/api/service/getServiceType';
 
@@ -23,7 +23,7 @@ interface EditStylistFormProps {
 export default function EditStylistForm({ stylist, mode, onClose }: EditStylistFormProps) {
 	const queryClient = useQueryClient();
 	const [serviceTypeId, setServiceTypeId] = useState<string>(stylist?.serviceTypeId || '');
-	const [imagesForRemoval, setImagesForRemoval] = useState<string[]>([]); // Track images to remove
+	const [imagesForRemoval, setImagesForRemoval] = useState<string[]>([]);
 
 	// Mutation for creating a new service
 	const { mutate: mutateCreateService } = useMutation({
@@ -118,16 +118,13 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 			});
 		}
 
-		// Handle removing images
 		if (imagesForRemoval.length > 0) {
-			imagesForRemoval.forEach((imageUrl) => {
-				formData.append('remove_images', imageUrl); // Append each image URL separately
-			});
+			formData.append('remove_images', JSON.stringify(imagesForRemoval));
 		}
 
 		// Trigger mutation based on the mode (add or edit)
 		if (mode === 'edit') {
-			formData.append('id', stylist.id); // Include the service ID for update
+			formData.append('id', stylist.id);
 			mutateUpdateService(formData);
 		} else {
 			mutateCreateService(formData);
@@ -151,17 +148,19 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 						<div className='space-y-2'>
 							{mode === 'edit' && stylist?.images?.length > 0 && (
 								<div className='flex flex-wrap gap-4'>
-									{stylist.images.map((image: any) => (
-										<div key={image.url} className='relative'>
-											<Image src={image.url} alt={stylist.name} width={100} height={100} />
-											<Button
-												className='absolute top-0 right-0 bg-red-500 text-white'
-												onClick={() => handleImageRemove(image.url)}
-											>
-												Remove
-											</Button>
-										</div>
-									))}
+									{stylist?.images
+										?.filter((image: any) => !imagesForRemoval.includes(image.url))
+										?.map((image: any) => (
+											<div key={image.url} className='relative'>
+												<Image src={image.url} alt={stylist.name} width={100} height={100} />
+												<Button
+													className='absolute top-0 right-0 bg-red-500 text-white'
+													onClick={() => handleImageRemove(image.url)}
+												>
+													Remove
+												</Button>
+											</div>
+										))}
 								</div>
 							)}
 						</div>
