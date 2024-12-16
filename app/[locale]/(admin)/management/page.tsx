@@ -3,16 +3,84 @@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { useEffect, useMemo, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import PageContainer from '@/app/components/page-container';
 import { useAuth } from '@/context/AuthProvider';
+import { useQuery } from '@tanstack/react-query';
+import { getCustomersStatistics } from '@/app/api/statistic/getStatisticCustomers';
+import { getStaffStatistics } from '@/app/api/statistic/getStatisticStaffs'; // Added import for staff statistics API
+import { CustomersResponse } from '@/types/Customer.type';
+import { getStaffs } from '@/app/api/customer/getStaffs';
 
 const timeFilters = ['1 Week', '1 Month', '6 Month', '1 Year', 'Ever'];
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658'];
 
 export default function DashBoardPage() {
 	const [selectedFilter, setSelectedFilter] = useState('1 Week');
+	const [fromDate, setFromDate] = useState('');
+	const [toDate, setToDate] = useState('');
+	const [staffNameMap, setStaffNameMap] = useState<any>({});
+
+	const calculateDates = (filter: string) => {
+		const now = new Date();
+		let from = new Date();
+
+		switch (filter) {
+			case '1 Week':
+				from.setDate(now.getDate() - 7);
+				break;
+			case '1 Month':
+				from.setMonth(now.getMonth() - 1);
+				break;
+			case '6 Month':
+				from.setMonth(now.getMonth() - 6);
+				break;
+			case '1 Year':
+				from.setFullYear(now.getFullYear() - 1);
+				break;
+			case 'Ever':
+				from = new Date('1970-01-01');
+				break;
+			default:
+				break;
+		}
+
+		setFromDate(from.toISOString().split('T')[0]); // Format to YYYY-MM-DD
+		setToDate(now.toISOString().split('T')[0]);
+	};
+
+	useEffect(() => {
+		calculateDates(selectedFilter);
+	}, [selectedFilter]);
+
+	const {
+		data: staffData,
+		isLoading: isLoadingStaffs,
+		error: errorStaffs,
+	} = useQuery<CustomersResponse>({
+		queryKey: ['dataStaffs'],
+		queryFn: getStaffs,
+	});
+
+	const {
+		data: customerData = [],
+		isLoading: isLoadingCustomerData,
+		error: errorCustomerData,
+	} = useQuery({
+		queryKey: ['dataCustomers', fromDate, toDate],
+		queryFn: () => getCustomersStatistics(fromDate, toDate),
+		enabled: !!fromDate && !!toDate,
+	});
+
+	const {
+		data: staffStatisticsData = [], // Fetch staff statistics
+		isLoading: isLoadingStaffStatistics,
+		error: errorStaffStatistics,
+	} = useQuery({
+		queryKey: ['dataStaffStatistics', fromDate, toDate],
+		queryFn: () => getStaffStatistics(fromDate, toDate), // Call the staff statistics function
+		enabled: !!fromDate && !!toDate,
+	});
 
 	const { isAuthenticated } = useAuth();
 	const [isClient, setIsClient] = useState(false);
@@ -24,22 +92,35 @@ export default function DashBoardPage() {
 		}
 	}, [isAuthenticated]);
 
+	useEffect(() => {
+		if (staffData?.payload) {
+			const mapping: Record<number, string> = {};
+			staffData.payload.forEach((staff: any) => {
+				mapping[staff.id] = staff.name;
+			});
+			setStaffNameMap(mapping);
+		}
+	}, [staffData]);
+
+	const transformedStaffChartData = useMemo(() => {
+		if (!staffStatisticsData?.payload || !staffNameMap) return [];
+		return staffStatisticsData.payload.map((item: any) => ({
+			...item,
+			name: staffNameMap[item.id] || `ID: ${item.id}`,
+		}));
+	}, [staffStatisticsData, staffNameMap]);
+
+	const transformedCustomerChartData = useMemo(() => {
+		if (!customerData?.payload || !staffNameMap) return [];
+		return customerData.payload.map((item: any) => ({
+			...item,
+			name: staffNameMap[item.id] || `ID: ${item.id}`,
+		}));
+	}, [customerData, staffNameMap]);
+
 	if (!isClient || !isAuthenticated) {
 		return null;
 	}
-
-	// Dữ liệu mẫu
-	const bookingsData = [
-		{ id: 1, stylist: 'Thiep', service: 'Service 1', total: 100 },
-		{ id: 2, stylist: 'Thiep', service: 'Service 2', total: 200 },
-		{ id: 3, stylist: 'Thiep', service: 'Service 3', total: 300 },
-	];
-
-	const statsData = [
-		{ name: 'Stylist', value: 20 },
-		{ name: 'Services', value: 40 },
-		{ name: 'Revenue', value: 10000 },
-	];
 
 	return (
 		<PageContainer>
@@ -58,39 +139,39 @@ export default function DashBoardPage() {
 					</div>
 
 					<div className='grid md:grid-cols-3 gap-6'>
-						{/* Biểu đồ thanh cho các dịch vụ */}
+						{/* Staff Performance Bar Chart */}
 						<div className='md:col-span-2 bg-gray-800 p-4 rounded-lg'>
-							<h3 className='text-sm font-medium text-gray-400 mb-4'>Service Usage</h3>
+							<h3 className='text-sm font-medium text-gray-400 mb-4'>Top Staff Performance</h3>
 							<ResponsiveContainer width='100%' height={300}>
-								<BarChart data={bookingsData}>
-									<XAxis dataKey='service' stroke='#ccc' />
+								<BarChart data={transformedStaffChartData}>
+									<XAxis
+										dataKey='name'
+										stroke='#ccc'
+										label={{ value: 'Staff Name', position: 'insideBottom', offset: -5 }}
+									/>
 									<YAxis stroke='#ccc' />
 									<Tooltip />
-									<Bar dataKey='total' fill='#8884d8' />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8884d8' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9d' />
 								</BarChart>
 							</ResponsiveContainer>
 						</div>
 
-						{/* Biểu đồ tròn cho Stylist và Doanh thu */}
-						<div className='bg-gray-800 p-4 rounded-lg'>
-							<h3 className='text-sm font-medium text-gray-400 mb-4'>Statistics</h3>
+						{/* Customer Performance Bar Chart */}
+						<div className='md:col-span-2 bg-gray-800 p-4 rounded-lg'>
+							<h3 className='text-sm font-medium text-gray-400 mb-4'>Top Customer Performance</h3>
 							<ResponsiveContainer width='100%' height={300}>
-								<PieChart>
-									<Pie
-										data={statsData}
-										dataKey='value'
-										nameKey='name'
-										innerRadius={60}
-										outerRadius={100}
-										fill='#82ca9d'
-										label
-									>
-										{statsData.map((_, index) => (
-											<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-										))}
-									</Pie>
+								<BarChart data={transformedCustomerChartData}>
+									<XAxis
+										dataKey='name'
+										stroke='#ccc'
+										label={{ value: 'Customer Name', position: 'insideBottom', offset: -5 }}
+									/>
+									<YAxis stroke='#ccc' />
 									<Tooltip />
-								</PieChart>
+									<Bar dataKey='amountMade' name='Revenue' fill='#8884d8' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9d' />
+								</BarChart>
 							</ResponsiveContainer>
 						</div>
 					</div>
