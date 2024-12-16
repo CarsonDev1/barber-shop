@@ -104,8 +104,8 @@ const VoucherManagement = () => {
 				icon: 'success',
 				confirmButtonText: 'OK',
 			});
-			setIsDialogOpen(false); // Close dialog after successful create
-			resetVoucherData(); // Reset the form
+			setIsDialogOpen(false);
+			resetVoucherData();
 		},
 		onError: () => {
 			Swal.fire({
@@ -165,32 +165,6 @@ const VoucherManagement = () => {
 		let newValue = value;
 		if (type === 'number') {
 			newValue = Math.max(0, Number(value)).toString();
-		}
-
-		// Validate Discount and Max Discount constraints
-		if (name === 'discount' || name === 'maxDiscount') {
-			// Ensure Discount and Max Discount are not smaller than 0
-			if (Number(newValue) < 0) {
-				newValue = '0';
-			}
-
-			// Ensure Max Discount is not smaller than Discount
-			if (name === 'maxDiscount' && Number(newValue) < Number(voucherData.discount)) {
-				newValue = voucherData.discount.toString(); // Set maxDiscount to the value of discount if it's smaller
-			}
-		}
-
-		// Ensure Max Discount is not more than 100
-		if (name === 'discount' && Number(newValue) > 100) {
-			newValue = '100'; // Limit discount to 100%
-		}
-
-		if (name === 'maxDiscount' && Number(newValue) > 100) {
-			newValue = '100'; // Limit maxDiscount to 100%
-		}
-
-		if (name === 'minPrice' && Number(newValue) < 0) {
-			newValue = '0'; // Prevent minPrice from being negative
 		}
 
 		if (name === 'startDate' && new Date(newValue) < new Date()) {
