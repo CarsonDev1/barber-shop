@@ -38,6 +38,7 @@ export default function ProfilePage() {
 		blocked: false,
 		role: '',
 		createdAt: '',
+		rank: '',
 		updatedAt: '',
 	});
 
