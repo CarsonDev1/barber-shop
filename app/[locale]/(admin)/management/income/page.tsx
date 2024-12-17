@@ -288,7 +288,7 @@ const Income = () => {
 							<TableCell>{salary.rate}</TableCell>
 							<TableCell>{salary.percentage}</TableCell>
 							<TableCell>
-								<Button onClick={() => handleEditClick(salary)} variant='outline'>
+								<Button onClick={() => handleEditClick(salary)} variant='ghost'>
 									Edit
 								</Button>
 							</TableCell>

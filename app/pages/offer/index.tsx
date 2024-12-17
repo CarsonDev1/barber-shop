@@ -22,7 +22,7 @@ export default function OfferPage() {
 	const offers = vouchersData?.payload || [];
 
 	return (
-		<div className='relative sec-com h-dvh'>
+		<div className='relative sec-com'>
 			<Image
 				src={BackGroundRoot}
 				alt='Barber Shop Logo'
@@ -85,7 +85,7 @@ export default function OfferPage() {
 											{new Intl.NumberFormat('vi-VN', {
 												style: 'currency',
 												currency: 'VND',
-											}).format(offer.minPrice)}
+											}).format(offer.maxDiscount)}
 										</span>
 									</div>
 								</div>

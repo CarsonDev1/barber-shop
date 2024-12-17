@@ -193,13 +193,6 @@ export default function DashBoardPage() {
 					{/* Header */}
 					<div className='flex justify-between items-center mb-6'>
 						<h1 className='text-2xl font-bold text-white'>DASHBOARD MANAGEMENT</h1>
-						<div className='relative w-72'>
-							<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
-							<Input
-								placeholder='Search Stylist'
-								className='pl-9 bg-gray-700 border-gray-600 text-white placeholder:text-gray-400'
-							/>
-						</div>
 					</div>
 
 					<div className='grid md:grid-cols-3 gap-6'>

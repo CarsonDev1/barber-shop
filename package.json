@@ -45,7 +45,7 @@
     "react-confetti": "^6.1.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
-    "react-hook-form": "^7.53.2",
+    "react-hook-form": "^7.54.1",
     "react-i18next": "^15.1.0",
     "react-markdown": "^9.0.1",
     "react-select": "^5.8.3",
@@ -57,6 +57,7 @@
     "swiper": "^11.1.15",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "yup": "^1.6.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

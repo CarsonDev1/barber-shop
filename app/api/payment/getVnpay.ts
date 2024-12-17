@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
 import api from '@/utils/api';
+import { AxiosError } from 'axios';
 
 /**
  * Fetch VNPay URL for the given booking IDs with additional parameters
@@ -20,15 +19,24 @@ export const getVNPayUrl = async (
 	try {
 		const response = await api.get<ApiResponseServiceType>('/payment/get-vnpay-url', {
 			params: {
-				bookingIds: bookingIds.join(','),
+				bookingIds: bookingIds.join(','), // Convert array to string
 				bankCode,
 				language,
-				voucherCode
+				voucherCode,
 			},
 		});
 		return response.data;
 	} catch (error: any) {
-		console.error('Error fetching VNPay URL:', error.response?.data || error.message);
-		throw error;
+		if (error instanceof AxiosError && error.response) {
+			// Throw specific error from API response
+			throw new Error(
+				error.response.data.payload?.vi || // Prefer Vietnamese error
+				error.response.data.message || // Generic error message
+				'Unknown error occurred' // Fallback error
+			);
+		} else {
+			// Fallback for unexpected errors
+			throw new Error('An unexpected error occurred');
+		}
 	}
 };

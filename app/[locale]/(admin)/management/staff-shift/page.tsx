@@ -104,19 +104,34 @@ const StaffShift = () => {
 	// Handle form submission for creating a new staff shift
 	const handleCreateStaffShift = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (date <= currentDate) {
+		const selectedDate = new Date(date); // Ngày được chọn
+		const today = new Date(); // Ngày hiện tại
+		const maxDate = new Date();
+		maxDate.setDate(today.getDate() + 7); // Ngày tối đa (7 ngày tới)
+
+		// Kiểm tra ngày
+		if (selectedDate <= today) {
 			setDateError('The selected date must be greater than today.');
 			return;
+		} else if (selectedDate > maxDate) {
+			Swal.fire({
+				title: 'Error!',
+				text: 'The selected date must be within the next 7 days.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return;
 		}
-		setDateError('');
+
+		setDateError(''); // Xóa lỗi nếu không có vấn đề
+
 		if (staffId && shiftId && date) {
-			// Update the data to send dates as an array
 			const staffShiftData = { staffId, shiftId, dates: [date] };
 			mutateCreateStaffShift(staffShiftData);
 			setStaffId(0);
 			setShiftId(0);
 			setDate('');
-			setDialogOpen(false); // Close dialog on success
+			setDialogOpen(false); // Đóng dialog nếu thành công
 		} else {
 			Swal.fire({
 				title: 'Warning!',
@@ -125,7 +140,6 @@ const StaffShift = () => {
 				confirmButtonText: 'OK',
 			});
 		}
-		setDate('');
 	};
 
 	const { mutate: mutateDeleteStaffShift } = useMutation({
@@ -245,6 +259,12 @@ const StaffShift = () => {
 										type='date'
 										className='w-full'
 										value={date}
+										min={new Date().toISOString().split('T')[0]} // Ngày hôm nay
+										max={
+											new Date(new Date().setDate(new Date().getDate() + 7))
+												.toISOString()
+												.split('T')[0]
+										} // 7 ngày tới
 										onChange={(e) => setDate(e.target.value)}
 										required
 									/>

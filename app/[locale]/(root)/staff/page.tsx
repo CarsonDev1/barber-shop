@@ -2,14 +2,12 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronDown, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import BackGroundRoot from '@/public/root/background-root.png';
 import { useQuery } from '@tanstack/react-query';
 import { CustomersResponse } from '@/types/Customer.type';
 import { getStaffs } from '@/app/api/customer/getStaffs';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function Stylist() {
 	const {
@@ -24,6 +22,14 @@ export default function Stylist() {
 	const stylists = staffData?.payload || [];
 	const [selectedStylistId, setSelectedStylistId] = useState<number | null>(null);
 	const router = useRouter();
+
+	const [currentPage, setCurrentPage] = useState(1);
+	const stylistsPerPage = 8;
+	const totalPages = Math.ceil(stylists.length / stylistsPerPage);
+
+	const startIndex = (currentPage - 1) * stylistsPerPage;
+	const endIndex = startIndex + stylistsPerPage;
+	const paginatedStylists = stylists.slice(startIndex, endIndex);
 
 	const handleSelectStylist = (stylistId: number) => {
 		setSelectedStylistId(stylistId);
@@ -40,7 +46,7 @@ export default function Stylist() {
 	};
 
 	return (
-		<div className='min-h-screen bg-slate-950 text-white p-4 space-y-6 !pt-24 relative'>
+		<div className='sec-com !pb-32 bg-slate-950 text-white p-4 space-y-6 !pt-24 relative'>
 			<Image
 				src={BackGroundRoot}
 				alt='Barber Shop Logo'
@@ -48,11 +54,9 @@ export default function Stylist() {
 				height={1200}
 				className='absolute inset-0 w-full object-cover h-full'
 			/>
-			<div className='absolute inset-0 bg-black bg-opacity-50 h-screen'></div>
 			<div className='container-lg'>
-				{/* Stylist Grid */}
 				<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4'>
-					{stylists.map((stylist) => (
+					{paginatedStylists.map((stylist) => (
 						<Card
 							key={stylist.id}
 							className='group white backdrop-blur-sm border-gray-800 hover:border-orange-500 transition-colors'
@@ -96,6 +100,25 @@ export default function Stylist() {
 							</CardContent>
 						</Card>
 					))}
+				</div>
+
+				{/* Pagination Controls */}
+				<div className='flex justify-center items-center gap-4 mt-4'>
+					<Button
+						onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+						disabled={currentPage === 1}
+					>
+						Previous
+					</Button>
+					<span>
+						Page {currentPage} of {totalPages}
+					</span>
+					<Button
+						onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+						disabled={currentPage === totalPages}
+					>
+						Next
+					</Button>
 				</div>
 			</div>
 		</div>

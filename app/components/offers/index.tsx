@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getCusVouchers } from '@/app/api/voucher/getCusVoucher';
 
 interface OffersProps {
-	onApply: (offers: { id: number; name: string; minPrice: number }[]) => void;
+	onApply: (offers: { id: number; name: string; maxDiscount: number }[]) => void;
 }
 
 interface Voucher {
@@ -21,7 +21,6 @@ interface Voucher {
 	maxDiscount: number;
 	startDate: string;
 	endDate: string;
-	minPrice: number;
 	disabled: boolean;
 }
 
@@ -78,12 +77,12 @@ export default function Offers({ onApply }: OffersProps) {
 			...Array.from(selectedBarberOffers).map((index) => ({
 				id: barberOffers[index].id,
 				name: barberOffers[index].code,
-				minPrice: barberOffers[index].minPrice,
+				maxDiscount: barberOffers[index].maxDiscount,
 			})),
 			...Array.from(selectedUserOffers).map((index) => ({
 				id: userOffers[index].id,
 				name: userOffers[index].name,
-				minPrice: barberOffers[index].minPrice,
+				maxDiscount: barberOffers[index].maxDiscount,
 			})),
 		];
 

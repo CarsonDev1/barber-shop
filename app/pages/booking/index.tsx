@@ -81,7 +81,6 @@ interface Voucher {
 	maxDiscount: number;
 	startDate: string;
 	endDate: string;
-	minPrice: number;
 	disabled: boolean;
 }
 
@@ -408,7 +407,7 @@ export default function BookingForm() {
 												{bookingData.selectedOffers.map((offer) => (
 													<div key={offer.id} className='flex justify-between text-white'>
 														<span>{offer.code}</span>
-														<span>-{offer.minPrice.toLocaleString()}₫</span>
+														<span>-{offer.maxDiscount.toLocaleString()}₫</span>
 													</div>
 												))}
 											</div>
@@ -532,7 +531,7 @@ export default function BookingForm() {
 																className='flex justify-between text-white'
 															>
 																<span>{offer.code}</span>
-																<span>-{offer.minPrice.toLocaleString()}₫</span>
+																<span>-{offer.maxDiscount.toLocaleString()}₫</span>
 															</div>
 														))}
 													</div>

@@ -370,15 +370,15 @@ const ComboManagement = () => {
 			{/* Add Combo Dialog */}
 			<Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
 				<DialogOverlay />
-				<DialogContent className='bg-white p-6'>
-					<h3 className='text-xl font-semibold mb-4'>{selectedCombo ? 'Update Combo' : 'Add New Combo'}</h3>
+				<DialogContent className='bg-white max-w-2xl h-[70%] overflow-y-auto'>
+					<h3 className='text-xl font-semibold'>{selectedCombo ? 'Update Combo' : 'Add New Combo'}</h3>
 					<label>Name</label>
 					<input
 						name='name'
 						placeholder='Name'
 						value={comboData.name}
 						onChange={handleInputChange}
-						className='mb-2 p-2 border'
+						className='p-2 border'
 					/>
 					<label>Description</label>
 					<textarea
@@ -386,7 +386,7 @@ const ComboManagement = () => {
 						placeholder='Description'
 						value={comboData.description}
 						onChange={handleInputChange}
-						className='mb-2 p-2 border'
+						className='p-2 border h-12'
 					/>
 					<label>Price</label>
 					<input
@@ -395,7 +395,7 @@ const ComboManagement = () => {
 						placeholder='Price'
 						value={comboData.price}
 						onChange={handleInputChange}
-						className='mb-2 p-2 border'
+						className='p-2 border'
 					/>
 					<label>Estimate Time</label>
 					<input
@@ -404,10 +404,10 @@ const ComboManagement = () => {
 						placeholder='Estimate Time'
 						value={comboData.estimateTime}
 						onChange={handleInputChange}
-						className='mb-2 p-2 border'
+						className='p-2 border'
 					/>
 
-					<input type='file' accept='image/*' onChange={handleImageChange} className='mb-2 p-2 border' />
+					<input type='file' accept='image/*' onChange={handleImageChange} className='p-2 border' />
 
 					{/* Hiển thị danh sách hình ảnh hiện tại
 					<div className='mb-4'>

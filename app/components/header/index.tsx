@@ -197,7 +197,7 @@ export default function Header() {
 														</h3>
 														<p className='text-xs text-gray-400'>{notif.message}</p>
 														<span className='text-xs text-gray-500'>
-															{new Date(notif.timestamp).toLocaleString()}
+															{new Date(notif.createdAt).toLocaleString()}
 														</span>
 													</div>
 												</div>

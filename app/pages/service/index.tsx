@@ -29,7 +29,7 @@ export default function Service() {
 	const [selectedTab, setSelectedTab] = useState<'service' | 'combo'>('service');
 	const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string; minPrice: number }[]>([]);
+	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string; maxDiscount: number }[]>([]);
 	const [visibleCount, setVisibleCount] = useState(4);
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [selectedCombos, setSelectedCombos] = useState<Set<number>>(new Set());
@@ -94,16 +94,16 @@ export default function Service() {
 		setTotalPrice(newTotal);
 	};
 
-	const handleApplyOffers = (offers: { id: number; name: string; minPrice: number }[]) => {
+	const handleApplyOffers = (offers: { id: number; name: string; maxDiscount: number }[]) => {
 		setIsDialogOpen(false);
 		setSelectedOffers(offers);
 
 		let discount = 0;
 
-		// Calculate the discount based on minPrice
+		// Calculate the discount based on maxDiscount
 		offers.forEach((offer) => {
-			if (offer.minPrice && totalPrice >= offer.minPrice) {
-				discount += offer.minPrice;
+			if (offer.maxDiscount && totalPrice >= offer.maxDiscount) {
+				discount += offer.maxDiscount;
 			}
 		});
 
@@ -155,7 +155,7 @@ export default function Service() {
 		const selectedOffersData = selectedOffers.map((offer) => ({
 			id: offer.id,
 			name: offer.name,
-			minPrice: offer.minPrice,
+			maxDiscount: offer.maxDiscount,
 		}));
 		// Create a detailed object with all selected services, combos, and total payment
 		const bookingData = {

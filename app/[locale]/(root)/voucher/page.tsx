@@ -20,7 +20,7 @@ interface Voucher {
 	maxDiscount: number;
 	startDate: string;
 	endDate: string;
-	minPrice: number;
+	maxDiscount: number;
 	disabled: boolean;
 }
 
@@ -36,7 +36,7 @@ const VoucherManagement = () => {
 		maxDiscount: 0,
 		startDate: '',
 		endDate: '',
-		minPrice: 0,
+		maxDiscount: 0,
 		disabled: false,
 	});
 
@@ -153,7 +153,7 @@ const VoucherManagement = () => {
 			maxDiscount: 0,
 			startDate: '',
 			endDate: '',
-			minPrice: 0,
+			maxDiscount: 0,
 			disabled: false,
 		});
 	};
@@ -189,8 +189,8 @@ const VoucherManagement = () => {
 			newValue = '100'; // Limit maxDiscount to 100%
 		}
 
-		if (name === 'minPrice' && Number(newValue) < 0) {
-			newValue = '0'; // Prevent minPrice from being negative
+		if (name === 'maxDiscount' && Number(newValue) < 0) {
+			newValue = '0'; // Prevent maxDiscount from being negative
 		}
 
 		if (name === 'startDate' && new Date(newValue) < new Date()) {
@@ -262,7 +262,7 @@ const VoucherManagement = () => {
 							<TableCell>{voucher.code}</TableCell>
 							<TableCell>{voucher.discount}%</TableCell>
 							<TableCell>{voucher.maxDiscount}%</TableCell>
-							<TableCell>{voucher.minPrice.toLocaleString()} VNĐ</TableCell>
+							<TableCell>{voucher.maxDiscount.toLocaleString()} VNĐ</TableCell>
 							<TableCell>{voucher.startDate}</TableCell>
 							<TableCell>{voucher.endDate}</TableCell>
 							{/* <TableCell>{voucher.disabled ? <span>True</span> : <span>False</span>}</TableCell> */}
@@ -349,15 +349,15 @@ const VoucherManagement = () => {
 						</div>
 
 						<div>
-							<label htmlFor='minPrice' className='block text-sm font-medium text-gray-700'>
+							<label htmlFor='maxDiscount' className='block text-sm font-medium text-gray-700'>
 								Min Price
 							</label>
 							<input
-								id='minPrice'
-								name='minPrice'
+								id='maxDiscount'
+								name='maxDiscount'
 								type='number'
 								placeholder='Min Price'
-								value={voucherData.minPrice}
+								value={voucherData.maxDiscount}
 								onChange={handleInputChange}
 								className='mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500'
 							/>

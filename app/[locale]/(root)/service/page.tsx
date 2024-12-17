@@ -22,6 +22,14 @@ export default function Service() {
 	const [isModalOpen, setModalOpen] = useState(false);
 	const [selectedService, setSelectedService] = useState(null);
 	const [mode, setMode] = useState<'add' | 'edit'>('add');
+	const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: number]: boolean }>({});
+
+	const toggleDescription = (index: number) => {
+		setExpandedDescriptions((prevState) => ({
+			...prevState,
+			[index]: !prevState[index],
+		}));
+	};
 
 	const {
 		data: servicesData,
@@ -99,7 +107,7 @@ export default function Service() {
 
 	return (
 		<div className='pt-24 pb-8 bg-[#0a0a0a] flex flex-col gap-4'>
-			<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8 container-lg'>
+			<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 container-lg'>
 				{getCurrentServices().map((service, index) => (
 					<Card
 						key={index}
@@ -112,12 +120,27 @@ export default function Service() {
 									<Clock className='mr-1 w-4 h-4' /> <span>{service.estimateTime} minutes</span>
 								</div>
 							</div>
-							<div className='p-4'>
-								<h3 className='font-bold text-lg mb-1 min-h-14 line-clamp-2'>{service.name}</h3>
-								<p className='text-sm text-gray-600 min-h-9 line-clamp-2'>{service.description}</p>
-								<span className='bg-yellow-600 text-white text-xs px-2 py-1 rounded mt-2 inline-block'>
+							<div className='p-4 flex flex-col gap-2'>
+								<h3 className='font-bold text-lg min-h-14 line-clamp-2'>{service.name}</h3>
+								<span className='bg-yellow-600 text-white text-xs px-2 py-1 rounded inline-block w-fit'>
 									{service.serviceType.name}
 								</span>
+								<p
+									className={`text-sm text-gray-600 ${
+										expandedDescriptions[index] ? '' : 'line-clamp-2'
+									}`}
+								>
+									{service.description}
+								</p>
+								{service.description.length > 50 && (
+									<Button
+										variant='link'
+										className='text-blue-500 text-xs p-0'
+										onClick={() => toggleDescription(index)}
+									>
+										{expandedDescriptions[index] ? 'Thu gọn' : 'Xem thêm'}
+									</Button>
+								)}
 							</div>
 						</CardContent>
 						<CardFooter>

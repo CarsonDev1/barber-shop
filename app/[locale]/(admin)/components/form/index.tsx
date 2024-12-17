@@ -107,22 +107,32 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 		formData.append('price', (e.target as any).price.value);
 		formData.append('estimateTime', (e.target as any).estimateTime.value);
 
-		// Handle new images
+		// Handle images for creation and update separately
 		const images = (e.target as HTMLFormElement).images.files;
-		if (images.length > 0) {
+		if (mode === 'add' && images.length > 0) {
+			// For creation, append images as 'images'
 			Array.from(images).forEach((file) => {
 				if (file instanceof File) {
-					formData.append('new_images', file);
+					formData.append('images', file);
 				}
 			});
 		}
 
-		if (removeImageId !== null) {
-			formData.append('remove_images', String(removeImageId));
-		}
-
-		// Trigger mutation based on the mode (add or edit)
 		if (mode === 'edit') {
+			// For update, append images as 'new_images' if new files are selected
+			const newImages = (e.target as HTMLFormElement).images.files;
+			if (newImages.length > 0) {
+				Array.from(newImages).forEach((file) => {
+					if (file instanceof File) {
+						formData.append('new_images', file);
+					}
+				});
+			}
+
+			if (removeImageId !== null) {
+				formData.append('remove_images', String(removeImageId));
+			}
+
 			formData.append('id', stylist.id);
 			mutateUpdateService(formData);
 		} else {
@@ -234,7 +244,7 @@ export default function EditStylistForm({ stylist, mode, onClose }: EditStylistF
 				</CardContent>
 
 				<div className='space-x-3'>
-					<Button type='submit' variant='outline'>
+					<Button type='submit' variant='ghost'>
 						{mode === 'edit' ? 'Update Service' : 'Create Service'}
 					</Button>
 					<Button variant='ghost' onClick={onClose}>

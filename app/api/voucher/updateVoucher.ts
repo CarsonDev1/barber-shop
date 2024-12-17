@@ -7,7 +7,7 @@ interface VoucherData {
 	maxDiscount: number;
 	startDate: string;
 	endDate: string;
-	minPrice: number;
+	maxDiscount: number;
 	disabled: boolean;
 }
 
