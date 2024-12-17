@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import PageContainer from '@/app/components/page-container';
 import { useAuth } from '@/context/AuthProvider';
 import { useQuery } from '@tanstack/react-query';
@@ -12,6 +12,9 @@ import { getCustomersStatistics } from '@/app/api/statistic/getStatisticCustomer
 import { getStaffStatistics } from '@/app/api/statistic/getStatisticStaffs'; // Added import for staff statistics API
 import { CustomersResponse } from '@/types/Customer.type';
 import { getStaffs } from '@/app/api/customer/getStaffs';
+import { getBookingStatistics } from '@/app/api/statistic/getBookingStatistics';
+import { getBookingServiceStatistics } from '@/app/api/statistic/getBookingService';
+import { getBookingComboStatistics } from '@/app/api/statistic/getBookingCombo';
 
 const timeFilters = ['1 Week', '1 Month', '6 Month', '1 Year', 'Ever'];
 
@@ -20,6 +23,9 @@ export default function DashBoardPage() {
 	const [fromDate, setFromDate] = useState('');
 	const [toDate, setToDate] = useState('');
 	const [staffNameMap, setStaffNameMap] = useState<any>({});
+	const year = 2024;
+
+	const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 	const calculateDates = (filter: string) => {
 		const now = new Date();
@@ -73,12 +79,42 @@ export default function DashBoardPage() {
 	});
 
 	const {
-		data: staffStatisticsData = [], // Fetch staff statistics
+		data: staffStatisticsData = [],
 		isLoading: isLoadingStaffStatistics,
 		error: errorStaffStatistics,
 	} = useQuery({
 		queryKey: ['dataStaffStatistics', fromDate, toDate],
-		queryFn: () => getStaffStatistics(fromDate, toDate), // Call the staff statistics function
+		queryFn: () => getStaffStatistics(fromDate, toDate),
+		enabled: !!fromDate && !!toDate,
+	});
+
+	const {
+		data: bookingStatisticsData = [],
+		isLoading: isLoadingBookingStatistics,
+		error: errorBookingStatistics,
+	} = useQuery({
+		queryKey: ['dataBookingStatistics', year],
+		queryFn: () => getBookingStatistics(year),
+		enabled: !!year,
+	});
+
+	const {
+		data: bookingServiceStatisticsData = [],
+		isLoading: isLoadingBookingServiceStatistics,
+		error: errorBookingServiceStatistics,
+	} = useQuery({
+		queryKey: ['dataBookingServiceStatistics', fromDate, toDate],
+		queryFn: () => getBookingServiceStatistics(fromDate, toDate),
+		enabled: !!fromDate && !!toDate,
+	});
+
+	const {
+		data: bookingComboStatisticsData = [],
+		isLoading: isLoadingBookingComboStatistics,
+		error: errorBookingComboStatistics,
+	} = useQuery({
+		queryKey: ['dataBookingComboStatistics', fromDate, toDate],
+		queryFn: () => getBookingComboStatistics(fromDate, toDate),
 		enabled: !!fromDate && !!toDate,
 	});
 
@@ -118,6 +154,34 @@ export default function DashBoardPage() {
 		}));
 	}, [customerData, staffNameMap]);
 
+	const transformedBookingServiceChartData = useMemo(() => {
+		if (!bookingServiceStatisticsData?.payload || !staffNameMap) return [];
+		return bookingServiceStatisticsData.payload.map((item: any) => ({
+			...item,
+			name: staffNameMap[item.id] || `ID: ${item.id}`,
+		}));
+	}, [bookingServiceStatisticsData, staffNameMap]);
+
+	const transformedBookingComboChartData = useMemo(() => {
+		if (!bookingComboStatisticsData?.payload || !staffNameMap) return [];
+		return bookingComboStatisticsData.payload.map((item: any) => ({
+			...item,
+			name: staffNameMap[item.id] || `ID: ${item.id}`,
+		}));
+	}, [bookingComboStatisticsData, staffNameMap]);
+
+	const pieChartData = useMemo(() => {
+		if (!bookingStatisticsData?.payload) return [];
+		return [
+			{ name: 'Booking Count', value: bookingStatisticsData.payload.monthlyData.DECEMBER.bookingCount },
+			{ name: 'Total Amount', value: bookingStatisticsData.payload.monthlyData.DECEMBER.amount },
+		];
+	}, [bookingStatisticsData]);
+
+	if (!isClient || !isAuthenticated) {
+		return null;
+	}
+
 	if (!isClient || !isAuthenticated) {
 		return null;
 	}
@@ -156,12 +220,70 @@ export default function DashBoardPage() {
 								</BarChart>
 							</ResponsiveContainer>
 						</div>
+						<div className='bg-gray-800 p-4 rounded-lg'>
+							<h3 className='text-sm font-medium text-gray-400 mb-4'>Booking Statistics</h3>
+							<ResponsiveContainer width='100%' height={300}>
+								<PieChart>
+									<Pie
+										data={pieChartData}
+										dataKey='value'
+										nameKey='name'
+										cx='50%'
+										cy='50%'
+										outerRadius={80}
+										label
+									>
+										{pieChartData.map((_, index) => (
+											<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+										))}
+									</Pie>
+									<Tooltip />
+									<Legend />
+								</PieChart>
+							</ResponsiveContainer>
+						</div>
 
 						{/* Customer Performance Bar Chart */}
 						<div className='md:col-span-2 bg-gray-800 p-4 rounded-lg'>
 							<h3 className='text-sm font-medium text-gray-400 mb-4'>Top Customer Performance</h3>
 							<ResponsiveContainer width='100%' height={300}>
 								<BarChart data={transformedCustomerChartData}>
+									<XAxis
+										dataKey='name'
+										stroke='#ccc'
+										label={{ value: 'Customer Name', position: 'insideBottom', offset: -5 }}
+									/>
+									<YAxis stroke='#ccc' />
+									<Tooltip />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8884d2' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9c' />
+								</BarChart>
+							</ResponsiveContainer>
+						</div>
+						<div className='md:col-span-2 bg-gray-800 p-4 rounded-lg'>
+							<h3 className='text-sm font-medium text-gray-400 mb-4'>
+								Top Booking Service Popular Performance
+							</h3>
+							<ResponsiveContainer width='100%' height={300}>
+								<BarChart data={transformedBookingServiceChartData}>
+									<XAxis
+										dataKey='name'
+										stroke='#ccc'
+										label={{ value: 'Customer Name', position: 'insideBottom', offset: -5 }}
+									/>
+									<YAxis stroke='#ccc' />
+									<Tooltip />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8884d8' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9d' />
+								</BarChart>
+							</ResponsiveContainer>
+						</div>
+						<div className='md:col-span-2 bg-gray-800 p-4 rounded-lg'>
+							<h3 className='text-sm font-medium text-gray-400 mb-4'>
+								Top Booking Combo Popular Performance
+							</h3>
+							<ResponsiveContainer width='100%' height={300}>
+								<BarChart data={transformedBookingComboChartData}>
 									<XAxis
 										dataKey='name'
 										stroke='#ccc'

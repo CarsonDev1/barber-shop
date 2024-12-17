@@ -20,6 +20,15 @@ import { useAuth } from '@/context/AuthProvider';
 import { useTranslation } from 'react-i18next';
 import { jwtDecode } from 'jwt-decode';
 import { createAdminBook } from '@/app/api/booking/createAdminBooking';
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface Image {
 	id: number;
@@ -118,6 +127,7 @@ export default function BookingForm() {
 	const { isAuthenticated } = useAuth();
 	const { t } = useTranslation('common');
 	const tokenData: any = localStorage?.getItem('accessToken');
+	const [dialogOpen, setDialogOpen] = useState(false);
 
 	let decoded: any = null;
 	if (typeof tokenData === 'string' && tokenData.trim()) {
@@ -480,13 +490,72 @@ export default function BookingForm() {
 								/>
 							</div>
 
-							<Button
-								variant='default'
-								className='w-full bg-[#F0B35B] text-white'
-								onClick={handleBooking}
-							>
-								{t('book')}
-							</Button>
+							{bookingData && (
+								<Dialog>
+									{selectedTime !== null && (
+										<DialogTrigger asChild>
+											<Button variant='default' className='w-full bg-[#F0B35B] text-white'>
+												{t('book')}
+											</Button>
+										</DialogTrigger>
+									)}
+									<DialogContent className='sm:max-w-[425px] bg-slate-800'>
+										<div className='py-4 text-white'>
+											{bookingData.selectedCombos.map((combo) => (
+												<div key={combo.id} className='flex justify-between text-white'>
+													<span>{combo.name}</span>
+													<span>{combo.price.toLocaleString()}₫</span>
+												</div>
+											))}
+											{bookingData.selectedServices.length > 0 && (
+												<div className='space-y-1 mt-2'>
+													{bookingData.selectedServices.map((service) => (
+														<div
+															key={service.id}
+															className='flex justify-between text-white'
+														>
+															<span>{service.name}</span>
+															<span>{service.price.toLocaleString()}₫</span>
+														</div>
+													))}
+												</div>
+											)}
+											{bookingData.selectedOffers.length > 0 && (
+												<div className='space-y-1 mt-2'>
+													<div className='flex justify-between text-white font-semibold border-t border-gray-400 pt-2 mt-2'>
+														<h4 className='text-md text-white font-semibold'>
+															Total Offers:
+														</h4>
+														{bookingData.selectedOffers.map((offer) => (
+															<div
+																key={offer.id}
+																className='flex justify-between text-white'
+															>
+																<span>{offer.code}</span>
+																<span>-{offer.minPrice.toLocaleString()}₫</span>
+															</div>
+														))}
+													</div>
+												</div>
+											)}
+											<div className='flex justify-between text-white font-semibold border-t border-gray-400 pt-2 mt-2'>
+												<span>Total Payment:</span>
+												<span>{bookingData.totalPayment.toLocaleString()}₫</span>
+											</div>
+										</div>
+										<DialogFooter className='flex items-center gap-2'>
+											<DialogClose asChild>
+												<Button type='button' variant='secondary'>
+													Close
+												</Button>
+											</DialogClose>
+											<Button onClick={handleBooking} type='submit'>
+												Confirm
+											</Button>
+										</DialogFooter>
+									</DialogContent>
+								</Dialog>
+							)}
 						</div>
 					</div>
 				</div>
