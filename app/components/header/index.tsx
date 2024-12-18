@@ -61,9 +61,9 @@ export default function Header() {
 			setTokenExchange(data);
 
 			// Example: Save the new token to localStorage
-			if (data?.accessToken) {
-				localStorage.setItem('accessToken', data.accessToken);
-				console.log('Token exchanged successfully:', data.accessToken);
+			if (data?.payload) {
+				localStorage.setItem('accessToken', data.payload);
+				console.log('Token exchanged successfully:', data.payload);
 			}
 		} catch (error) {
 			console.error('Error during token exchange:', error);
