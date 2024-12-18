@@ -45,8 +45,26 @@ export default function Header() {
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
 
-	const exchangeToken = async (token: string) => {
+	useEffect(() => {
+		const currentUrl = window.location.href;
+		const urlParams = new URLSearchParams(new URL(currentUrl).search);
+		const token = urlParams.get('token_exchange');
+
+		if (token) {
+			setTokenExchange(token);
+			localStorage.setItem('token_exchange', token);
+
+			// Call the token exchange API
+
+			// Clean up the URL (remove query params)
+			const cleanedUrl = currentUrl.split('?')[0];
+			router.replace(cleanedUrl);
+		}
+	}, [router]);
+
+	const exchangeToken = async () => {
 		try {
+			const token = localStorage.getItem('token_exchange');
 			const response = await fetch('/api/auth/token-exchange', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -68,24 +86,6 @@ export default function Header() {
 			console.error('Error during token exchange:', error);
 		}
 	};
-
-	useEffect(() => {
-		const currentUrl = window.location.href;
-		const urlParams = new URLSearchParams(new URL(currentUrl).search);
-		const token = urlParams.get('token_exchange');
-
-		if (token) {
-			setTokenExchange(token);
-			localStorage.setItem('token_exchange', token);
-
-			// Call the token exchange API
-			exchangeToken(token);
-
-			// Clean up the URL (remove query params)
-			const cleanedUrl = currentUrl.split('?')[0];
-			router.replace(cleanedUrl);
-		}
-	}, [router]);
 
 	const {
 		data: dataProfile,
