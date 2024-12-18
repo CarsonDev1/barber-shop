@@ -238,9 +238,11 @@ export default function LoginForm() {
 							</div>
 						</div>
 						<div className='mt-6 grid grid-cols-3 gap-4'>
-							<Button variant='outline' className='bg-white hover:bg-gray-100'>
-								<Image src={Google} alt='Google' width={46} height={46} className='size-6' />
-							</Button>
+							<a href='https://fauction.online/oauth2/authorization/google' className='w-full'>
+								<Button variant='outline' className='bg-white hover:bg-gray-100 w-full'>
+									<Image src={Google} alt='Google' width={46} height={46} className='size-6' />
+								</Button>
+							</a>
 							<Button variant='outline' className='bg-white hover:bg-gray-100'>
 								<Image src={Meta} alt='Meta' width={46} height={46} className='size-6' />
 							</Button>

@@ -43,6 +43,29 @@ export default function Header() {
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
+	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
+
+	console.log('tokenExchange', tokenExchange);
+
+	useEffect(() => {
+		// Access the full URL, including query parameters
+		const currentUrl = window.location.href;
+
+		// Extract the 'token_exchange' parameter from the URL
+		const urlParams = new URLSearchParams(new URL(currentUrl).search);
+		const token = urlParams.get('token_exchange');
+
+		if (token) {
+			setTokenExchange(token);
+			// Save token to localStorage or perform other actions
+			localStorage.setItem('token_exchange', token);
+			console.log('Token Exchange:', token);
+
+			// Optionally clean up the URL (remove query params)
+			const cleanedUrl = currentUrl.split('?')[0];
+			router.replace(cleanedUrl); // Uses shallow routing
+		}
+	}, [router]);
 
 	const {
 		data: dataProfile,
