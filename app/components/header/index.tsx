@@ -44,53 +44,48 @@ export default function Header() {
 	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
-	const [dataToken, setDataToken] = useState();
-
-	useEffect(() => {
-		// Access the full URL, including query parameters
-		const currentUrl = window.location.href;
-
-		// Extract the 'token_exchange' parameter from the URL
-		const urlParams = new URLSearchParams(new URL(currentUrl).search);
-		const token = urlParams.get('token_exchange');
-
-		if (token) {
-			setTokenExchange(token);
-			// Save token to localStorage or perform other actions
-			localStorage.setItem('token_exchange', token);
-
-			// Optionally clean up the URL (remove query params)
-			const cleanedUrl = currentUrl.split('?')[0];
-			router.replace(cleanedUrl); // Uses shallow routing
-		}
-	}, [router]);
 
 	const exchangeToken = async (token: string) => {
 		try {
-			const response = await fetch('https://52.187.14.110/api/auth/token-exchange', {
+			const response = await fetch('/api/auth/token-exchange', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ code: tokenExchange }),
+				body: JSON.stringify({ code: token }),
 			});
 
 			if (!response.ok) {
-				throw new Error('Token exchange faileds');
+				throw new Error('Token exchange failed');
 			}
 
 			const data = await response.json();
-			setDataToken(data);
 
 			// Example: Save the new token to localStorage
-			if (data?.payload) {
-				localStorage.setItem('accessToken', data.payload);
-				console.log('Token exchanged successfully:', data.payload);
+			if (data?.accessToken) {
+				localStorage.setItem('accessToken', data.accessToken);
+				console.log('Token exchanged successfully:', data.accessToken);
 			}
 		} catch (error) {
 			console.error('Error during token exchange:', error);
 		}
 	};
 
-	console.log('dataToken', dataToken);
+	useEffect(() => {
+		const currentUrl = window.location.href;
+		const urlParams = new URLSearchParams(new URL(currentUrl).search);
+		const token = urlParams.get('token_exchange');
+
+		if (token) {
+			setTokenExchange(token);
+			localStorage.setItem('token_exchange', token);
+
+			// Call the token exchange API
+			exchangeToken(token);
+
+			// Clean up the URL (remove query params)
+			const cleanedUrl = currentUrl.split('?')[0];
+			router.replace(cleanedUrl);
+		}
+	}, [router]);
 
 	const {
 		data: dataProfile,
