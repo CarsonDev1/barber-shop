@@ -36,6 +36,7 @@ import { getLogOut } from '@/app/api/getLogout';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getNotification } from '@/app/api/notification/getNotification';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Header() {
 	const { t, i18n } = useTranslation('common');
@@ -44,6 +45,10 @@ export default function Header() {
 	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
+	const dataGoogle: any = localStorage.getItem('dataLogin');
+	const decoded: any = jwtDecode(dataGoogle);
+
+	console.log('decoded', decoded);
 
 	const exchangeToken = async (token: string) => {
 		try {
