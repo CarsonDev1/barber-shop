@@ -261,7 +261,7 @@ export default function Header() {
 							</SheetContent>
 						</Sheet>
 
-						{dataProfile ? (
+						{dataProfile || dataDecode ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<div className='flex items-center gap-2 cursor-pointer'>
@@ -272,13 +272,13 @@ export default function Header() {
 													alt={dataProfile.avatar.name}
 												/>
 											)}
-											{/* {dataDecode && (
+											{dataDecode && (
 												<AvatarImage src={dataDecode?.avatar} alt={dataDecode.name} />
-											)} */}
+											)}
 											{dataProfile && (
 												<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
 											)}
-											{/* {dataDecode && <AvatarFallback>{dataDecode?.name}</AvatarFallback>} */}
+											{dataDecode && <AvatarFallback>{dataDecode?.name}</AvatarFallback>}
 										</Avatar>
 										{dataProfile && <span className='text-xs'>{dataProfile.name}</span>}
 										{dataDecode && <span className='text-xs'>{dataDecode?.name}</span>}
