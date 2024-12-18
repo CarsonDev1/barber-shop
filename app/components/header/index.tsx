@@ -65,7 +65,7 @@ export default function Header() {
 
 			// Example: Save the new token to localStorage
 			if (data?.payload) {
-				localStorage.setItem('dataLogin', data.payload);
+				setDataDecode(jwtDecode(data?.payload));
 				console.log('Token exchanged successfully:', data.payload);
 			}
 		} catch (error) {
@@ -92,13 +92,6 @@ export default function Header() {
 	}, [router]);
 
 	const dataGoogle: any = localStorage?.getItem('dataLogin');
-
-	if (dataGoogle) {
-		const decoded: any = jwtDecode(dataGoogle);
-		setDataDecode(decoded);
-	} else {
-		console.error("No data in localStorage for 'dataLogin'.");
-	}
 
 	const {
 		data: dataProfile,
