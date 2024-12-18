@@ -45,6 +45,25 @@ export default function Header() {
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
 
+	useEffect(() => {
+		// Access the full URL, including query parameters
+		const currentUrl = window.location.href;
+
+		// Extract the 'token_exchange' parameter from the URL
+		const urlParams = new URLSearchParams(new URL(currentUrl).search);
+		const token = urlParams.get('token_exchange');
+
+		if (token) {
+			setTokenExchange(token);
+			// Save token to localStorage or perform other actions
+			localStorage.setItem('token_exchange', token);
+
+			// Optionally clean up the URL (remove query params)
+			const cleanedUrl = currentUrl.split('?')[0];
+			router.replace(cleanedUrl); // Uses shallow routing
+		}
+	}, [router]);
+
 	const exchangeToken = async (token: string) => {
 		try {
 			const response = await fetch('https://52.187.14.110/api/auth/token-exchange', {
@@ -71,25 +90,6 @@ export default function Header() {
 	};
 
 	console.log('tokenExchange', tokenExchange);
-
-	useEffect(() => {
-		// Access the full URL, including query parameters
-		const currentUrl = window.location.href;
-
-		// Extract the 'token_exchange' parameter from the URL
-		const urlParams = new URLSearchParams(new URL(currentUrl).search);
-		const token = urlParams.get('token_exchange');
-
-		if (token) {
-			setTokenExchange(token);
-			// Save token to localStorage or perform other actions
-			localStorage.setItem('token_exchange', token);
-
-			// Optionally clean up the URL (remove query params)
-			const cleanedUrl = currentUrl.split('?')[0];
-			router.replace(cleanedUrl); // Uses shallow routing
-		}
-	}, [router]);
 
 	const {
 		data: dataProfile,
