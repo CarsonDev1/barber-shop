@@ -47,6 +47,8 @@ export default function Header() {
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
 	const [dataDecode, setDataDecode] = useState<any>();
 
+	console.log('dataDecode', dataDecode);
+
 	const exchangeToken = async (token: string) => {
 		try {
 			const response = await fetch('https://52.187.14.110/api/auth/token-exchange', {
@@ -285,7 +287,7 @@ export default function Header() {
 											{dataProfile && (
 												<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
 											)}
-											{dataDecode && <AvatarFallback>{dataDecode?.avatar}</AvatarFallback>}
+											{dataDecode && <AvatarFallback>{dataDecode?.name}</AvatarFallback>}
 										</Avatar>
 										{dataProfile && <span className='text-xs'>{dataProfile.name}</span>}
 										{dataDecode && <span className='text-xs'>{dataDecode?.name}</span>}
