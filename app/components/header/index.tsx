@@ -45,10 +45,10 @@ export default function Header() {
 	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
-	const dataGoogle: any = localStorage.getItem('dataLogin');
-	const decoded: any = jwtDecode(dataGoogle);
+	// const dataGoogle: any = localStorage.getItem('dataLogin');
+	// const decoded: any = jwtDecode(dataGoogle);
 
-	console.log('decoded', decoded);
+	// console.log('decoded', decoded);
 
 	const exchangeToken = async (token: string) => {
 		try {
