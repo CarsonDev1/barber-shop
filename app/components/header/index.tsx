@@ -100,8 +100,6 @@ export default function Header() {
 		console.error("No data in localStorage for 'dataLogin'.");
 	}
 
-	// const decoded: any = jwtDecode(dataGoogle);
-
 	const {
 		data: dataProfile,
 		isLoading,
@@ -270,7 +268,7 @@ export default function Header() {
 							</SheetContent>
 						</Sheet>
 
-						{dataProfile || dataDecode ? (
+						{dataProfile ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<div className='flex items-center gap-2 cursor-pointer'>
