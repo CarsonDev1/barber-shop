@@ -44,6 +44,7 @@ export default function Header() {
 	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
+	const [dataToken, setDataToken] = useState();
 
 	useEffect(() => {
 		// Access the full URL, including query parameters
@@ -77,7 +78,7 @@ export default function Header() {
 			}
 
 			const data = await response.json();
-			setTokenExchange(data);
+			setDataToken(data);
 
 			// Example: Save the new token to localStorage
 			if (data?.payload) {
@@ -89,7 +90,7 @@ export default function Header() {
 		}
 	};
 
-	console.log('tokenExchange', tokenExchange);
+	console.log('dataToken', dataToken);
 
 	const {
 		data: dataProfile,
