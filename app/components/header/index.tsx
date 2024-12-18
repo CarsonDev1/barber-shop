@@ -58,6 +58,7 @@ export default function Header() {
 			}
 
 			const data = await response.json();
+			setTokenExchange(data);
 
 			// Example: Save the new token to localStorage
 			if (data?.accessToken) {
@@ -69,7 +70,7 @@ export default function Header() {
 		}
 	};
 
-	console.log('exchangeToken', exchangeToken);
+	console.log('tokenExchange', tokenExchange);
 
 	useEffect(() => {
 		// Access the full URL, including query parameters
