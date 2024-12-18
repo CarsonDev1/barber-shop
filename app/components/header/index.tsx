@@ -54,7 +54,7 @@ export default function Header() {
 			});
 
 			if (!response.ok) {
-				throw new Error('Token exchange failed');
+				throw new Error('Token exchange faileds');
 			}
 
 			const data = await response.json();
