@@ -45,7 +45,31 @@ export default function Header() {
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
 
-	console.log('tokenExchange', tokenExchange);
+	const exchangeToken = async (token: string) => {
+		try {
+			const response = await fetch('https://52.187.14.110/api/auth/token-exchange', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ code: tokenExchange }),
+			});
+
+			if (!response.ok) {
+				throw new Error('Token exchange failed');
+			}
+
+			const data = await response.json();
+
+			// Example: Save the new token to localStorage
+			if (data?.accessToken) {
+				localStorage.setItem('accessToken', data.accessToken);
+				console.log('Token exchanged successfully:', data.accessToken);
+			}
+		} catch (error) {
+			console.error('Error during token exchange:', error);
+		}
+	};
+
+	console.log('exchangeToken', exchangeToken);
 
 	useEffect(() => {
 		// Access the full URL, including query parameters
@@ -59,7 +83,6 @@ export default function Header() {
 			setTokenExchange(token);
 			// Save token to localStorage or perform other actions
 			localStorage.setItem('token_exchange', token);
-			console.log('Token Exchange:', token);
 
 			// Optionally clean up the URL (remove query params)
 			const cleanedUrl = currentUrl.split('?')[0];
