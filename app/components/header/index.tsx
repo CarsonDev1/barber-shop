@@ -260,18 +260,25 @@ export default function Header() {
 							</SheetContent>
 						</Sheet>
 
-						{dataProfile ? (
+						{dataProfile || decoded ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<div className='flex items-center gap-2 cursor-pointer'>
 										<Avatar className='size-7'>
-											<AvatarImage
-												src={dataProfile.avatar.thumbUrl}
-												alt={dataProfile.avatar.name}
-											/>
-											<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
+											{dataProfile && (
+												<AvatarImage
+													src={dataProfile.avatar.thumbUrl}
+													alt={dataProfile.avatar.name}
+												/>
+											)}
+											{decoded && <AvatarImage src={decoded.avatar} alt={decoded.name} />}
+											{dataProfile && (
+												<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
+											)}
+											{decoded && <AvatarFallback>{decoded.avatar}</AvatarFallback>}
 										</Avatar>
-										<span className='text-xs'>{dataProfile.name}</span>
+										{dataProfile && <span className='text-xs'>{dataProfile.name}</span>}
+										{decoded && <span className='text-xs'>{decoded.name}</span>}
 										{dataProfile?.rank ? (
 											<span
 												className={`px-2 py-1 bg-slate-200 rounded-md ${
