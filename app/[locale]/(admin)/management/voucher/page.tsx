@@ -167,6 +167,7 @@ const VoucherManagement = () => {
 			newValue = Math.max(0, Number(value)).toString();
 		}
 
+		// Kiểm tra ngày hợp lệ nhưng không chặn nhập liệu
 		if (name === 'startDate' && new Date(newValue) > new Date(voucherData.endDate)) {
 			Swal.fire({
 				title: 'Error!',
@@ -174,10 +175,10 @@ const VoucherManagement = () => {
 				icon: 'error',
 				confirmButtonText: 'OK',
 			});
-			newValue = voucherData.endDate;
 		}
 
 		if (name === 'endDate' && new Date(newValue) < new Date(voucherData.startDate)) {
+			// Thông báo lỗi nhưng không thay đổi giá trị
 			Swal.mixin({
 				toast: true,
 				position: 'top-end',
@@ -193,13 +194,13 @@ const VoucherManagement = () => {
 				icon: 'error',
 				title: 'End date cannot be earlier than the start date.',
 			});
-			newValue = voucherData.startDate;
 		}
 
 		if (name === 'disabled') {
 			newValue = checked ? 'true' : 'false';
 		}
 
+		// Cập nhật dữ liệu form
 		setVoucherData((prev) => ({
 			...prev,
 			[name]: type === 'checkbox' ? checked : newValue,
@@ -209,9 +210,15 @@ const VoucherManagement = () => {
 	// Validate form fields
 	const validateForm = () => {
 		if (!voucherData.code || !voucherData.discount || !voucherData.startDate || !voucherData.endDate) {
-			toast.error('Please fill in all required fields (Voucher Code, Discount, Start Date, End Date');
+			toast.error('Please fill in all required fields (Voucher Code, Discount, Start Date, End Date)');
 			return false;
 		}
+
+		if (new Date(voucherData.startDate) > new Date(voucherData.endDate)) {
+			toast.error('Start date cannot be later than the end date.');
+			return false;
+		}
+
 		return true;
 	};
 
