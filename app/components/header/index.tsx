@@ -65,7 +65,7 @@ export default function Header() {
 	const exchangeToken = async () => {
 		try {
 			const token = localStorage.getItem('token_exchange');
-			const response = await fetch('/api/auth/token-exchange', {
+			const response = await fetch('https://52.187.14.110/api/auth/token-exchange', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ code: token }),
