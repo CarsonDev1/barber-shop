@@ -17,7 +17,7 @@ interface Voucher {
 	code: string;
 	maxUses: number;
 	discount: number;
-	maxDiscount: number;
+	minPrice: number;
 	startDate: string;
 	endDate: string;
 	maxDiscount: number;
@@ -36,7 +36,7 @@ const VoucherManagement = () => {
 		maxDiscount: 0,
 		startDate: '',
 		endDate: '',
-		maxDiscount: 0,
+		minPrice: 0,
 		disabled: false,
 	});
 
@@ -153,7 +153,7 @@ const VoucherManagement = () => {
 			maxDiscount: 0,
 			startDate: '',
 			endDate: '',
-			maxDiscount: 0,
+			minPrice: 0,
 			disabled: false,
 		});
 	};
