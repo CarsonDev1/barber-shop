@@ -37,53 +37,45 @@ export default function Offers({ onApply }: OffersProps) {
 
 	const barberOffers = vouchersData?.payload || [];
 
-	// const barberOffers = Array.from({ length: 8 }, (_, index) => ({
-	// 	id: index,
-	// 	name: 'Giảm 20% cho tất cả dịch vụ từ Barber',
-	// }));
-
 	const userOffers = Array.from({ length: 6 }, (_, index) => ({
 		id: index,
 		name: 'Ưu đãi riêng của bạn: Giảm giá 15%',
 	}));
 
-	const [selectedBarberOffers, setSelectedBarberOffers] = useState<Set<number>>(new Set());
-	const [selectedUserOffers, setSelectedUserOffers] = useState<Set<number>>(new Set());
+	// Update state to store only one selected offer (either index or null)
+	const [selectedBarberOffer, setSelectedBarberOffer] = useState<number | null>(null);
+	const [selectedUserOffer, setSelectedUserOffer] = useState<number | null>(null);
 
-	// Toggle selection for Barber Offers
+	// Toggle selection for Barber Offers (only one selection allowed)
 	const toggleBarberOffer = (index: number) => {
-		const updatedOffers = new Set(selectedBarberOffers);
-		if (updatedOffers.has(index)) {
-			updatedOffers.delete(index);
-		} else {
-			updatedOffers.add(index);
-		}
-		setSelectedBarberOffers(updatedOffers);
+		setSelectedBarberOffer(selectedBarberOffer === index ? null : index);
 	};
 
-	// Toggle selection for User Offers
+	// Toggle selection for User Offers (only one selection allowed)
 	const toggleUserOffer = (index: number) => {
-		const updatedOffers = new Set(selectedUserOffers);
-		if (updatedOffers.has(index)) {
-			updatedOffers.delete(index);
-		} else {
-			updatedOffers.add(index);
-		}
-		setSelectedUserOffers(updatedOffers);
+		setSelectedUserOffer(selectedUserOffer === index ? null : index);
 	};
 
 	const saveOffersToStorage = () => {
 		const allSelectedOffers = [
-			...Array.from(selectedBarberOffers).map((index) => ({
-				id: barberOffers[index].id,
-				name: barberOffers[index].code,
-				maxDiscount: barberOffers[index].maxDiscount,
-			})),
-			...Array.from(selectedUserOffers).map((index) => ({
-				id: userOffers[index].id,
-				name: userOffers[index].name,
-				maxDiscount: barberOffers[index].maxDiscount,
-			})),
+			...(selectedBarberOffer !== null
+				? [
+						{
+							id: barberOffers[selectedBarberOffer].id,
+							name: barberOffers[selectedBarberOffer].code,
+							maxDiscount: barberOffers[selectedBarberOffer].maxDiscount,
+						},
+				  ]
+				: []),
+			...(selectedUserOffer !== null
+				? [
+						{
+							id: userOffers[selectedUserOffer].id,
+							name: userOffers[selectedUserOffer].name,
+							maxDiscount: barberOffers[selectedBarberOffer || 0].maxDiscount,
+						},
+				  ]
+				: []),
 		];
 
 		const storedBookingData = localStorage.getItem('bookingData');
@@ -130,7 +122,7 @@ export default function Offers({ onApply }: OffersProps) {
 								<div
 									key={offer.id}
 									className={`py-4 px-3 text-black font-medium text-xs rounded-lg cursor-pointer ${
-										selectedBarberOffers.has(index) ? 'bg-blue-500 text-white' : 'bg-gray-200'
+										selectedBarberOffer === index ? 'bg-blue-500 text-white' : 'bg-gray-200'
 									}`}
 									onClick={() => toggleBarberOffer(index)}
 								>
@@ -161,7 +153,7 @@ export default function Offers({ onApply }: OffersProps) {
 								<div
 									key={offer.id}
 									className={`py-4 px-3 text-black font-medium text-xs rounded-lg cursor-pointer ${
-										selectedUserOffers.has(index) ? 'bg-blue-500 text-white' : 'bg-gray-200'
+										selectedUserOffer === index ? 'bg-blue-500 text-white' : 'bg-gray-200'
 									}`}
 									onClick={() => toggleUserOffer(index)}
 								>
