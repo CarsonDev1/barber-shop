@@ -66,6 +66,7 @@ export default function Header() {
 			// Example: Save the new token to localStorage
 			if (data?.payload) {
 				setDataDecode(jwtDecode(data?.payload));
+				localStorage.setItem('token', data?.payload);
 				console.log('Token exchanged successfully:', data.payload);
 			}
 		} catch (error) {
