@@ -61,7 +61,7 @@ export default function Header() {
 
 			// Example: Save the new token to localStorage
 			if (data?.payload) {
-				localStorage.setItem('accessToken', data.payload);
+				localStorage.setItem('dataLogin', data.payload);
 				console.log('Token exchanged successfully:', data.payload);
 			}
 		} catch (error) {
