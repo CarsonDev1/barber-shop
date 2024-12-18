@@ -24,9 +24,10 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getBookings } from '@/app/api/booking/getBooking';
 import Swal from 'sweetalert2';
+import { CancelBooking } from '@/app/api/booking/cancelBooking';
 
 type Booking = {
 	id: number;
@@ -45,6 +46,7 @@ type Booking = {
 };
 
 export default function BookingCalender() {
+	const queryClient = useQueryClient();
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 	const [staffComment, setStaffComment] = useState('');
@@ -100,6 +102,75 @@ export default function BookingCalender() {
 			Swal.fire('Error', 'Failed to submit review', 'error');
 		}
 	};
+
+	const { mutate: mutateCancelBooking } = useMutation({
+		mutationFn: async (id: number) => {
+			await CancelBooking(id);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataBookings'] });
+			Swal.fire({
+				title: 'Deleted!',
+				text: 'Cancel Booking successfully.',
+				icon: 'success',
+				confirmButtonText: 'OK',
+			});
+		},
+		onError: () => {
+			Swal.fire({
+				title: 'Error!',
+				text: 'There was an error cancel booking.',
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		},
+	});
+
+	const handleCancelBooking = (id: number) => {
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Yes, delete it!',
+			cancelButtonText: 'Cancel',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				mutateCancelBooking(id);
+			}
+		});
+	};
+
+	// const handleCancelBooking = async (bookingId: number) => {
+	// 	try {
+	// 		const result = await Swal.fire({
+	// 			title: 'Are you sure?',
+	// 			text: 'You won’t be able to revert this!',
+	// 			icon: 'warning',
+	// 			showCancelButton: true,
+	// 			confirmButtonColor: '#d33',
+	// 			cancelButtonColor: '#3085d6',
+	// 			confirmButtonText: 'Yes, cancel it!',
+	// 		});
+
+	// 		if (result.isConfirmed) {
+	// 			const response = await fetch(`https://52.187.14.110/api/booking/cancel/${bookingId}`, {
+	// 				method: 'DELETE',
+	// 				headers: {
+	// 					Authorization: `Bearer ${token}`,
+	// 				},
+	// 			});
+
+	// 			if (!response.ok) {
+	// 				throw new Error('Failed to cancel booking');
+	// 			}
+
+	// 			Swal.fire('Canceled!', 'The booking has been canceled.', 'success');
+	// 		}
+	// 	} catch (error) {
+	// 		Swal.fire('Error', 'Failed to cancel booking.', 'error');
+	// 	}
+	// };
 
 	// Handle edit dialog
 	const handleEditClick = (booking: Booking) => {
@@ -248,6 +319,13 @@ export default function BookingCalender() {
 													>
 														<Star className='w-4 h-4 mr-2' />
 														Review
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={() => handleCancelBooking(booking.id)}
+														className='hover:cursor-pointer flex items-center gap-2'
+													>
+														<Trash2 className='mr-2 h-4 w-4 text-red-500' />
+														<span className='text-red-500'>Cancel</span>
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>

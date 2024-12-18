@@ -9,6 +9,7 @@ import {
 	ChevronLast,
 	ChevronLeft,
 	ChevronRight,
+	XCircle,
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import PageContainer from '@/app/components/page-container';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBookings } from '@/app/api/booking/getBooking';
 import { CompleteBooking } from '@/app/api/booking/completeBooking';
+import { RejectBooking } from '@/app/api/booking/rejectBooking';
 import Swal from 'sweetalert2';
 
 export default function Booking() {
@@ -58,6 +60,27 @@ export default function Booking() {
 		},
 	});
 
+	// Mutation for rejecting booking
+	const rejectBookingMutation = useMutation({
+		mutationFn: RejectBooking,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['dataBookings'] });
+			Swal.fire({
+				icon: 'success',
+				title: 'Success',
+				text: 'Booking rejected successfully.',
+			});
+		},
+		onError: (error: any) => {
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: error,
+			});
+			console.error('Error rejecting booking:', error);
+		},
+	});
+
 	// Extract bookings data
 	const bookings = bookingData?.payload || [];
 
@@ -82,6 +105,11 @@ export default function Booking() {
 	// Handle complete booking action
 	const handleCompleteBooking = (id: number) => {
 		completeBookingMutation.mutate(id);
+	};
+
+	// Handle reject booking action
+	const handleRejectBooking = (id: number) => {
+		rejectBookingMutation.mutate(id);
 	};
 
 	return (
@@ -152,7 +180,11 @@ export default function Booking() {
 														variant='secondary'
 														className='bg-gray-700 text-gray-200 hover:bg-gray-600'
 													>
-														{new Date(booking.startTime).toLocaleString()}
+														{new Date(booking.startTime).toLocaleDateString('vi-VN', {
+															day: '2-digit',
+															month: '2-digit',
+															year: 'numeric',
+														})}
 													</Badge>
 												</TableCell>
 												<TableCell>
@@ -160,9 +192,14 @@ export default function Booking() {
 														variant='secondary'
 														className='bg-gray-700 text-gray-200 hover:bg-gray-600'
 													>
-														{new Date(booking.endTime).toLocaleString()}
+														{new Date(booking.endTime).toLocaleDateString('vi-VN', {
+															day: '2-digit',
+															month: '2-digit',
+															year: 'numeric',
+														})}
 													</Badge>
 												</TableCell>
+
 												<TableCell>
 													<Badge
 														variant='secondary'
@@ -190,6 +227,13 @@ export default function Booking() {
 															>
 																<CheckCircle className='mr-2 h-4 w-4' />
 																<span>Complete</span>
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																className='text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-800 cursor-pointer'
+																onClick={() => handleRejectBooking(booking.id)}
+															>
+																<XCircle className='mr-2 h-4 w-4' />
+																<span>Reject</span>
 															</DropdownMenuItem>
 														</DropdownMenuContent>
 													</DropdownMenu>

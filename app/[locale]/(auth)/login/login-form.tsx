@@ -79,10 +79,10 @@ export default function LoginForm() {
 					router.push('/');
 				}
 			} else {
-				toast.error(response?.data?.message || 'Login failed');
+				toast.error(response?.data?.payload?.vi || 'Login failed');
 			}
 		} catch (err: any) {
-			toast.error(err?.response?.data?.message || 'Login failed');
+			toast.error(err?.response.data.payload?.vi || 'Login failed');
 			console.error('Login error:', err);
 		} finally {
 			setLoading(false);
