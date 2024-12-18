@@ -32,6 +32,7 @@ export default function Service() {
 	const [selectedOffers, setSelectedOffers] = useState<{ id: number; name: string; maxDiscount: number }[]>([]);
 	const [visibleCount, setVisibleCount] = useState(4);
 	const [totalPrice, setTotalPrice] = useState(0);
+	const [totalDiscount, setTotalDiscount] = useState(0);
 	const [selectedCombos, setSelectedCombos] = useState<Set<number>>(new Set());
 	const router = useRouter();
 	const { t } = useTranslation('common');
@@ -99,11 +100,14 @@ export default function Service() {
 		setSelectedOffers(offers);
 
 		let discount = 0;
+		let remainingTotal = totalPrice;
 
-		// Calculate the discount based on maxDiscount
+		// Calculate the total discount based on maxDiscount and remaining total price
 		offers.forEach((offer) => {
-			if (offer.maxDiscount && totalPrice >= offer.maxDiscount) {
-				discount += offer.maxDiscount;
+			if (offer.maxDiscount) {
+				const applicableDiscount = Math.min(offer.maxDiscount, remainingTotal);
+				discount += applicableDiscount;
+				remainingTotal -= applicableDiscount; // Avoid over-discount
 			}
 		});
 
@@ -111,6 +115,10 @@ export default function Service() {
 		const newTotalPrice = Math.max(0, totalPrice - discount);
 		setTotalPrice(newTotalPrice);
 
+		// Save total discount for storage
+		const totalDiscount = discount;
+
+		// Show success toast
 		toast.success('Offers have been saved successfully!', {
 			style: { color: '#4CAF50' },
 			position: 'top-right',
@@ -122,6 +130,9 @@ export default function Service() {
 				},
 			},
 		});
+
+		// Store the total discount value in a state (optional, used in handleFinished)
+		setTotalDiscount(totalDiscount);
 	};
 
 	const handleFinished = () => {
@@ -157,20 +168,28 @@ export default function Service() {
 			name: offer.name,
 			maxDiscount: offer.maxDiscount,
 		}));
+
+		// Calculate total discount
+		const totalDiscount = selectedOffers.reduce((sum, offer) => sum + (offer.maxDiscount || 0), 0);
+
 		// Create a detailed object with all selected services, combos, and total payment
 		const bookingData = {
 			selectedServices: selectedServicesData,
 			selectedCombos: selectedCombosData,
 			selectedOffers: selectedOffersData,
 			totalPayment: totalPrice,
+			totalDiscount, // Add total discount here
 		};
 
+		// Save the bookingData object in localStorage
+		localStorage.setItem('bookingData', JSON.stringify(bookingData));
+
+		// Save the voucher data separately
 		const voucherData = {
 			selectedOffers: selectedOffersData,
+			totalDiscount, // Include total discount in voucher data
 		};
 
-		// Save the entire bookingData object in localStorage
-		localStorage.setItem('bookingData', JSON.stringify(bookingData));
 		localStorage.setItem('voucherData', JSON.stringify(voucherData));
 
 		// Redirect to booking page

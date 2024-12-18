@@ -90,6 +90,7 @@ interface BookingData {
 	totalPayment: number;
 	selectedStylist?: Stylist;
 	selectedOffers: Voucher[];
+	totalDiscount: number;
 }
 
 const generateTimeSlots = (startTime: string, endTime: string, interval: number): string[] => {
@@ -404,12 +405,9 @@ export default function BookingForm() {
 										<div className='space-y-1 mt-2'>
 											<div className='flex justify-between text-white font-semibold border-t border-gray-400 pt-2 mt-2'>
 												<h4 className='text-md text-white font-semibold'>Total Offers:</h4>
-												{bookingData.selectedOffers.map((offer) => (
-													<div key={offer.id} className='flex justify-between text-white'>
-														<span>{offer.code}</span>
-														<span>-{offer.maxDiscount.toLocaleString()}₫</span>
-													</div>
-												))}
+												<div className='flex justify-between text-white'>
+													<span>-{bookingData?.totalDiscount?.toLocaleString()}₫</span>
+												</div>
 											</div>
 										</div>
 									)}
@@ -525,15 +523,11 @@ export default function BookingForm() {
 														<h4 className='text-md text-white font-semibold'>
 															Total Offers:
 														</h4>
-														{bookingData.selectedOffers.map((offer) => (
-															<div
-																key={offer.id}
-																className='flex justify-between text-white'
-															>
-																<span>{offer.code}</span>
-																<span>-{offer.maxDiscount.toLocaleString()}₫</span>
-															</div>
-														))}
+														<div className='flex justify-between text-white'>
+															<span>
+																-{bookingData?.totalDiscount?.toLocaleString()}₫
+															</span>
+														</div>
 													</div>
 												</div>
 											)}

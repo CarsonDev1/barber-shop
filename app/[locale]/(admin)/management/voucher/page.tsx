@@ -23,7 +23,10 @@ interface Voucher {
 	maxDiscount: number;
 	disabled: boolean;
 	minPrice: number;
+	forRank: string;
 }
+
+const rankOptions = ['BRONZE', 'SILVER', 'GOLD', 'DIAMOND'];
 
 const VoucherManagement = () => {
 	const queryClient = useQueryClient();
@@ -39,6 +42,7 @@ const VoucherManagement = () => {
 		endDate: '',
 		disabled: false,
 		minPrice: 0,
+		forRank: 'BRONZE',
 	});
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -150,11 +154,12 @@ const VoucherManagement = () => {
 			endDate: '',
 			minPrice: 0,
 			disabled: false,
+			forRank: 'BRONZE',
 		});
 	};
 
 	// Handle form input changes
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleInputChange = (e: any) => {
 		const { name, value, type, checked } = e.target;
 
 		let newValue = value;
@@ -253,6 +258,7 @@ const VoucherManagement = () => {
 						<TableHead>Discount</TableHead>
 						<TableHead>Max Discount</TableHead>
 						<TableHead>Min Price</TableHead>
+						<TableHead>For Rank</TableHead>
 						<TableHead>Start Date</TableHead>
 						<TableHead>End Date</TableHead>
 						<TableHead>Actions</TableHead>
@@ -265,6 +271,7 @@ const VoucherManagement = () => {
 							<TableCell>{voucher.discount}%</TableCell>
 							<TableCell>{voucher.maxDiscount}</TableCell>
 							<TableCell>{voucher.minPrice.toLocaleString()} VNĐ</TableCell>
+							<TableCell>{voucher.forRank}</TableCell>
 							<TableCell>{voucher.startDate}</TableCell>
 							<TableCell>{voucher.endDate}</TableCell>
 							<TableCell>
@@ -317,6 +324,26 @@ const VoucherManagement = () => {
 								onChange={handleInputChange}
 								className='mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500'
 							/>
+						</div>
+
+						<div>
+							<label htmlFor='forRank' className='block mb-1'>
+								For Rank
+							</label>
+							<select
+								name='forRank'
+								id='forRank'
+								className='w-full px-2 py-1 border rounded'
+								value={voucherData.forRank}
+								onChange={handleInputChange}
+								required
+							>
+								{rankOptions.map((rank) => (
+									<option key={rank} value={rank}>
+										{rank}
+									</option>
+								))}
+							</select>
 						</div>
 
 						<div>
