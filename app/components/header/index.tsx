@@ -45,10 +45,6 @@ export default function Header() {
 	const [notificationsOpen, setNotificationsOpen] = useState(false);
 	const router = useRouter();
 	const [tokenExchange, setTokenExchange] = useState<string | null>(null);
-	// const dataGoogle: any = localStorage.getItem('dataLogin');
-	// const decoded: any = jwtDecode(dataGoogle);
-
-	// console.log('decoded', decoded);
 
 	const exchangeToken = async (token: string) => {
 		try {
@@ -91,6 +87,9 @@ export default function Header() {
 			router.replace(cleanedUrl);
 		}
 	}, [router]);
+
+	const dataGoogle: any = localStorage?.getItem('dataLogin');
+	const decoded: any = jwtDecode(dataGoogle);
 
 	const {
 		data: dataProfile,
@@ -260,7 +259,7 @@ export default function Header() {
 							</SheetContent>
 						</Sheet>
 
-						{dataProfile ? (
+						{dataProfile || decoded ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<div className='flex items-center gap-2 cursor-pointer'>
@@ -271,14 +270,14 @@ export default function Header() {
 													alt={dataProfile.avatar.name}
 												/>
 											)}
-											{/* {decoded && <AvatarImage src={decoded?.avatar} alt={decoded.name} />} */}
+											{decoded && <AvatarImage src={decoded?.avatar} alt={decoded.name} />}
 											{dataProfile && (
 												<AvatarFallback>{dataProfile.avatar.thumbUrl}</AvatarFallback>
 											)}
-											{/* {decoded && <AvatarFallback>{decoded?.avatar}</AvatarFallback>} */}
+											{decoded && <AvatarFallback>{decoded?.avatar}</AvatarFallback>}
 										</Avatar>
 										{dataProfile && <span className='text-xs'>{dataProfile.name}</span>}
-										{/* {decoded && <span className='text-xs'>{decoded?.name}</span>} */}
+										{decoded && <span className='text-xs'>{decoded?.name}</span>}
 										{dataProfile?.rank ? (
 											<span
 												className={`px-2 py-1 bg-slate-200 rounded-md ${
