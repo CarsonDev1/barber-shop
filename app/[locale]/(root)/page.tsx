@@ -6,6 +6,7 @@ import Feature from '@/app/pages/home/feature';
 import StyleList from '@/app/pages/home/stylist';
 import '@/i18n';
 import Address from '@/app/pages/home/address';
+import FeatureCombo from '@/app/pages/home/feature-combo';
 
 export default function Home() {
 	return (
@@ -13,6 +14,7 @@ export default function Home() {
 			<Banner />
 			<Introduce />
 			<Feature />
+			<FeatureCombo />
 			<StyleList />
 			<Address />
 		</Fragment>

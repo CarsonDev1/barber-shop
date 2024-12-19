@@ -13,6 +13,7 @@ import { updateAvatar } from '@/app/api/updateAvatar';
 import Swal from 'sweetalert2';
 import { UserProfile } from '@/types/Profile.type';
 import { useTranslation } from 'react-i18next';
+import { getBookingInMonth } from '@/app/api/booking/getBookingInMonth';
 
 export default function ProfilePage() {
 	const [profileImage, setProfileImage] = useState('/placeholder.svg');
@@ -26,6 +27,40 @@ export default function ProfilePage() {
 		queryKey: ['dataProfile'],
 		queryFn: getAccount,
 	});
+
+	const { data: dataRank } = useQuery<any>({
+		queryKey: ['dataRank'],
+		queryFn: getBookingInMonth,
+	});
+
+	const calculateRank = (moneyUsed: number) => {
+		if (moneyUsed >= 10000000) {
+			return { current: 'DIAMOND', next: null, remaining: 0, progress: 100 };
+		} else if (moneyUsed >= 5000000) {
+			return {
+				current: 'GOLD',
+				next: 'DIAMOND',
+				remaining: 10000000 - moneyUsed,
+				progress: (moneyUsed / 10000000) * 100,
+			};
+		} else if (moneyUsed >= 1000000) {
+			return {
+				current: 'SILVER',
+				next: 'GOLD',
+				remaining: 5000000 - moneyUsed,
+				progress: (moneyUsed / 5000000) * 100,
+			};
+		} else {
+			return {
+				current: 'BRONZE',
+				next: 'SILVER',
+				remaining: 1000000 - moneyUsed,
+				progress: (moneyUsed / 1000000) * 100,
+			};
+		}
+	};
+
+	const rankData = dataRank?.payload?.money_used ? calculateRank(dataRank.payload.money_used) : null;
 
 	const [formData, setFormData] = useState<UserProfile>({
 		id: 1,
@@ -195,7 +230,7 @@ export default function ProfilePage() {
 	};
 
 	return (
-		<div className='min-h-screen bg-black text-white sec-com relative'>
+		<div className='bg-black text-white sec-com !pt-20 relative'>
 			<Image
 				src={BackGroundRoot}
 				alt='Barber Shop Logo'
@@ -233,6 +268,23 @@ export default function ProfilePage() {
 									className='hidden'
 									accept='image/*'
 								/>
+								<div className='absolute -bottom-2 -right-2'>
+									{dataProfile?.rank ? (
+										<span
+											className={`px-2 py-1 bg-slate-200 rounded-md ${
+												dataProfile?.rank === 'BRONZE'
+													? 'bg-yellow-400/15 text-yellow-600'
+													: dataProfile.rank === 'DIAMOND'
+													? 'bg-blue-400/15 text-blue-600'
+													: 'bg-green-400/15 text-green-600'
+											}`}
+										>
+											{dataProfile?.rank}
+										</span>
+									) : (
+										<span className='text-xs'>Not rank</span>
+									)}
+								</div>
 							</div>
 						</div>
 
@@ -300,6 +352,60 @@ export default function ProfilePage() {
 								</Button>
 							</div>
 						</div>
+					</div>
+				</div>
+				<div className='space-y-4 p-4 bg-white/10 rounded-md'>
+					{/* Rank Display */}
+					{rankData && (
+						<div className='text-lg bg-white/20 rounded-lg p-4 space-y-2'>
+							<div className='relative z-10'>
+								<p>
+									<strong>Current Rank:</strong> {rankData.current}
+								</p>
+								{rankData.next && (
+									<p>
+										<strong>Next Rank:</strong> {rankData.next}
+									</p>
+								)}
+								{rankData.remaining > 0 && (
+									<p>
+										<strong>Money Needed for Next Rank:</strong>{' '}
+										{rankData.remaining.toLocaleString('vi-VN')} VND
+									</p>
+								)}
+							</div>
+
+							{/* Progress Bar */}
+							<div className='relative h-4 w-full bg-gray-200 rounded-full overflow-hidden'>
+								<div
+									className='absolute h-full bg-green-500 transition-all duration-300'
+									style={{ width: `${rankData.progress}%` }}
+								></div>
+							</div>
+							<p className='text-sm text-gray-400 mt-2 z-10 relative'>
+								Progress: {Math.min(rankData.progress, 100).toFixed(2)}%
+							</p>
+						</div>
+					)}
+					<div className='mt-8 p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white relative z-10'>
+						<h2 className='text-lg font-bold mb-4'>Rank Upgrade Policy</h2>
+						<ul className='list-disc list-inside space-y-2'>
+							<li>
+								<strong>BRONZE → SILVER:</strong> Spend 1,000,000 VND in 1 month. Maintenance: 200,000
+								VND/month.
+							</li>
+							<li>
+								<strong>SILVER → GOLD:</strong> Spend 5,000,000 VND in 1 month. Maintenance: 300,000
+								VND/month.
+							</li>
+							<li>
+								<strong>GOLD → DIAMOND:</strong> Spend 10,000,000 VND in 1 month. Maintenance: 500,000
+								VND/month.
+							</li>
+						</ul>
+						<p className='mt-4 text-sm text-gray-400'>
+							<em>*Note: You can only upgrade your rank once per month.</em>
+						</p>
 					</div>
 				</div>
 			</div>

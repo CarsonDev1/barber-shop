@@ -23,6 +23,9 @@ export interface Customer {
 	description: string;
 	rating: any;
 	bookingCount: any;
+	can_rank_up: boolean;
+	bookings_count: number;
+	money_used: number;
 }
 
 export interface CustomersResponse {

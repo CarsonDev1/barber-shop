@@ -21,16 +21,14 @@ export default function StyleList() {
 	const { t } = useTranslation('common');
 
 	return (
-		<div className='bg-[#292828] sec-com relative'>
+		<div className='bg-[#292828] sec-com relative text-white'>
 			{/* Vertical "STYLISTS" text */}
 			<div className='hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 transform -rotate-90 origin-center'>
-				<span className='text-[#4A5568] text-6xl font-bold tracking-wider'>{t('stylist')}</span>
+				<span className='text-6xl font-bold tracking-wider'>{t('stylist')}</span>
 			</div>
 
 			<div className='container-lg'>
-				<h2 className='text-4xl md:text-5xl lg:text-6xl font-bold text-[#4A5568] text-center mb-16'>
-					{t('topStylistMonth')}
-				</h2>
+				<h2 className='text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-16'>{t('topStylistMonth')}</h2>
 
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto'>
 					{stylists.slice(0, 3).map((stylist, index) => (
