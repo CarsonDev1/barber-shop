@@ -182,10 +182,6 @@ export default function DashBoardPage() {
 		return null;
 	}
 
-	if (!isClient || !isAuthenticated) {
-		return null;
-	}
-
 	return (
 		<PageContainer>
 			<div className='bg-gray-900'>
@@ -203,12 +199,13 @@ export default function DashBoardPage() {
 								<BarChart data={transformedStaffChartData}>
 									<XAxis
 										dataKey='name'
-										stroke='#ccc'
+										stroke='#f3f3f3'
 										label={{ value: 'Staff Name', position: 'insideBottom', offset: -5 }}
+										hide
 									/>
-									<YAxis stroke='#ccc' />
+									<YAxis stroke='#eee' />
 									<Tooltip />
-									<Bar dataKey='amountMade' name='Revenue' fill='#8884d8' />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8ac7f6' />
 									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9d' />
 								</BarChart>
 							</ResponsiveContainer>
@@ -245,11 +242,12 @@ export default function DashBoardPage() {
 										dataKey='name'
 										stroke='#ccc'
 										label={{ value: 'Customer Name', position: 'insideBottom', offset: -5 }}
+										hide
 									/>
 									<YAxis stroke='#ccc' />
 									<Tooltip />
-									<Bar dataKey='amountMade' name='Revenue' fill='#8884d2' />
-									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9c' />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8ac7f6' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#8ac7f6' />
 								</BarChart>
 							</ResponsiveContainer>
 						</div>
@@ -263,11 +261,12 @@ export default function DashBoardPage() {
 										dataKey='name'
 										stroke='#ccc'
 										label={{ value: 'Customer Name', position: 'insideBottom', offset: -5 }}
+										hide
 									/>
 									<YAxis stroke='#ccc' />
 									<Tooltip />
-									<Bar dataKey='amountMade' name='Revenue' fill='#8884d8' />
-									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9d' />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8ac7f6' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#8ac7f6' />
 								</BarChart>
 							</ResponsiveContainer>
 						</div>
@@ -284,8 +283,8 @@ export default function DashBoardPage() {
 									/>
 									<YAxis stroke='#ccc' />
 									<Tooltip />
-									<Bar dataKey='amountMade' name='Revenue' fill='#8884d8' />
-									<Bar dataKey='bookingCount' name='Bookings' fill='#82ca9d' />
+									<Bar dataKey='amountMade' name='Revenue' fill='#8ac7f6' />
+									<Bar dataKey='bookingCount' name='Bookings' fill='#8ac7f6' />
 								</BarChart>
 							</ResponsiveContainer>
 						</div>
