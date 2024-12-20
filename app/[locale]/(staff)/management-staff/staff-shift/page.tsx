@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiResponseServiceType } from '@/types/ServiceType.type';
@@ -34,13 +34,60 @@ const StaffShift = () => {
 
 	const staffId = dataProfile?.id;
 
+	const [weekStaff, setWeekStaff] = useState<number | ''>('');
+	const [yearStaff, setYearStaff] = useState<number | ''>('');
+
+	useEffect(() => {
+		const currentDate = new Date();
+		const currentWeek = getWeekNumber(currentDate);
+		const currentYear = currentDate.getFullYear();
+
+		setWeekStaff(currentWeek);
+		setYearStaff(currentYear);
+	}, []);
+
+	const getWeekNumber = (date: Date): number => {
+		const startOfYear = new Date(date.getFullYear(), 0, 1);
+		const pastDaysOfYear = (date.getTime() - startOfYear.getTime()) / 86400000;
+		return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+	};
+
+	const handleNextWeek = () => {
+		if (weekStaff !== '') {
+			const nextWeek = weekStaff + 1;
+			if (nextWeek > 52) {
+				// Nếu vượt qua tuần 52, tăng năm lên 1 và đặt tuần về 1
+				setWeekStaff(1);
+				setYearStaff((prevYear) => (prevYear !== '' ? prevYear + 1 : ''));
+			} else {
+				// Tăng tuần bình thường
+				setWeekStaff(nextWeek);
+			}
+		}
+	};
+
+	const handlePrevWeek = () => {
+		if (weekStaff !== '') {
+			const prevWeek = weekStaff - 1;
+			if (prevWeek < 1) {
+				// Nếu giảm xuống trước tuần 1, giảm năm đi 1 và đặt tuần về 52
+				setWeekStaff(52); // Hoặc 53 nếu muốn kiểm tra cụ thể
+				setYearStaff((prevYear) => (prevYear !== '' ? prevYear - 1 : ''));
+			} else {
+				// Giảm tuần bình thường
+				setWeekStaff(prevWeek);
+			}
+		}
+	};
+
 	const {
 		data: staffShiftData,
 		isLoading: isLoadingStaffShiftData,
 		error: errorStaffShiftData,
 	} = useQuery<any>({
-		queryKey: ['dataStaffShift'],
-		queryFn: getStaffShift,
+		queryKey: ['dataStaffShift', weekStaff, yearStaff],
+		queryFn: () => getStaffShift(weekStaff as number, yearStaff as number),
+		enabled: Boolean(weekStaff && yearStaff),
 	});
 
 	const {
@@ -149,6 +196,14 @@ const StaffShift = () => {
 
 	return (
 		<PageContainer>
+			<div className='flex items-center gap-3'>
+				<button onClick={handlePrevWeek} className='mr-2 p-3 border bg-slate-800 rounded-lg'>
+					Prev Week
+				</button>
+				<button onClick={handleNextWeek} className='mr-2 p-3 border bg-slate-800 rounded-lg'>
+					Next Week
+				</button>
+			</div>
 			<div className='rounded-xl bg-gray-800/50 backdrop-blur-sm overflow-hidden border border-gray-700'>
 				<div className='overflow-x-auto'>
 					{isLoadingStaffShiftCusData ? (
