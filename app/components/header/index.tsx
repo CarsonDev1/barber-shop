@@ -140,7 +140,7 @@ export default function Header() {
 
 	const languages = useMemo(
 		() => [
-			{ code: 'en', label: 'English', flag: '🇺🇸' },
+			{ code: 'vi', label: 'Vietnamese', flag: 'vn' },
 			{ code: 'ko', label: '한국어', flag: '🇰🇷' },
 		],
 		[]

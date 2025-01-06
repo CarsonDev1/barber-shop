@@ -8,12 +8,12 @@ i18n.use(HttpBackend)
 	.use(LanguageDetector)
 	.use(initReactI18next)
 	.init({
-		fallbackLng: 'en',
-		supportedLngs: ['en', 'ko'], // Add your languages here
+		fallbackLng: 'vi',
+		supportedLngs: ['vi', 'ko'], // Add your languages here
 		backend: {
 			loadPath: '/locales/{{lng}}/{{ns}}.json', // Path for translation files
 		},
-		lng: 'en',
+		lng: 'vi',
 		interpolation: {
 			escapeValue: false, // React already escapes values
 		},
