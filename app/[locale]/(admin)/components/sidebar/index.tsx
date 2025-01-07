@@ -60,24 +60,24 @@ export interface NavItem {
 }
 
 const navItems: NavItem[] = [
-	{ title: 'DASHBOARD', href: '/management', icon: LayoutDashboard },
-	{ title: 'MANAGEMENT STYLIST', href: '/management/stylist', icon: Scissors },
-	{ title: 'MANAGEMENT STAFF SHIFT', href: '/management/staff-shift', icon: Clock4 },
-	{ title: 'MANAGEMENT SHIFT', href: '/management/shift', icon: ChevronsUpDown },
+	{ title: 'BẢNG ĐIỀU KHIỂN', href: '/management', icon: LayoutDashboard },
+	{ title: 'QUẢN LÝ STYLIST', href: '/management/stylist', icon: Scissors },
+	{ title: 'QUẢN LÝ CA LÀM VIỆC NHÂN VIÊN', href: '/management/staff-shift', icon: Clock4 },
+	{ title: 'QUẢN LÝ CA LÀM VIỆC', href: '/management/shift', icon: ChevronsUpDown },
 	{
-		title: 'MANAGEMENT SERVICE',
+		title: 'QUẢN LÝ DỊCH VỤ',
 		href: '/management/service',
 		icon: Settings,
-		subItems: [{ title: 'Service Type', href: '/management/service/service-type', icon: Settings }],
+		subItems: [{ title: 'Loại Dịch Vụ', href: '/management/service/service-type', icon: Settings }],
 	},
-	{ title: 'MANAGEMENT CUSTOMER', href: '/management/customer', icon: Users },
-	{ title: 'MANAGEMENT FEEDBACK', href: '/management/feedback', icon: MessageSquare },
-	{ title: 'MANAGEMENT BOOKING', href: '/management/booking', icon: Calendar },
-	{ title: 'MANAGEMENT VOUCHER', href: '/management/voucher', icon: Ticket },
-	{ title: 'MANAGEMENT BILL', href: '/management/bill', icon: Receipt },
+	{ title: 'QUẢN LÝ KHÁCH HÀNG', href: '/management/customer', icon: Users },
+	{ title: 'QUẢN LÝ PHẢN HỒI', href: '/management/feedback', icon: MessageSquare },
+	{ title: 'QUẢN LÝ ĐẶT LỊCH', href: '/management/booking', icon: Calendar },
+	{ title: 'QUẢN LÝ VOUCHER', href: '/management/voucher', icon: Ticket },
+	{ title: 'QUẢN LÝ HÓA ĐƠN', href: '/management/bill', icon: Receipt },
 	// { title: 'BARBER HISTORY', href: '/management/history', icon: Clock4 },
-	{ title: 'MANAGEMENT COMBO', href: '/management/combo', icon: PlusSquare },
-	{ title: 'MANAGEMENT SALARY', href: '/management/income', icon: DollarSign },
+	{ title: 'QUẢN LÝ COMBO', href: '/management/combo', icon: PlusSquare },
+	{ title: 'QUẢN LÝ LƯƠNG', href: '/management/income', icon: DollarSign },
 ];
 
 export default function AppSidebar({ children }: { children: React.ReactNode }) {
@@ -143,7 +143,7 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 				</SidebarHeader>
 				<SidebarContent className='overflow-x-hidden bg-gray-900'>
 					<SidebarGroup>
-						<SidebarGroupLabel className='text-white'>Overview</SidebarGroupLabel>
+						<SidebarGroupLabel className='text-white'>Tổng quan</SidebarGroupLabel>
 						<SidebarMenu className='flex flex-col gap-3 text-white'>
 							{navItems.map((item) => (
 								<React.Fragment key={item.href}>
@@ -232,12 +232,12 @@ export default function AppSidebar({ children }: { children: React.ReactNode }) 
 									<DropdownMenuItem>
 										<Link href='/' className='flex items-center gap-2'>
 											<Home size={16} />
-											Home Page
+											Trang Chủ
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem onClick={handleLogout}>
 										<LogOut />
-										Log out
+										Đăng Xuất
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>

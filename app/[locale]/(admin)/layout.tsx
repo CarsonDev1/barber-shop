@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import SideBar from '@/app/[locale]/(admin)/components/sidebar';
 import '@/app/globals.css';
 import Provider from '@/utils/Provider';
@@ -7,7 +7,7 @@ import { AuthProvider } from '@/context/AuthProvider';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const poppins = Poppins({
+const poppins = Inter({
 	weight: ['400', '500', '600', '700', '800', '900'],
 	subsets: ['latin'],
 });

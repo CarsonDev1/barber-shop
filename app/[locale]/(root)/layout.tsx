@@ -1,6 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import Header from '@/app/components/header';
 import '@/app/globals.css';
 import Chats from '@/app/components/chats';
@@ -9,7 +9,7 @@ import Footer from '@/app/components/footer';
 import { AuthProvider } from '@/context/AuthProvider';
 import Provider from '@/utils/Provider';
 
-const poppins = Poppins({
+const poppins = Inter({
 	weight: ['400', '500', '600', '700', '800', '900'],
 	subsets: ['latin'],
 });
