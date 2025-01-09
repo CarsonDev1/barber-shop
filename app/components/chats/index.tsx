@@ -1,164 +1,155 @@
 'use client';
 
-import Link from 'next/link';
-import AI from '@/public/root/btn-ai.png';
-import Image from 'next/image';
-import { useState, useRef, useEffect } from 'react';
-import { createAI } from '@/app/api/ai/createAI';
+import { useEffect, useRef, useState } from 'react';
+import { CometChat } from '@cometchat-pro/chat';
+import { createOrJoinGroup, initializeCometChat, loginToCometChat } from '@/lib/comechat';
+
+interface Message {
+	text: string;
+	sender: string;
+}
 
 export default function Chats() {
-	const [isChatOpen, setChatOpen] = useState(false);
-	const [formData, setFormData] = useState({ characteristics: '', language: 'vi', gender: 'male' });
-	const [messages, setMessages] = useState<{ text: string; sender: 'user' | 'ai' }[]>([]); // For chat history
-	const [loading, setLoading] = useState(false);
-	const chatBoxRef = useRef<HTMLDivElement>(null); // Reference for chat box to detect outside click
+	const [isChatOpen, setChatOpen] = useState<boolean>(false);
+	const [formData, setFormData] = useState<{ userId: string; message: string }>({
+		userId: '',
+		message: '',
+	});
+	const [messages, setMessages] = useState<Message[]>([]);
+	const chatBoxRef = useRef<HTMLDivElement>(null);
 
-	// Handle form submit
-	const handleFormSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const groupID = 'cometchat-guid-1'; // Unique group ID
+	const groupName = 'Hiking Group'; // Group name
 
-		// Add user message to the chat
-		setMessages((prevMessages) => [
-			...prevMessages,
-			{
-				text: `Gender: ${formData.gender}, Characteristics: ${formData.characteristics}, Language: ${formData.language}`,
-				sender: 'user',
-			},
-		]);
-		setLoading(true);
+	// Initialize CometChat
+	useEffect(() => {
+		initializeCometChat();
 
+		const joinGroup = async () => {
+			await createOrJoinGroup(groupID, groupName);
+		};
+
+		joinGroup();
+	}, []);
+
+	// Listen for incoming messages
+	// Listen for incoming messages
+	useEffect(() => {
+		const listenerID = 'GROUP_CHAT_LISTENER';
+
+		CometChat.addMessageListener(
+			listenerID,
+			new CometChat.MessageListener({
+				onTextMessageReceived: (message: any) => {
+					console.log('Message received:', message); // Debugging để kiểm tra tin nhắn nhận được
+					if (message.receiver === groupID && message.receiverType === CometChat.RECEIVER_TYPE.GROUP) {
+						// Cập nhật state messages khi có tin nhắn mới
+						setMessages((prev) => [...prev, { text: message.text, sender: message.sender.uid }]);
+					}
+				},
+			})
+		);
+
+		// Xóa listener khi component unmount
+		return () => {
+			CometChat.removeMessageListener(listenerID);
+		};
+	}, [groupID]);
+
+	const handleLogin = async () => {
 		try {
-			// API call to create AI
-			const AIData = {
-				gender: formData.gender,
-				characteristics: formData.characteristics.split(','),
-				language: formData.language,
-			};
-			const response = await createAI(AIData); // Send data to the server
-
-			// Assuming the response looks like: { status: string, message: string, payload: object }
-			const parsedPayload = JSON.parse(response?.payload || '[]'); // Safely parse the JSON string
-			const firstDescription = parsedPayload[0]?.description || 'No description available'; // Get the description of the first object
-			setMessages((prevMessages) => [
-				...prevMessages,
-				{ text: firstDescription, sender: 'ai' }, // Use the message field to display the AI's response
-			]);
-			setFormData({ gender: 'male', characteristics: '', language: 'vi' }); // Reset form data
+			await loginToCometChat(formData.userId);
+			alert('Logged in successfully');
 		} catch (error) {
-			console.error('Error creating AI:', error);
-			setMessages((prevMessages) => [...prevMessages, { text: 'Sorry, something went wrong!', sender: 'ai' }]);
-		} finally {
-			setLoading(false);
+			alert('Login failed. Please try again.');
 		}
 	};
 
-	// Close chat when clicking outside
-	useEffect(() => {
-		const handleOutsideClick = (e: MouseEvent) => {
-			if (chatBoxRef.current && !chatBoxRef.current.contains(e.target as Node)) {
-				setChatOpen(false);
-			}
-		};
+	const sendMessageToGroup = async (messageText: string): Promise<void> => {
+		const textMessage = new CometChat.TextMessage(groupID, messageText, CometChat.RECEIVER_TYPE.GROUP);
 
-		if (isChatOpen) {
-			document.addEventListener('mousedown', handleOutsideClick);
+		try {
+			const message = await CometChat.sendMessage(textMessage);
+			console.log('Message sent successfully:', message);
+			setMessages((prev) => [...prev, { text: messageText, sender: formData.userId }]);
+		} catch (error) {
+			console.error('Message sending failed:', error);
 		}
+	};
 
-		return () => {
-			document.removeEventListener('mousedown', handleOutsideClick);
-		};
-	}, [isChatOpen]);
+	const handleFormSubmit = async (e: React.FormEvent): Promise<void> => {
+		e.preventDefault();
+		if (!formData.message) return;
+
+		await sendMessageToGroup(formData.message);
+		setFormData((prev) => ({ ...prev, message: '' }));
+	};
 
 	return (
 		<div className='fixed bottom-4 right-4 z-50 flex flex-col gap-4'>
-			{/* AI Chat Button */}
 			<button
-				className='relative rounded-full shadow-lg hover:shadow-xl transition-all group'
+				className='bg-blue-500 text-white p-4 rounded-full shadow-lg'
 				onClick={() => setChatOpen((prev) => !prev)}
 			>
-				<span className='absolute top-1/2 left-1/2 w-[120%] h-[120%] bg-[#2196f3]/50 rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-ripple'></span>
-				<Image src={AI} alt='btn-chat' className='w-14 h-14 animate-shake' />
+				Open Chat
 			</button>
 
-			{/* Chat UI */}
 			{isChatOpen && (
 				<div
 					ref={chatBoxRef}
-					className='w-96 p-4 bg-white shadow-lg rounded-lg transform transition-transform ease-in-out duration-500 absolute bottom-20 right-0'
+					className='w-96 p-4 bg-white shadow-lg rounded-lg transform transition-transform ease-in-out duration-500'
 				>
-					{/* Chat History */}
 					<div className='overflow-y-auto max-h-60 mb-4'>
 						{messages.map((message, index) => (
-							<div key={index} className={`mb-2 ${message.sender === 'ai' ? 'text-left' : 'text-right'}`}>
+							<div
+								key={index}
+								className={`mb-2 ${message.sender === formData.userId ? 'text-right' : 'text-left'}`}
+							>
 								<span
 									className={`inline-block p-2 rounded-lg ${
-										message.sender === 'ai' ? 'bg-gray-200' : 'bg-blue-500 text-white'
+										message.sender === formData.userId ? 'bg-blue-500 text-white' : 'bg-gray-200'
 									}`}
 								>
-									{message.text}
+									{message.text} - <small>{message.sender}</small>
 								</span>
 							</div>
 						))}
-						{loading && (
-							<div className='text-left mb-2'>
-								<span className='inline-block p-2 rounded-lg bg-gray-200'>Loading...</span>
-							</div>
-						)}
 					</div>
 
-					{/* Form to input user data */}
-					{!loading && (
-						<form onSubmit={handleFormSubmit}>
-							<div>
-								<label className='block mb-2' htmlFor='characteristics'>
-									Characteristics:
-								</label>
-								<input
-									id='characteristics'
-									type='text'
-									value={formData.characteristics}
-									onChange={(e) => setFormData({ ...formData, characteristics: e.target.value })}
-									className='w-full p-2 border border-gray-300 rounded mb-4'
-									placeholder='Enter characteristics'
-									required
-								/>
-							</div>
+					<form onSubmit={handleFormSubmit}>
+						<div>
+							<input
+								type='text'
+								value={formData.userId}
+								onChange={(e) => setFormData((prev) => ({ ...prev, userId: e.target.value }))}
+								placeholder='Enter User ID'
+								className='w-full p-2 border mb-2'
+								required
+							/>
+						</div>
 
-							<div>
-								<label className='block mb-2' htmlFor='language'>
-									Language:
-								</label>
-								<select
-									id='language'
-									value={formData.language}
-									onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-									className='w-full p-2 border border-gray-300 rounded mb-4'
-								>
-									<option value='vi'>Vietnamese</option>
-									<option value='ko'>Korean</option>
-								</select>
-							</div>
+						<div>
+							<input
+								type='text'
+								value={formData.message}
+								onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
+								placeholder='Type a message'
+								className='w-full p-2 border'
+								required
+							/>
+						</div>
 
-							<div>
-								<label className='block mb-2' htmlFor='gender'>
-									Gender:
-								</label>
-								<select
-									id='gender'
-									value={formData.gender}
-									onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-									className='w-full p-2 border border-gray-300 rounded mb-4'
-								>
-									<option value='male'>Male</option>
-									<option value='female'>Female</option>
-								</select>
-							</div>
-
-							<button type='submit' className='w-full bg-blue-500 text-white p-2 rounded'>
-								Submit
-							</button>
-						</form>
-					)}
+						<button
+							type='button'
+							onClick={handleLogin}
+							className='w-full bg-green-500 text-white p-2 rounded mt-2'
+						>
+							Login
+						</button>
+						<button type='submit' className='w-full bg-blue-500 text-white p-2 rounded mt-2'>
+							Send
+						</button>
+					</form>
 				</div>
 			)}
 		</div>
