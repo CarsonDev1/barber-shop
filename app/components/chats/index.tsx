@@ -9,6 +9,7 @@ import AI from '@/public/root/btn-ai.png';
 import { useQuery } from '@tanstack/react-query';
 import { getAccount } from '@/app/api/getProfile';
 import { createAIPro } from '@/app/api/ai/AIPro';
+import Link from 'next/link';
 
 export default function RealTimeChatPopup() {
 	const [isPopupOpen, setIsPopupOpen] = useState(false); // Trạng thái mở/đóng popup
@@ -167,6 +168,13 @@ export default function RealTimeChatPopup() {
 	return (
 		<div className='fixed bottom-4 right-4 z-50 flex flex-col gap-4 items-center'>
 			{/* Nút mở popup */}
+
+			<Link href='/ai-suggest'>
+				<button className='bg-orange-300 text-white p-3 rounded-full shadow-lg hover:shadow-xl'>
+					Gợi ý kiểu tóc
+				</button>
+			</Link>
+
 			<button
 				className='bg-blue-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl'
 				onClick={() => setIsPopupOpen((prev) => !prev)}
@@ -176,7 +184,7 @@ export default function RealTimeChatPopup() {
 
 			{/* Popup */}
 			{isPopupOpen && (
-				<div ref={popupRef} className='fixed bottom-20 right-4 w-80 p-4 bg-white shadow-lg rounded-lg'>
+				<div ref={popupRef} className='fixed bottom-20 right-4 w-80 p-4 bg-white shadow-lg rounded-lg z-40'>
 					<h2 className='text-lg font-bold mb-4'>Real-Time Chat</h2>
 
 					{/* Hiển thị tin nhắn */}
@@ -311,12 +319,9 @@ export default function RealTimeChatPopup() {
 			)}
 
 			{/* AI Pro Button */}
-			<button
-				className='bg-green-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl'
-				onClick={() => setAIProOpen((prev) => !prev)}
-			>
-				AI Pro
-			</button>
+			<Link href='/ai-pro'>
+				<button className='bg-green-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl'>AI Pro</button>
+			</Link>
 
 			{/* AI Pro Popup */}
 			{isAIProOpen && (
