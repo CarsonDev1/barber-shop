@@ -1,15 +1,15 @@
 // Import các thư viện Firebase cần thiết
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
 // Cấu hình Firebase của ứng dụng bạn
 const firebaseConfig = {
-  apiKey: "AIzaSyBN7-FLqpIZv12xZzrxlGtgz4Qlw7LbDTw",
-  authDomain: "barber-shop-839df.firebaseapp.com",
-  projectId: "barber-shop-839df",
-  storageBucket: "barber-shop-839df.appspot.com",
-  messagingSenderId: "165333213279",
-  appId: "1:165333213279:web:4dbf6af188d28f7cd63bea",
+	apiKey: 'AIzaSyAKqlDPE3hU0s1uhQmc4_H_oVZ0469LeYA',
+	authDomain: 'barber-shop-ee686.firebaseapp.com',
+	projectId: 'barber-shop-ee686',
+	storageBucket: 'barber-shop-ee686.firebasestorage.app',
+	messagingSenderId: '715393501875',
+	appId: '1:715393501875:web:2fa6e612d24afe2be2bec6',
 };
 
 // Khởi tạo ứng dụng Firebase
